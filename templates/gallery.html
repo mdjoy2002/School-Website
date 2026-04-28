@@ -1,0 +1,240 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ফটো গ্যালারি | খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #004a99;
+            --secondary-color: #ffc107;
+            --bg-light: #f4f7f6;
+        }
+
+        body { 
+            font-family: 'Times New Roman', 'Nikosh', 'Hind Siliguri', serif; 
+            background-color: var(--bg-light);
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Navbar & Dropdown Styling */
+        .navbar { background-color: var(--primary-color) !important; border-bottom: 3px solid var(--secondary-color); padding: 10px 0; }
+        .nav-link { font-size: 15px; font-weight: 600; color: #fff !important; margin: 0 5px; transition: 0.3s; cursor: pointer; }
+        .nav-link i { margin-right: 5px; color: var(--secondary-color); }
+        .nav-link:hover { color: var(--secondary-color) !important; }
+
+        .dropdown:hover .dropdown-menu { display: block; margin-top: 0; border-top: 3px solid var(--secondary-color); }
+        .dropdown-item { font-weight: 600; color: #333; font-size: 14px; padding: 10px 20px; border-bottom: 1px solid #eee; }
+        .dropdown-item:hover { background-color: var(--primary-color); color: #fff; }
+
+        .section-title {
+            margin: 50px 0;
+            font-weight: 700;
+            color: var(--primary-color);
+            position: relative;
+            text-align: center;
+        }
+
+        /* Folder/Album Card Design */
+        .event-folder {
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            cursor: pointer;
+            height: 100%;
+        }
+
+        .event-folder:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        .folder-img-wrapper {
+            position: relative;
+            height: 220px;
+            overflow: hidden;
+        }
+
+        .folder-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: 0.5s;
+        }
+
+        .event-folder:hover .folder-img-wrapper img { transform: scale(1.1); }
+
+        .photo-count {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+        }
+
+        .folder-name { padding: 20px; text-align: center; font-weight: 700; color: var(--primary-color); }
+
+        /* Gallery Modal Styling */
+        .modal-content { border-radius: 25px; border: none; }
+        .gallery-item { position: relative; border-radius: 15px; overflow: hidden; height: 200px; }
+        .gallery-item img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; transition: 0.3s; }
+
+        footer {
+            background: #001d3d;
+            color: white;
+            padding: 60px 0 30px;
+            margin-top: 100px;
+        }
+        .footer-logo-img { width: 70px; height: 70px; margin-bottom: 15px; border: 2px solid var(--secondary-color); padding: 2px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                <img src="{% static 'images/logo.png' %}" alt="Logo" class="me-2 rounded-circle border border-warning" style="width: 50px; height: 50px; object-fit: cover;"> 
+                <div class="lh-1">
+                    <span class="fw-bold d-block" style="font-size: 18px;">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</span>
+                    <small style="font-size: 12px; color: var(--secondary-color);">বয়রা,খুলনা</small>
+                </div>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+             <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto" data-aos="fade-left">
+                    <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}"><i class="fas fa-home"></i> হোম</a></li>
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="studentCornerDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-graduate"></i> শিক্ষার্থী কর্নার
+                        </a>
+                        <ul class="dropdown-menu shadow">
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'info' %}"><i class="fas fa-info-circle"></i> তথ্য</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'seats' %}"><i class="fas fa-chair"></i> আসন সংখ্যা</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'dress' %}"><i class="fas fa-tshirt"></i> ড্রেস</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'class-routine' %}"><i class="fas fa-calendar-alt"></i> ক্লাস রুটিন</a></li>
+                            <li><a class="dropdown-item" href="{% url 'exam_routine' %}"><i class="fas fa-file-invoice"></i> পরীক্ষার রুটিন</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'syllabus' %}"><i class="fas fa-book"></i> সিলেবাস</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'holiday' %}"><i class="fas fa-umbrella-beach"></i> ছুটির তালিকা</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="admissionDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-plus"></i> ভর্তি তথ্য
+                        </a>
+                        <ul class="dropdown-menu shadow">
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'form' %}"><i class="fas fa-file-signature"></i> ভর্তি আবেদন ফরম</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'guide' %}"><i class="fas fa-clipboard-check"></i> ভর্তি নির্দেশিকা</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'result' %}"><i class="fas fa-list-ol"></i> ভর্তি পরীক্ষার ফলাফল</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'fees' %}"><i class="fas fa-tags"></i> বেতন ও ফি সমূহ</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item"><a class="nav-link" href="{% url 'all_notices' %}"><i class="fas fa-file-alt"></i> নোটিশ</a></li>
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="resultDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-poll"></i> ফলাফল
+                        </a>
+                        <ul class="dropdown-menu shadow">
+                            <li><a class="dropdown-item" href="{% url 'result_category' 'public' %}"><i class="fas fa-graduation-cap"></i> পাবলিক পরীক্ষার ফলাফল</a></li>
+                            <li><a class="dropdown-item" href="{% url 'result_category' 'internal' %}"><i class="fas fa-file-alt"></i> স্কুল ও কলেজের ফলাফল</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users-cog"></i> শিক্ষক</a></li>
+                    
+                    <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}"><i class="fas fa-envelope-open-text"></i> যোগাযোগ</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        <h2 class="section-title" data-aos="fade-down" data-aos-duration="1000"><span>📸 ইভেন্ট ভিত্তিক ফটো গ্যালারি</span></h2>
+
+        <div class="row g-4">
+            {% for category in categories %}
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter }}00">
+                <div class="card event-folder" data-bs-toggle="modal" data-bs-target="#album{{ category.id }}">
+                    <div class="folder-img-wrapper">
+                        <img src="{{ category.cover_image.url }}" alt="{{ category.name }}">
+                        <div class="photo-count">
+                            <i class="fas fa-images"></i> {{ category.images.count }} টি ছবি
+                        </div>
+                    </div>
+                    <div class="folder-name">
+                        <h5 class="mb-0">{{ category.name }}</h5>
+                        <small class="text-muted">{{ category.created_at|date:"d M, Y" }}</small>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="album{{ category.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header border-0">
+                                <h4 class="modal-title fw-bold text-primary">{{ category.name }}</h4>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <div class="row g-3">
+                                    {% for img in category.images.all %}
+                                    <div class="col-lg-3 col-md-4 col-6">
+                                        <div class="gallery-item shadow-sm">
+                                            <a href="{{ img.image.url }}" target="_blank">
+                                                <img src="{{ img.image.url }}" alt="{{ img.caption }}">
+                                            </a>
+                                        </div>
+                                        {% if img.caption %}
+                                        <p class="small text-center mt-2 text-muted">{{ img.caption }}</p>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="lead text-muted">বর্তমানে কোনো গ্যালারি ইভেন্ট তৈরি করা হয়নি।</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <footer>
+        <div class="container text-center">
+            <img src="{% static 'images/logo.png' %}" alt="School Logo" class="footer-logo-img rounded-circle mb-3">
+            <h5 class="fw-bold mb-2" style="color: var(--secondary-color);">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</h5>
+            <p class="opacity-75 mb-4">বয়রা, খুলনা | স্থাপিত: ১৯৯৪</p>
+            <hr class="bg-light opacity-25">
+            <p class="small mb-0 opacity-75">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | ডিজাইন ও ডেভেলপমেন্ট: **Joy**</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ duration: 800, once: true, offset: 100 });
+    </script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>যোগাযোগ | খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #004a99;
+            --secondary-color: #ffc107;
+            --accent-red: #cc0000;
+        }
+
+        body { 
+            font-family: 'Times New Roman', 'Nikosh', 'Hind Siliguri', serif; 
+            background-color: #f4f7f6;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Navbar & Dropdown Styling */
+        .navbar { 
+            background-color: var(--primary-color) !important; 
+            border-bottom: 3px solid var(--secondary-color); 
+            padding: 10px 0;
+        }
+        .nav-link { font-size: 15px; font-weight: 600; color: #fff !important; margin: 0 5px; transition: 0.3s; cursor: pointer; }
+        .nav-link i { margin-right: 5px; color: var(--secondary-color); }
+        .nav-link:hover { color: var(--secondary-color) !important; }
+
+        .dropdown:hover .dropdown-menu { display: block; margin-top: 0; border-top: 3px solid var(--secondary-color); }
+        .dropdown-item { font-weight: 600; color: #333; font-size: 14px; padding: 10px 20px; border-bottom: 1px solid #eee; }
+        .dropdown-item:hover { background-color: var(--primary-color); color: #fff; }
+
+        .page-header {
+            background: linear-gradient(rgba(0, 74, 153, 0.8), rgba(0, 74, 153, 0.8)), url('https://images.unsplash.com/photo-1523050335392-9befbf567c45?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        /* Contact Cards */
+        .contact-card {
+            background: #fff;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: 0.3s;
+            height: 100%;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            text-decoration: none;
+            display: block;
+            color: inherit;
+        }
+        .contact-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); color: var(--primary-color); }
+        .icon-box {
+            width: 70px;
+            height: 70px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 28px;
+        }
+
+        /* Form Styling */
+        .contact-form {
+            background: #fff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .form-control {
+            border-radius: 10px;
+            padding: 12px 20px;
+            border: 1px solid #ddd;
+        }
+        .form-control:focus { border-color: var(--primary-color); box-shadow: none; }
+
+        /* Map */
+        .map-container { 
+            border-radius: 20px; 
+            overflow: hidden; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            height: 100%; 
+            min-height: 450px;
+            border: 5px solid #fff;
+        }
+        .map-container iframe { width: 100%; height: 100%; border: 0; min-height: 450px; }
+
+        footer { background: #002d5a; color: #fff; padding: 60px 0 30px; }
+        .footer-logo-img { width: 70px; height: 70px; margin-bottom: 15px; border: 2px solid var(--secondary-color); padding: 2px; }
+        
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                <img src="{% static 'images/logo.png' %}" alt="Logo" class="me-2 rounded-circle border border-warning" style="width: 50px; height: 50px; object-fit: cover;"> 
+                <div class="lh-1">
+                    <span class="fw-bold d-block" style="font-size: 18px;">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</span>
+                    <small style="font-size: 12px; color: var(--secondary-color);">বয়রা, খুলনা</small>
+                </div>
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto" data-aos="fade-left">
+                    <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}"><i class="fas fa-home"></i> হোম</a></li>
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="studentCornerDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-graduate"></i> শিক্ষার্থী কর্নার
+                        </a>
+                        <ul class="dropdown-menu shadow">
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'info' %}"><i class="fas fa-info-circle"></i> তথ্য</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'seats' %}"><i class="fas fa-chair"></i> আসন সংখ্যা</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'dress' %}"><i class="fas fa-tshirt"></i> ড্রেস</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'class-routine' %}"><i class="fas fa-calendar-alt"></i> ক্লাস রুটিন</a></li>
+                            <li><a class="dropdown-item" href="{% url 'exam_routine' %}"><i class="fas fa-file-invoice"></i> পরীক্ষার রুটিন</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'syllabus' %}"><i class="fas fa-book"></i> সিলেবাস</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'holiday' %}"><i class="fas fa-umbrella-beach"></i> ছুটির তালিকা</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="admissionDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-plus"></i> ভর্তি তথ্য
+                        </a>
+                        <ul class="dropdown-menu shadow">
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'form' %}"><i class="fas fa-file-signature"></i> ভর্তি আবেদন ফরম</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'guide' %}"><i class="fas fa-clipboard-check"></i> ভর্তি নির্দেশিকা</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'result' %}"><i class="fas fa-list-ol"></i> ভর্তি পরীক্ষার ফলাফল</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'fees' %}"><i class="fas fa-tags"></i> বেতন ও ফি সমূহ</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item"><a class="nav-link" href="{% url 'all_notices' %}"><i class="fas fa-file-alt"></i> নোটিশ</a></li>
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="resultDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-poll"></i> ফলাফল
+                        </a>
+                        <ul class="dropdown-menu shadow">
+                            <li><a class="dropdown-item" href="{% url 'result_category' 'public' %}"><i class="fas fa-graduation-cap"></i> পাবলিক পরীক্ষার ফলাফল</a></li>
+                            <li><a class="dropdown-item" href="{% url 'result_category' 'internal' %}"><i class="fas fa-file-alt"></i> স্কুল ও কলেজের ফলাফল</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users-cog"></i> শিক্ষক</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'gallery' %}"><i class="fas fa-images"></i> গ্যালারি</a></li>
+                   
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-header" data-aos="fade-in">
+        <div class="container">
+            <h1 class="display-4 fw-bold" data-aos="zoom-in" data-aos-delay="200">আমাদের সাথে যোগাযোগ করুন</h1>
+            <p class="lead" data-aos="fade-up" data-aos-delay="400">যেকোনো জিজ্ঞাসা বা তথ্যের জন্য আমাদের লিখুন অথবা সরাসরি যোগাযোগ করুন</p>
+        </div>
+    </div>
+
+    <div class="container my-5">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm mb-4" role="alert" data-aos="flip-up">
+                    <i class="fas fa-check-circle me-2"></i> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <a href="https://www.google.com/maps?q=Khandaker+Naser+Uddin+High+School+Khulna" target="_blank" class="contact-card">
+                    <div class="icon-box"><i class="fas fa-map-marker-alt"></i></div>
+                    <h4 class="fw-bold">ঠিকানা</h4>
+                    <p class="text-muted">বয়রা, খুলনা, বাংলাদেশ</p>
+                    <small class="text-primary fw-bold">লোকেশনে ক্লিক করুন <i class="fas fa-external-link-alt ms-1"></i></small>
+                </a>
+            </div>
+            
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <a href="tel:+8801306117407" class="contact-card">
+                    <div class="icon-box"><i class="fas fa-phone-alt"></i></div>
+                    <h4 class="fw-bold">ফোন করুন</h4>
+                    <p class="text-muted">+৮৮০ ১৩০৬ ১১৭৪০৭</p>
+                    <span class="small text-primary fw-bold">সরাসরি কল করতে ক্লিক করুন</span>
+                </a>
+            </div>
+
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="500">
+                <div class="contact-card">
+                    <div class="icon-box"><i class="fas fa-comments"></i></div>
+                    <h4 class="fw-bold">অনলাইন যোগাযোগ</h4>
+                    <div class="social-links mt-2">
+                        <a href="mailto:knuhighschool1994@gmail.com" class="mx-2" style="color: #EA4335;"><i class="fas fa-envelope fa-lg"></i></a>
+                        <a href="https://wa.me/8801306117407" target="_blank" class="mx-2" style="color: #25D366;"><i class="fab fa-whatsapp fa-lg"></i></a>
+                        <a href="https://www.facebook.com/profile.php?id=61555308809098" target="_blank" class="mx-2" style="color: #1877F2;"><i class="fab fa-facebook fa-lg"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-5">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="contact-form">
+                    <h3 class="fw-bold mb-4 text-primary">বার্তা পাঠান</h3>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">আপনার নাম</label>
+                            <input type="text" name="name" class="form-control" placeholder="নাম লিখুন" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">মোবাইল নম্বর</label>
+                            <input type="text" name="phone" class="form-control" placeholder="০১৭XXXXXXXX" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">বিষয়</label>
+                            <input type="text" name="subject" class="form-control" placeholder="কি বিষয়ে লিখতে চান?" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">আপনার বার্তা</label>
+                            <textarea name="message" class="form-control" rows="5" placeholder="বিস্তারিত লিখুন..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow-sm">বার্তা জমা দিন</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="map-container">
+                    {% if school_info.map_url %}
+                        {{ school_info.map_url|safe }}
+                    {% else %}
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3677.3023062602755!2d89.5448373752538!3d22.82823617931086!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ff91444367f139%3A0xc023f03b22b10a2d!2sKhandaker+Naser+Uddin+High+School!5e0!3m2!1sen!2sbd!4v1713425000000!5m2!1sen!2sbd" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center" data-aos="fade-up">
+        <div class="container">
+            <img src="{% static 'images/logo.png' %}" alt="School Logo" class="footer-logo-img rounded-circle mb-3">
+            <h5 class="fw-bold mb-2" style="color: var(--secondary-color);">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</h5>
+            <p class="opacity-75 mb-4">বয়রা, খুলনা | স্থাপিত: ১৯৯৪</p>
+            <hr class="bg-light opacity-25">
+            <p class="small mb-0 opacity-75">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | ডিজাইন ও ডেভেলপমেন্ট: **Joy**</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ duration: 800, once: true, offset: 100 });
+    </script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} | খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        body { 
+            font-family: 'Times New Roman', 'Nikosh', 'Hind Siliguri', serif; 
+            background-color: #f8f9fa; 
+            color: #333;
+        }
+
+        /* Navbar Styling */
+        .navbar { 
+            background-color: #004a99 !important; 
+            border-bottom: 3px solid #ffc107; 
+            padding: 10px 0;
+            z-index: 1100; /* Higher z-index to prevent overlap */
+        }
+        .nav-link { font-size: 15px; font-weight: 600; color: #fff !important; margin: 0 5px; transition: 0.3s; cursor: pointer; }
+        .nav-link i { margin-right: 5px; color: #ffc107; }
+        .nav-link:hover { color: #ffc107 !important; }
+
+        /* Hover Dropdown Logic */
+        .dropdown:hover .dropdown-menu { display: block; margin-top: 0; border-top: 3px solid #ffc107; }
+        .dropdown-item { font-weight: 600; color: #333; font-size: 14px; padding: 10px 20px; border-bottom: 1px solid #eee; }
+        .dropdown-item:hover { background-color: #004a99; color: #fff; }
+        .dropdown-item:last-child { border-bottom: none; }
+
+        /* Page Header Fix for Overlap */
+        .page-header {
+            background: linear-gradient(rgba(0, 74, 153, 0.9), rgba(0, 74, 153, 0.9)), url('https://via.placeholder.com/1500x300');
+            background-size: cover; 
+            background-position: center;
+            color: white; 
+            padding: 80px 0 50px; /* Top padding added to push content down from fixed navbar */
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Table Styling */
+        .table-card { border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: none; overflow: hidden; }
+        .bg-custom { background-color: #004a99; color: white; }
+        .table thead { background-color: #f1f4f9; }
+        .table th { border: none; padding: 15px; color: #004a99; }
+        .table td { vertical-align: middle; padding: 15px; }
+
+        /* Footer */
+        footer { background: #002d5a; color: #fff; padding: 60px 0 30px; margin-top: 80px; }
+        .footer-logo { font-size: 22px; font-weight: 700; color: #ffc107; }
+        .footer-logo-img { width: 70px; height: 70px; margin-bottom: 15px; border: 2px solid #ffc107; padding: 2px; }
+        .social-links a { 
+            display: inline-block; width: 35px; height: 35px; 
+            background: rgba(255,255,255,0.1); line-height: 35px; 
+            text-align: center; border-radius: 50%; color: #fff; margin-right: 5px; 
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark shadow sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                <img src="{% static 'images/logo.png' %}" alt="Logo" class="me-2 rounded-circle border border-warning" style="width: 55px; height: 55px; object-fit: cover;"> 
+                <div class="lh-1">
+                    <span class="fw-bold d-block" style="font-size: 18px;">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</span>
+                    <small style="font-size: 12px; color: #ffc107;">বয়রা,খুলনা</small>
+                </div>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    
+                    {% if request.resolver_match.url_name != 'home' %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> হোম</a></li>
+                    {% endif %}
+
+                   <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="studentCornerDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-graduate"></i> শিক্ষার্থী কর্নার
+                        </a>
+                        <ul class="dropdown-menu shadow">
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'info' %}"><i class="fas fa-info-circle"></i> তথ্য</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'seats' %}"><i class="fas fa-chair"></i> আসন সংখ্যা</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'dress' %}"><i class="fas fa-tshirt"></i> ড্রেস</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'class-routine' %}"><i class="fas fa-calendar-alt"></i> ক্লাস রুটিন</a></li>
+                            <li><a class="dropdown-item" href="{% url 'exam_routine' %}"><i class="fas fa-file-invoice"></i> পরীক্ষার রুটিন</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'syllabus' %}"><i class="fas fa-book"></i> সিলেবাস</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'holiday' %}"><i class="fas fa-umbrella-beach"></i> ছুটির তালিকা</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-user-plus"></i> ভর্তি তথ্য</a></li>
+
+                    {% if request.resolver_match.url_name != 'all_notices' %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'all_notices' %}"><i class="fas fa-file-alt"></i> নোটিশ</a></li>
+                    {% endif %}
+
+                     <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="resultDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-poll"></i> ফলাফল
+                        </a>
+                        <ul class="dropdown-menu shadow">
+                            <li><a class="dropdown-item" href="{% url 'result_category' 'public' %}"><i class="fas fa-graduation-cap"></i> পাবলিক পরীক্ষার ফলাফল</a></li>
+                            <li><a class="dropdown-item" href="{% url 'result_category' 'internal' %}"><i class="fas fa-file-alt"></i> স্কুল ও কলেজের ফলাফল</a></li>
+                        </ul>
+                    </li>
+
+                    {% if request.resolver_match.url_name != 'teachers_page' %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users"></i> শিক্ষক ও কর্মচারী</a></li>
+                    {% endif %}
+
+                    {% if request.resolver_match.url_name != 'gallery' %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'gallery' %}"><i class="fas fa-images"></i> গ্যালারি</a></li>
+                    {% endif %}
+
+                    {% if request.resolver_match.url_name != 'contact' %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}"><i class="fas fa-envelope"></i> যোগাযোগ</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-header text-center">
+        <div class="container">
+            <h1 class="display-6 fw-bold mb-3">{{ page_title }}</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-warning text-decoration-none">হোম</a></li>
+                    <li class="breadcrumb-item active text-white" aria-current="page">{{ page_title }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="container mb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card table-card">
+                    <div class="card-header bg-custom p-3 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-list me-2 text-warning"></i> বিস্তারিত তালিকা</h5>
+                        <span class="badge bg-warning text-dark">{{ data_list|length }} টি ফাইল পাওয়া গেছে</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-4">ক্রমিক</th>
+                                        <th>শিরোনাম</th>
+                                        <th>তারিখ</th>
+                                        <th class="text-center">ডাউনলোড</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in data_list %}
+                                    <tr>
+                                        <td class="ps-4">{{ forloop.counter }}</td>
+                                        <td class="fw-bold">{{ item.title }}</td>
+                                        <td>{{ item.created_at|date:"d M, Y" }}</td>
+                                        <td class="text-center">
+                                            <a href="{{ item.pdf_file.url }}" class="btn btn-sm btn-danger rounded-pill px-3" target="_blank">
+                                                <i class="fas fa-file-pdf"></i> PDF ডাউনলোড
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5 text-muted">কোন ডাটা পাওয়া যায়নি।</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container text-center">
+            <img src="{% static 'images/logo.png' %}" alt="School Logo" class="footer-logo-img rounded-circle mb-3">
+            <h5 class="footer-logo mb-2">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</h5>
+            <p class="opacity-75 mb-4">বয়রা, খুলনা | স্থাপিত: ১৯৯৪</p>
+            <div class="social-links mb-4">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+                <a href="#"><i class="fas fa-envelope"></i></a>
+            </div>
+            <hr class="bg-light opacity-25">
+            <p class="small mb-0 opacity-75">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | ডিজাইন ও ডেভেলপমেন্ট: **Joy**</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
