@@ -11,7 +11,7 @@
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     
     <style>
-        /* Font Setup */
+        /* Font Setup - Unchanged */
         @import url('https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap');
         
         body { 
@@ -41,7 +41,7 @@
             color: var(--accent-yellow);
         }
 
-        /* Auto Dropdown on Hover */
+        /* Auto Dropdown on Hover (Desktop) */
         @media (min-width: 992px) {
             .nav-item.dropdown:hover .dropdown-menu {
                 display: block;
@@ -128,7 +128,7 @@
                 <img src="{% static 'images/logo.png' %}" alt="Logo" class="me-2 rounded-circle border border-warning" style="width: 55px; height: 55px; object-fit: cover;"> 
                 <div class="lh-1">
                     <span class="fw-bold d-block" style="font-size: 18px;">খন্দকার নাসের উদ্দিন মাধ্যমিক বিদ্যালয়</span>
-                    <small style="font-size: 12px; color: #ffc107;">বয়রা, খুলনা</small>
+                    <small style="font-size: 12px; color: #ffc107;">বয়রা, খুলনা</small>
                 </div>
             </a>
             
@@ -141,7 +141,7 @@
                     <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}"><i class="fas fa-home"></i> হোম</a></li>
                     
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="studentCornerDropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="studentCornerDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-graduate"></i> শিক্ষার্থী কর্নার
                         </a>
                         <ul class="dropdown-menu">
@@ -156,7 +156,7 @@
                     </li>
 
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="admissionDropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="admissionDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-plus"></i> ভর্তি তথ্য
                         </a>
                         <ul class="dropdown-menu">
@@ -168,16 +168,17 @@
                     </li>
 
                     <li class="nav-item"><a class="nav-link" href="{% url 'all_notices' %}"><i class="fas fa-file-alt"></i> নোটিশ</a></li>
-                     <li class="nav-item dropdown">
+                    
+                    <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="resultDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-poll"></i> ফলাফল
                         </a>
                         <ul class="dropdown-menu shadow">
-                            <li><a class="dropdown-item" href="{% url 'result_category' 'public' %}"><i class="fas fa-graduation-cap"></i> পাবলিক পরীক্ষার ফলাফল</a></li>
-                            <li><a class="dropdown-item" href="{% url 'result_category' 'internal' %}"><i class="fas fa-file-alt"></i> স্কুল ও কলেজের ফলাফল</a></li>
+                            <li><a class="dropdown-item" href="{% url 'result_category' 'public' %}"><i class="fas fa-graduation-cap me-2"></i> পাবলিক পরীক্ষার ফলাফল</a></li>
+                            <li><a class="dropdown-item" href="{% url 'result_category' 'internal' %}"><i class="fas fa-file-alt me-2"></i> স্কুল ও কলেজের ফলাফল</a></li>
                         </ul>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users-cog"></i> শিক্ষক</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users-cog"></i> শিক্ষক ও কর্মচারীবৃন্দ</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'gallery' %}"><i class="fas fa-images"></i> গ্যালারি</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}"><i class="fas fa-envelope-open-text"></i> যোগাযোগ</a></li>
                 </ul>
@@ -188,7 +189,7 @@
     <div class="container my-5 py-2" data-aos="zoom-in">
         <div class="text-center mb-5">
             <h2 class="section-title">{{ page_title }}</h2>
-            <p class="text-muted mt-3 fs-5">প্রয়োজনীয় ফাইলটি দেখতে বা সংগ্রহ করতে ডাউনলোড বাটনে ক্লিক করুন</p>
+            <p class="text-muted mt-3 fs-5">প্রয়োজনীয় ফাইলটি দেখতে বা সংগ্রহ করতে ডাউনলোড বাটনে ক্লিক করুন</p>
         </div>
         
         <div class="custom-card card p-3">
@@ -224,7 +225,7 @@
                         <tr>
                             <td colspan="4" class="p-5 text-center text-muted fs-4">
                                 <i class="fas fa-folder-open d-block mb-3 opacity-50" style="font-size: 50px;"></i>
-                                বর্তমানে কোনো তথ্য পাওয়া যায়নি।
+                                বর্তমানে কোনো তথ্য পাওয়া যায়নি।
                             </td>
                         </tr>
                         {% endfor %}
@@ -237,7 +238,7 @@
     <footer>
         <div class="container text-center">
             <h5 class="fw-bold mb-3">খন্দকার নাসের উদ্দিন মাধ্যমিক বিদ্যালয়</h5>
-            <p class="mb-1">বয়রা, খুলনা - ৯০০০</p>
+            <p class="mb-1">বয়রা, খুলনা - ৯০০০</p>
             <p class="mb-3"><i class="fas fa-phone-alt"></i> যোগাযোগ: ০২৪৭-XXXXXX | <i class="fas fa-envelope"></i> knuhs@gmail.com</p>
             <hr class="bg-light opacity-25">
             <p class="mb-0 opacity-75">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | ডিজাইন ও ডেভেলপমেন্ট: <strong>Md Imtiaz Sarder Joy</strong></p>

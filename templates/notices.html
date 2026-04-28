@@ -8,222 +8,269 @@
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     
     <style>
-        /* Font Setup */
+        :root {
+            --primary-color: #004a99;
+            --secondary-color: #ffc107;
+            --text-dark: #2c3e50;
+            --bg-light: #f8f9fa;
+        }
+
+        /* ফন্ট সেটিংস: বাংলার জন্য Nikosh এবং ইংরেজির জন্য Times New Roman */
         body { 
             font-family: 'Times New Roman', 'Nikosh', 'Hind Siliguri', serif; 
-            background-color: #f8f9fa; 
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
             overflow-x: hidden;
         }
 
-        /* Navbar & Dropdown Styling */
+        /* Navbar Styling */
         .navbar { 
-            background-color: #004a99 !important; 
-            border-bottom: 3px solid #ffc107; 
+            background: linear-gradient(135deg, var(--primary-color) 0%, #003366 100%) !important;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
             padding: 10px 0;
+            border-bottom: 3px solid var(--secondary-color);
         }
-        .nav-link { font-size: 15px; font-weight: 600; color: #fff !important; margin: 0 5px; transition: 0.3s; cursor: pointer; }
-        .nav-link i { margin-right: 5px; color: #ffc107; }
-        .nav-link:hover { color: #ffc107 !important; }
+        .nav-link { font-size: 15px; font-weight: 600; color: #fff !important; margin: 0 5px; transition: 0.3s; }
+        .nav-link i { margin-right: 5px; color: var(--secondary-color); }
+        .nav-link:hover { color: var(--secondary-color) !important; }
 
-        .dropdown:hover .dropdown-menu { display: block; margin-top: 0; border-top: 3px solid #ffc107; }
+        /* Desktop Dropdown Hover */
+        @media (min-width: 992px) {
+            .dropdown:hover .dropdown-menu { display: block; margin-top: 0; border-top: 3px solid var(--secondary-color); }
+        }
+        .dropdown-menu { border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .dropdown-item { font-weight: 600; color: #333; font-size: 14px; padding: 10px 20px; border-bottom: 1px solid #eee; }
-        .dropdown-item:hover { background-color: #004a99; color: #fff; }
+        .dropdown-item:hover { background-color: var(--primary-color); color: #fff; }
 
+        /* Section Title */
         .section-title { 
-            font-weight: 700; 
-            color: #004a99; 
-            margin-bottom: 30px; 
+            margin-top: 40px;
+            margin-bottom: 40px; 
             text-align: center; 
         }
+        .section-title h2 {
+            font-weight: 700; 
+            color: var(--primary-color);
+            position: relative;
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+        .section-title h2::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--secondary-color);
+            border-radius: 10px;
+        }
 
-        /* Table Styling */
-        .table-responsive {
+        /* Table & Notice Card Styling */
+        .custom-card {
+            border: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
             border-radius: 15px;
+            background: #fff;
             overflow: hidden;
+            border: 1px solid #ddd; /* কার্ডের বাইরের হালকা বর্ডার */
         }
-        .table {
-            border: 1px solid #dee2e6;
-            background: white;
-        }
+
+        .table { margin-bottom: 0; border-collapse: collapse; }
         .table thead th {
-            background-color: #004a99;
+            background-color: var(--primary-color);
             color: white;
-            border: 1px solid rgba(255,255,255,0.2);
             text-align: center;
-            vertical-align: middle;
-            padding: 15px;
+            padding: 18px;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.2); /* হেডারের ভেতরের দাগ */
+            white-space: nowrap;
         }
         .table tbody td {
-            border: 1px solid #dee2e6;
-            text-align: center;
+            padding: 18px;
             vertical-align: middle;
-            padding: 15px;
-            color: #333;
+            text-align: center;
+            border: 1px solid #dee2e6; /* টেবিলের বডি বা সেল এর দাগ */
         }
+        .notice-title { 
+            text-align: left !important; 
+            font-weight: 600; 
+            color: #333;
+            min-width: 250px;
+        }
+        .date-cell { font-family: 'Times New Roman', serif; font-weight: bold; color: #666; }
+
+        /* Table Hover Effect */
         .table-hover tbody tr:hover {
             background-color: #f1f8ff;
             transition: 0.3s;
         }
 
-        .notice-title { font-weight: 600; }
+        /* Responsive Table for Mobile */
+        @media (max-width: 576px) {
+            .table thead { display: none; }
+            .table tbody td { 
+                display: block; 
+                text-align: center !important; 
+                border: none;
+                border-bottom: 1px solid #f0f0f0;
+                padding: 12px 20px;
+            }
+            .table tbody td:last-child { border-bottom: none; }
+            .table tbody tr { 
+                display: block; 
+                border: 1px solid #dee2e6;
+                margin-bottom: 15px;
+                border-radius: 10px;
+                background: #fff;
+                padding: 10px 0;
+            }
+            .notice-title { text-align: center !important; font-size: 1.1rem; }
+            .date-cell { font-size: 0.9rem; color: var(--primary-color); }
+        }
 
+        /* Footer Styling */
         footer { 
-            background: #002d5a; 
-            color: #fff; 
-            padding: 60px 0 30px; 
-            margin-top: 80px; 
+            background: #001d3d; 
+            color: rgba(255,255,255,0.8); 
+            padding: 50px 0 20px; 
+            border-top: 4px solid var(--secondary-color);
+            margin-top: auto;
         }
-        .footer-logo-img { width: 70px; height: 70px; margin-bottom: 15px; border: 2px solid #ffc107; padding: 2px; }
-
-        .custom-card {
-            border: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            border-radius: 15px;
-        }
+        .footer-logo-img { width: 65px; height: 65px; margin-bottom: 15px; border: 2px solid var(--secondary-color); padding: 2px; }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark shadow sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
-                <img src="{% static 'images/logo.png' %}" alt="Logo" class="me-2 rounded-circle border border-warning" style="width: 50px; height: 50px; object-fit: cover;"> 
+                <img src="{% static 'images/logo.png' %}" alt="Logo" class="me-2 rounded-circle border border-warning" style="width: 45px; height: 45px; object-fit: cover;"> 
                 <div class="lh-1">
-                    <span class="fw-bold d-block" style="font-size: 18px;">খন্দকার নাসের উদ্দীন</span>
-                    <small style="font-size: 12px; color: #ffc107;">মাধ্যমিক বিদ্যালয়, খুলনা</small>
+                    <span class="fw-bold d-block" style="font-size: 18px;">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</span>
+                    <small style="font-size: 11px; color: var(--secondary-color);">বয়রা, খুলনা</small>
                 </div>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
-                    
-                    {% if request.resolver_match.url_name != 'home' %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> হোম</a></li>
-                    {% endif %}
-
-                   <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="studentCornerDropdown" role="button" data-bs-toggle="dropdown">
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="studentCorner" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-graduate"></i> শিক্ষার্থী কর্নার
                         </a>
-                        <ul class="dropdown-menu shadow">
-                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'info' %}"><i class="fas fa-info-circle"></i> তথ্য</a></li>
-                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'seats' %}"><i class="fas fa-chair"></i> আসন সংখ্যা</a></li>
-                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'dress' %}"><i class="fas fa-tshirt"></i> ড্রেস</a></li>
-                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'class-routine' %}"><i class="fas fa-calendar-alt"></i> ক্লাস রুটিন</a></li>
-                            <li><a class="dropdown-item" href="{% url 'exam_routine' %}"><i class="fas fa-file-invoice"></i> পরীক্ষার রুটিন</a></li>
-                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'syllabus' %}"><i class="fas fa-book"></i> সিলেবাস</a></li>
-                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'holiday' %}"><i class="fas fa-umbrella-beach"></i> ছুটির তালিকা</a></li>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'info' %}">তথ্য</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'class-routine' %}">ক্লাস রুটিন</a></li>
+                            <li><a class="dropdown-item" href="{% url 'exam_routine' %}">পরীক্ষার রুটিন</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'holiday' %}">ছুটির তালিকা</a></li>
                         </ul>
+                        
                     </li>
-
-                     <li class="nav-item dropdown">
+                       <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="admissionDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-plus"></i> ভর্তি তথ্য
                         </a>
-                        <ul class="dropdown-menu shadow">
+                        <ul class="dropdown-menu shadow border-0">
                             <li><a class="dropdown-item" href="{% url 'admission_detail' 'form' %}"><i class="fas fa-file-signature"></i> ভর্তি আবেদন ফরম</a></li>
                             <li><a class="dropdown-item" href="{% url 'admission_detail' 'guide' %}"><i class="fas fa-clipboard-check"></i> ভর্তি নির্দেশিকা</a></li>
                             <li><a class="dropdown-item" href="{% url 'admission_detail' 'result' %}"><i class="fas fa-list-ol"></i> ভর্তি পরীক্ষার ফলাফল</a></li>
                             <li><a class="dropdown-item" href="{% url 'admission_detail' 'fees' %}"><i class="fas fa-tags"></i> বেতন ও ফি সমূহ</a></li>
                         </ul>
                     </li>
+                    
 
-                    {% if request.resolver_match.url_name != 'all_notices' %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'all_notices' %}"><i class="fas fa-file-alt"></i> নোটিশ</a></li>
-                    {% endif %}
-                        <li class="nav-item dropdown">
+                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="resultDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-poll"></i> ফলাফল
                         </a>
-                        <ul class="dropdown-menu shadow">
+                        <ul class="dropdown-menu shadow border-0">
                             <li><a class="dropdown-item" href="{% url 'result_category' 'public' %}"><i class="fas fa-graduation-cap"></i> পাবলিক পরীক্ষার ফলাফল</a></li>
-                            <li><a class="dropdown-item" href="{% url 'result_category' 'internal' %}"><i class="fas fa-file-alt"></i> স্কুল ও কলেজের ফলাফল</a></li>
+                            <li><a class="dropdown-item" href="{% url 'result_category' 'internal' %}"><i class="fas fa-file-alt"></i> স্কুলের ফলাফল</a></li>
                         </ul>
                     </li>
-
-                    {% if request.resolver_match.url_name != 'teachers_page' %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users"></i> শিক্ষক ও কর্মচারী</a></li>
-                    {% endif %}
-
-                    {% if request.resolver_match.url_name != 'gallery' %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users"></i> শিক্ষক ও কর্মচারীবৃন্দ</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'gallery' %}"><i class="fas fa-images"></i> গ্যালারি</a></li>
-                    {% endif %}
-
-                    {% if request.resolver_match.url_name != 'contact' %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}"><i class="fas fa-envelope"></i> যোগাযোগ</a></li>
-                    {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container my-5" style="min-height: 70vh;">
-        <div class="section-title" data-aos="fade-down" data-aos-duration="1000">
+    <div class="container my-5 flex-grow-1">
+        <div class="section-title" data-aos="fade-down">
             <h2 class="fw-bold">নোটিশ বোর্ড (সকল নোটিশ)</h2>
-            <hr style="width: 120px; margin: auto; height: 4px; background: #ffc107; opacity: 1; border-radius: 10px;">
         </div>
         
-        <div class="card custom-card mt-5" data-aos="fade-up" data-aos-duration="1000">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th width="20%">প্রকাশের তারিখ</th>
-                                <th width="60%">নোটিশের শিরোনাম</th>
-                                <th width="20%">ফাইল (PDF)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for notice in all_notices %}
-                            <tr data-aos="fade-up" data-aos-delay="{{ forloop.counter }}00">
-                                <td class="en-text fw-bold text-muted">{{ notice.created_at|date:"d/m/Y" }}</td>
-                                <td class="notice-title text-dark">{{ notice.title }}</td>
-                                <td>
-                                    <a href="{{ notice.file.url }}" target="_blank" class="btn btn-danger btn-sm px-4 rounded-pill">
-                                        <i class="fas fa-file-pdf me-1"></i> ডাউনলোড
-                                    </a>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="3" class="text-center py-5 text-muted">
-                                    <i class="fas fa-info-circle mb-2 d-block fs-3"></i>
-                                    বর্তমানে কোনো নোটিশ নেই।
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+        <div class="card custom-card" data-aos="fade-up">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th width="20%">প্রকাশের তারিখ</th>
+                            <th width="60%">নোটিশের শিরোনাম</th>
+                            <th width="20%">ডাউনলোড</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for notice in all_notices %}
+                        <tr>
+                            <td class="date-cell">
+                                <span class="d-sm-none text-muted small d-block">তারিখ:</span>
+                                {{ notice.created_at|date:"d/m/Y" }}
+                            </td>
+                            <td class="notice-title">
+                                {{ notice.title }}
+                            </td>
+                            <td>
+                                <a href="{{ notice.file.url }}" target="_blank" class="btn btn-danger btn-sm rounded-pill px-4 shadow-sm">
+                                    <i class="fas fa-file-pdf me-1"></i> PDF
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center py-5 text-muted">
+                                <i class="fas fa-folder-open d-block fs-1 mb-3 opacity-25"></i>
+                                বর্তমানে কোনো নোটিশ নেই।
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <footer class="text-center" data-aos="fade-in">
+    <footer class="text-center">
         <div class="container">
             <img src="{% static 'images/logo.png' %}" alt="School Logo" class="footer-logo-img rounded-circle mb-3">
-            <h5 class="fw-bold mb-2" style="color: #ffc107;">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</h5>
-            <p class="opacity-75 mb-4">বয়রা, খুলনা | স্থাপিত: ১৯৯৪</p>
+            <h5 class="fw-bold mb-1" style="color: var(--secondary-color);">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</h5>
+            <p class="opacity-75 mb-4 small">বয়রা, খুলনা | স্থাপিত: ১৯৯৪</p>
+            <div class="mb-4">
+                <a href="#" class="btn btn-outline-light btn-sm rounded-circle mx-1"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="btn btn-outline-light btn-sm rounded-circle mx-1"><i class="fab fa-whatsapp"></i></a>
+            </div>
             <hr class="bg-light opacity-25">
-            <p class="small mb-0 opacity-75">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | ডিজাইন ও ডেভেলপমেন্ট: **Joy**</p>
+            <p class="small mb-0 opacity-75">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | ডিজাইন ও ডেভেলপমেন্ট: **Md. Imtiaz Sarder Joy**</p>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        AOS.init({
-            duration: 800,
-            once: true,
-            offset: 50
-        });
+        AOS.init({ duration: 800, once: true, offset: 50 });
     </script>
 </body>
 </html>

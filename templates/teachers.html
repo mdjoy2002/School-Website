@@ -20,6 +20,7 @@
             --white: #ffffff;
         }
 
+        /* ফন্ট সেটিংস: বাংলার জন্য Nikosh এবং ইংরেজির জন্য Times New Roman */
         body { 
             font-family: 'Times New Roman', 'Nikosh', 'Hind Siliguri', serif; 
             background-color: var(--bg-light);
@@ -41,22 +42,25 @@
         .nav-link i { margin-right: 5px; color: var(--secondary-color); }
         .nav-link:hover { color: var(--secondary-color) !important; }
 
-        .dropdown:hover .dropdown-menu { display: block; margin-top: 0; border-top: 3px solid var(--secondary-color); }
+        /* Desktop Dropdown Hover */
+        @media (min-width: 992px) {
+            .dropdown:hover .dropdown-menu { display: block; margin-top: 0; border-top: 3px solid var(--secondary-color); }
+        }
         .dropdown-item { font-weight: 600; color: #333; font-size: 14px; padding: 10px 20px; border-bottom: 1px solid #eee; }
         .dropdown-item:hover { background-color: var(--primary-color); color: #fff; }
         
         /* Section Headers */
         .section-title {
-            margin-top: 60px;
-            margin-bottom: 80px;
+            margin-top: 50px;
+            margin-bottom: 70px;
             position: relative;
             font-weight: 700;
             color: var(--primary-color);
-            text-transform: uppercase;
+            text-align: center;
         }
         .section-title span {
             background: var(--bg-light);
-            padding: 0 20px;
+            padding: 0 15px;
             position: relative;
             z-index: 1;
         }
@@ -64,15 +68,15 @@
             content: "";
             position: absolute;
             top: 50%;
-            left: 0;
-            width: 100%;
+            left: 5%;
+            width: 90%;
             height: 2px;
             background: #dee2e6;
             z-index: 0;
         }
 
         /* Teacher Card Styling */
-        .card-wrapper { margin-bottom: 100px; }
+        .card-wrapper { margin-bottom: 80px; }
         
         .teacher-card {
             border: none;
@@ -80,29 +84,30 @@
             background: var(--white);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
-            padding-top: 70px; 
+            padding-top: 60px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            margin-top: 50px; /* Space for absolute image */
         }
 
         .teacher-card:hover {
-            transform: translateY(-15px);
+            transform: translateY(-10px);
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
 
         .img-container {
             position: absolute;
-            top: -65px;
+            top: -55px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 2;
         }
 
         .teacher-img {
-            width: 130px;
-            height: 130px;
+            width: 110px;
+            height: 110px;
             object-fit: cover;
             border-radius: 50%;
-            border: 6px solid var(--white);
+            border: 5px solid var(--white);
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
             transition: 0.4s;
         }
@@ -113,41 +118,50 @@
         }
 
         .head-card {
-            max-width: 400px;
-            margin: 0 auto;
+            max-width: 380px;
+            margin: 50px auto 0;
             background: linear-gradient(to bottom, #fffcf0 0%, #ffffff 100%);
             border: 1px solid rgba(255, 193, 7, 0.3);
         }
 
         .designation-badge {
             display: inline-block;
-            padding: 6px 18px;
+            padding: 5px 15px;
             background-color: #f0f7ff;
             color: var(--primary-color);
             border-radius: 50px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .contact-box {
             background: #f8f9fa;
             border-radius: 15px;
-            padding: 12px;
-            margin-top: 15px;
-            font-size: 0.88rem;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.85rem;
         }
-        .contact-box p { margin: 4px 0; color: #555; }
-        .contact-box i { width: 25px; color: var(--secondary-color); }
+        .contact-box p { margin: 3px 0; color: #555; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .contact-box i { width: 20px; color: var(--secondary-color); }
 
         /* Footer & Logo */
         footer {
             background: #001d3d;
             color: rgba(255,255,255,0.8);
-            padding: 60px 0 30px;
+            padding: 50px 0 20px;
             border-top: 4px solid var(--secondary-color);
+            margin-top: auto;
         }
-        .footer-logo-img { width: 70px; height: 70px; margin-bottom: 15px; border: 2px solid var(--secondary-color); padding: 2px; }
+        .footer-logo-img { width: 60px; height: 60px; margin-bottom: 15px; border: 2px solid var(--secondary-color); padding: 2px; }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .section-title { margin-bottom: 40px; font-size: 1.5rem; }
+            .teacher-card { padding-top: 50px; }
+            .teacher-img { width: 100px; height: 100px; top: -50px; }
+            .navbar-brand span { font-size: 16px !important; }
+        }
     </style>
 </head>
 <body>
@@ -155,26 +169,24 @@
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
-                <img src="{% static 'images/logo.png' %}" alt="Logo" class="me-2 rounded-circle border border-warning" style="width: 50px; height: 50px; object-fit: cover;"> 
+                <img src="{% static 'images/logo.png' %}" alt="Logo" class="me-2 rounded-circle border border-warning" style="width: 45px; height: 45px; object-fit: cover;"> 
                 <div class="lh-1">
-                    <span class="fw-bold d-block" style="font-size: 18px;">খন্দকার নাসের উদ্দীন</span>
-                    <small style="font-size: 12px; color: var(--secondary-color);">মাধ্যমিক বিদ্যালয়, খুলনা</small>
+                    <span class="fw-bold d-block" style="font-size: 18px;">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</span>
+                    <small style="font-size: 11px; color: var(--secondary-color);">বয়রা, খুলনা</small>
                 </div>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
-                    {% if request.resolver_match.url_name != 'home' %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> হোম</a></li>
-                    {% endif %}
 
                      <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="studentCornerDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-graduate"></i> শিক্ষার্থী কর্নার
                         </a>
-                        <ul class="dropdown-menu shadow">
+                        <ul class="dropdown-menu shadow border-0">
                             <li><a class="dropdown-item" href="{% url 'corner_detail' 'info' %}"><i class="fas fa-info-circle"></i> তথ্য</a></li>
                             <li><a class="dropdown-item" href="{% url 'corner_detail' 'seats' %}"><i class="fas fa-chair"></i> আসন সংখ্যা</a></li>
                             <li><a class="dropdown-item" href="{% url 'corner_detail' 'dress' %}"><i class="fas fa-tshirt"></i> ড্রেস</a></li>
@@ -185,11 +197,11 @@
                         </ul>
                     </li>
 
-                     <li class="nav-item dropdown">
+                    <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="admissionDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-plus"></i> ভর্তি তথ্য
                         </a>
-                        <ul class="dropdown-menu shadow">
+                        <ul class="dropdown-menu shadow border-0">
                             <li><a class="dropdown-item" href="{% url 'admission_detail' 'form' %}"><i class="fas fa-file-signature"></i> ভর্তি আবেদন ফরম</a></li>
                             <li><a class="dropdown-item" href="{% url 'admission_detail' 'guide' %}"><i class="fas fa-clipboard-check"></i> ভর্তি নির্দেশিকা</a></li>
                             <li><a class="dropdown-item" href="{% url 'admission_detail' 'result' %}"><i class="fas fa-list-ol"></i> ভর্তি পরীক্ষার ফলাফল</a></li>
@@ -197,21 +209,19 @@
                         </ul>
                     </li>
 
-                    {% if request.resolver_match.url_name != 'all_notices' %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'all_notices' %}"><i class="fas fa-file-alt"></i> নোটিশ</a></li>
-                    {% endif %}
-
+                    
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="resultDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-poll"></i> ফলাফল
                         </a>
-                        <ul class="dropdown-menu shadow">
+                        <ul class="dropdown-menu shadow border-0">
                             <li><a class="dropdown-item" href="{% url 'result_category' 'public' %}"><i class="fas fa-graduation-cap"></i> পাবলিক পরীক্ষার ফলাফল</a></li>
-                            <li><a class="dropdown-item" href="{% url 'result_category' 'internal' %}"><i class="fas fa-file-alt"></i> স্কুল ও কলেজের ফলাফল</a></li>
+                            <li><a class="dropdown-item" href="{% url 'result_category' 'internal' %}"><i class="fas fa-file-alt"></i> স্কুলের ফলাফল</a></li>
                         </ul>
                     </li>
 
-                  
+                    
                     <li class="nav-item"><a class="nav-link" href="{% url 'gallery' %}"><i class="fas fa-images"></i> গ্যালারি</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}"><i class="fas fa-envelope-open-text"></i> যোগাযোগ</a></li>
                 </ul>
@@ -219,29 +229,12 @@
         </div>
     </nav>
 
-                    {% if request.resolver_match.url_name != 'teachers_page' %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users"></i> শিক্ষক ও কর্মচারী</a></li>
-                    {% endif %}
-
-                    {% if request.resolver_match.url_name != 'gallery' %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'gallery' %}"><i class="fas fa-images"></i> গ্যালারি</a></li>
-                    {% endif %}
-
-                    {% if request.resolver_match.url_name != 'contact' %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}"><i class="fas fa-envelope"></i> যোগাযোগ</a></li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </nav>
-
     <div class="container pb-5">
-        
-        <h2 class="text-center section-title" data-aos="fade-down"><span>প্রতিষ্ঠান প্রধান</span></h2>
+        <h2 class="section-title" data-aos="fade-down"><span>প্রতিষ্ঠান প্রধান</span></h2>
         <div class="row card-wrapper">
             {% for teacher in teachers %}
                 {% if teacher.teacher_type == 'HEAD' %}
-                <div class="col-12" data-aos="zoom-in" data-aos-duration="1000">
+                <div class="col-12" data-aos="zoom-in">
                     <div class="card teacher-card head-card text-center">
                         <div class="img-container">
                             <img src="{{ teacher.image.url }}" class="teacher-img" alt="{{ teacher.name }}">
@@ -260,7 +253,7 @@
             {% endfor %}
         </div>
 
-        <h2 class="text-center section-title" data-aos="fade-up"><span>শিক্ষক মণ্ডলী</span></h2>
+        <h2 class="section-title" data-aos="fade-up"><span>শিক্ষক মণ্ডলী</span></h2>
         <div class="row g-4 card-wrapper">
             {% for teacher in teachers %}
                 {% if teacher.teacher_type == 'TEACHER' %}
@@ -274,7 +267,7 @@
                             <span class="designation-badge mx-auto">{{ teacher.designation }}</span>
                             <div class="contact-box text-start mt-auto">
                                 {% if teacher.phone %}<p><i class="fas fa-phone-alt"></i> {{ teacher.phone }}</p>{% endif %}
-                                {% if teacher.email %}<p class="small text-truncate"><i class="fas fa-envelope"></i> {{ teacher.email }}</p>{% endif %}
+                                {% if teacher.email %}<p class="small"><i class="fas fa-envelope"></i> {{ teacher.email }}</p>{% endif %}
                             </div>
                         </div>
                     </div>
@@ -283,7 +276,7 @@
             {% endfor %}
         </div>
 
-        <h2 class="text-center section-title" data-aos="fade-up"><span>কর্মচারীবৃন্দ</span></h2>
+        <h2 class="section-title" data-aos="fade-up"><span>কর্মচারীবৃন্দ</span></h2>
         <div class="row g-4 card-wrapper">
             {% for teacher in teachers %}
                 {% if teacher.teacher_type == 'STAFF' %}
@@ -316,20 +309,20 @@
         <div class="container text-center">
             <img src="{% static 'images/logo.png' %}" alt="School Logo" class="footer-logo-img rounded-circle mb-3">
             <h5 class="fw-bold mb-2" style="color: var(--secondary-color);">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</h5>
-            <p class="opacity-75 mb-4">বয়রা, খুলনা | স্থাপিত: ১৯৯৪</p>
+            <p class="opacity-75 mb-4 small">বয়রা, খুলনা | স্থাপিত: ১৯৯৪</p>
             <div class="mb-4">
                 <a href="#" class="btn btn-outline-light btn-sm rounded-circle mx-1"><i class="fab fa-facebook-f"></i></a>
                 <a href="#" class="btn btn-outline-light btn-sm rounded-circle mx-1"><i class="fab fa-whatsapp"></i></a>
             </div>
             <hr class="bg-light opacity-25">
-            <p class="small mb-0 opacity-75">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | ডিজাইন ও ডেভেলপমেন্ট: **Joy**</p>
+            <p class="small mb-0 opacity-75">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | ডিজাইন ও ডেভেলপমেন্ট: **Md. Imtiaz Sarder Joy**</p>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        AOS.init({ duration: 800, once: true, offset: 120 });
+        AOS.init({ duration: 800, once: true, offset: 100 });
     </script>
 </body>
 </html>

@@ -11,10 +11,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
+        /* ফন্ট সেটিংস: বাংলার জন্য Nikosh/Hind Siliguri এবং ইংরেজির জন্য Times New Roman */
         body { 
-            font-family: 'Times New Roman', 'Nikosh', 'Hind Siliguri', serif; 
+            font-family: 'Times New Roman', 'Nikosh', 'Kalpurush', 'Hind Siliguri', serif; 
             background-color: #f8f9fa; 
             color: #333;
+            overflow-x: hidden; /* স্ক্রিন ফিট রাখার জন্য */
         }
 
         /* Navbar Styling */
@@ -22,36 +24,40 @@
             background-color: #004a99 !important; 
             border-bottom: 3px solid #ffc107; 
             padding: 10px 0;
-            z-index: 1100; /* Higher z-index to prevent overlap */
+            z-index: 1100;
         }
         .nav-link { font-size: 15px; font-weight: 600; color: #fff !important; margin: 0 5px; transition: 0.3s; cursor: pointer; }
         .nav-link i { margin-right: 5px; color: #ffc107; }
         .nav-link:hover { color: #ffc107 !important; }
 
-        /* Hover Dropdown Logic */
-        .dropdown:hover .dropdown-menu { display: block; margin-top: 0; border-top: 3px solid #ffc107; }
+        /* Hover Dropdown Logic for Desktop */
+        @media (min-width: 992px) {
+            .dropdown:hover .dropdown-menu { display: block; margin-top: 0; border-top: 3px solid #ffc107; }
+        }
+        
+        .dropdown-menu { border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .dropdown-item { font-weight: 600; color: #333; font-size: 14px; padding: 10px 20px; border-bottom: 1px solid #eee; }
         .dropdown-item:hover { background-color: #004a99; color: #fff; }
         .dropdown-item:last-child { border-bottom: none; }
 
-        /* Page Header Fix for Overlap */
+        /* Page Header Fix */
         .page-header {
             background: linear-gradient(rgba(0, 74, 153, 0.9), rgba(0, 74, 153, 0.9)), url('https://via.placeholder.com/1500x300');
             background-size: cover; 
             background-position: center;
             color: white; 
-            padding: 80px 0 50px; /* Top padding added to push content down from fixed navbar */
+            padding: 80px 15px 50px; 
             margin-bottom: 40px;
             position: relative;
             z-index: 1;
         }
 
-        /* Table Styling */
-        .table-card { border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: none; overflow: hidden; }
+        /* Table Styling & Responsive */
+        .table-card { border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: none; overflow: hidden; background: #fff; }
         .bg-custom { background-color: #004a99; color: white; }
         .table thead { background-color: #f1f4f9; }
-        .table th { border: none; padding: 15px; color: #004a99; }
-        .table td { vertical-align: middle; padding: 15px; }
+        .table th { border-bottom: 2px solid #eee !important; padding: 15px; color: #004a99; white-space: nowrap; }
+        .table td { vertical-align: middle; padding: 15px; border-bottom: 1px solid #eee; }
 
         /* Footer */
         footer { background: #002d5a; color: #fff; padding: 60px 0 30px; margin-top: 80px; }
@@ -60,7 +66,15 @@
         .social-links a { 
             display: inline-block; width: 35px; height: 35px; 
             background: rgba(255,255,255,0.1); line-height: 35px; 
-            text-align: center; border-radius: 50%; color: #fff; margin-right: 5px; 
+            text-align: center; border-radius: 50%; color: #fff; margin-right: 5px; transition: 0.3s;
+        }
+        .social-links a:hover { background: #ffc107; color: #002d5a; }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .navbar-brand span { font-size: 15px !important; }
+            .page-header h1 { font-size: 24px; }
+            .btn-sm { font-size: 12px; }
         }
     </style>
 </head>
@@ -72,7 +86,7 @@
                 <img src="{% static 'images/logo.png' %}" alt="Logo" class="me-2 rounded-circle border border-warning" style="width: 55px; height: 55px; object-fit: cover;"> 
                 <div class="lh-1">
                     <span class="fw-bold d-block" style="font-size: 18px;">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</span>
-                    <small style="font-size: 12px; color: #ffc107;">বয়রা,খুলনা</small>
+                    <small style="font-size: 12px; color: #ffc107;">বয়রা, খুলনা</small>
                 </div>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -100,24 +114,20 @@
                         </ul>
                     </li>
 
-                    <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-user-plus"></i> ভর্তি তথ্য</a></li>
-
-                    {% if request.resolver_match.url_name != 'all_notices' %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'all_notices' %}"><i class="fas fa-file-alt"></i> নোটিশ</a></li>
-                    {% endif %}
-
-                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="resultDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-poll"></i> ফলাফল
+                   <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="admissionDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-plus"></i> ভর্তি তথ্য
                         </a>
-                        <ul class="dropdown-menu shadow">
-                            <li><a class="dropdown-item" href="{% url 'result_category' 'public' %}"><i class="fas fa-graduation-cap"></i> পাবলিক পরীক্ষার ফলাফল</a></li>
-                            <li><a class="dropdown-item" href="{% url 'result_category' 'internal' %}"><i class="fas fa-file-alt"></i> স্কুল ও কলেজের ফলাফল</a></li>
+                        <ul class="dropdown-menu shadow border-0">
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'form' %}"><i class="fas fa-file-signature"></i> ভর্তি আবেদন ফরম</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'guide' %}"><i class="fas fa-clipboard-check"></i> ভর্তি নির্দেশিকা</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'result' %}"><i class="fas fa-list-ol"></i> ভর্তি পরীক্ষার ফলাফল</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'fees' %}"><i class="fas fa-tags"></i> বেতন ও ফি সমূহ</a></li>
                         </ul>
                     </li>
 
                     {% if request.resolver_match.url_name != 'teachers_page' %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users"></i> শিক্ষক ও কর্মচারী</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users"></i> শিক্ষক ও কর্মচারীবৃন্দ</a></li>
                     {% endif %}
 
                     {% if request.resolver_match.url_name != 'gallery' %}
@@ -200,7 +210,7 @@
                 <a href="#"><i class="fas fa-envelope"></i></a>
             </div>
             <hr class="bg-light opacity-25">
-            <p class="small mb-0 opacity-75">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | ডিজাইন ও ডেভেলপমেন্ট: **Joy**</p>
+            <p class="small mb-0 opacity-75">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | ডিজাইন ও ডেভেলপমেন্ট: **Md. Imtiaz Sarder Joy**</p>
         </div>
     </footer>
 
