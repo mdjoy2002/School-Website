@@ -10,6 +10,15 @@ from main_app import views # views ইমপোর্ট করা হয়ে�
 from django.conf import settings # settings ইমপোর্ট করা হয়েছে
 from django.conf.urls.static import static # static ইমপোর্ট করা হয়েছে
 
+# সাইটম্যাপের জন্য প্রয়োজনীয় ইমপোর্ট
+from django.contrib.sitemaps.views import sitemap
+from main_app.sitemaps import StaticViewSitemap
+
+# সাইটম্যাপ ডিকশনারি
+sitemaps = {
+    'static': StaticViewSitemap,
+}
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'), # হোম পেজের রুট
@@ -32,6 +41,9 @@ urlpatterns = [
     path('teachers/', views.teachers_view, name='teachers_page'), # শিক্ষকবৃন্দের পেজের রুট
     path('gallery/', views.gallery_view, name='gallery'), # গ্যালারি পেজের রুট
     path('contact/', views.contact_view, name='contact'), # যোগাযোগ পেজের রুট
+
+    # সাইটম্যাপের ইউআরএল পাথ
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 ]
 
 # ডেভেলপমেন্ট এবং প্রোডাকশনে মিডিয়া ও স্ট্যাটিক ফাইল দেখার জন্য
