@@ -9,6 +9,7 @@ from django.urls import path
 from main_app import views # views ইমপোর্ট করা হয়েছে
 from django.conf import settings # settings ইমপোর্ট করা হয়েছে
 from django.conf.urls.static import static # static ইমপোর্ট করা হয়েছে
+from django.contrib.auth.models import User # সুপার ইউজার তৈরির জন্য
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -38,3 +39,12 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# --- অটোমেটিক সুপার ইউজার তৈরির ট্রিক (সাময়িক) ---
+# এটি আপনার অ্যাডমিন প্যানেলে ঢোকার জন্য ইউজার তৈরি করবে
+try:
+    if not User.objects.filter(username='admin').exists():
+        User.objects.create_superuser('admin', 'admin@example.com', 'joy12345')
+        print("Superuser created successfully: User: admin, Pass: joy12345")
+except:
+    pass
