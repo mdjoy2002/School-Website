@@ -29,7 +29,9 @@ INSTALLED_APPS = [
     'whitenoise.runserver_nostatic', 
     'django.contrib.staticfiles',
     'django.contrib.sites',       
-    'django.contrib.sitemaps',    
+    'django.contrib.sitemaps',
+    'cloudinary_storage', # Cloudinary স্টোরেজ (staticfiles এর উপরে রাখা ভালো)
+    'cloudinary',         # Cloudinary লাইব্রেরি
     'main_app', 
 ]
 
@@ -64,7 +66,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-# Database
+# Database (Neon PostgreSQL remains unchanged)
 DATABASES = {
     'default': dj_database_url.config(
         default=os.environ.get('DATABASE_URL'),
@@ -98,6 +100,16 @@ STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
+# Cloudinary Configuration for Media Files
+# Cloudinary থেকে পাওয়া credentials গুলো এখানে বসান
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'আপনার_ক্লাউড_নেম', 
+    'API_KEY': 'আপনার_এপিআই_কি',
+    'API_SECRET': 'আপনার_এপিআই_সিক্রেট'
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -108,12 +120,11 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- ডাইনামিক SITE_ID কনফিগারেশন ---
-# এটি ডাটাবেজ থেকে অটোমেটিক সঠিক আইডি খুঁজে নেবে যাতে DoesNotExist এরর না আসে।
 def get_site_id():
     try:
         from django.contrib.sites.models import Site
         return Site.objects.first().id
     except Exception:
-        return 2 # আপনার বর্তমান ডাটাবেজ অনুযায়ী ডিফল্ট ২ রাখা হয়েছে
+        return 2 
 
 SITE_ID = get_site_id()
