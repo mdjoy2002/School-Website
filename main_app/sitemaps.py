@@ -21,4 +21,5 @@ class StaticViewSitemap(Sitemap):
 
     # এটি যোগ করা হয়েছে যাতে 'Site matching query does not exist' এররটি আর না আসে
     def get_urls(self, site=None, **kwargs):
+        # ডাটাবেজ চেক না করে সরাসরি ডোমেইন ব্যবহারের নির্দেশ দেয়
         return super().get_urls(site=None, **kwargs)
