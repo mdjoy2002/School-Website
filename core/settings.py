@@ -98,11 +98,12 @@ STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-# --- Cloudinary Configuration ---
+# --- Cloudinary Configuration (Updated for Security) ---
+# এটি এখন সরাসরি রেন্ডারের এনভায়রনমেন্ট ভেরিয়েবল থেকে ডাটা নেবে
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'dvgzjfzxp', 
-    'API_KEY': '815481492328731',
-    'API_SECRET': 'BCoCQMQZ_ySeqCdQxzNVu7QVhMQ'
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'), 
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET')
 }
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
