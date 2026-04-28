@@ -6,7 +6,7 @@ class StaticViewSitemap(Sitemap):
     changefreq = 'daily'
 
     def items(self):
-        # আপনার urls.py-তে থাকা name গুলোর সাথে মিলিয়ে এই লিস্টটি তৈরি করা হয়েছে
+        # আপনার urls.py-তে থাকা name গুলোর লিস্ট
         return [
             'home', 
             'all_notices', 
@@ -18,3 +18,7 @@ class StaticViewSitemap(Sitemap):
 
     def location(self, item):
         return reverse(item)
+
+    # এটি যোগ করা হয়েছে যাতে 'Site matching query does not exist' এররটি আর না আসে
+    def get_urls(self, site=None, **kwargs):
+        return super().get_urls(site=None, **kwargs)
