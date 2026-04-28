@@ -145,4 +145,4 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Sitemap-এর জন্য SITE_ID প্রয়োজন
-SITE_ID = 1
+SITE_ID = 2
