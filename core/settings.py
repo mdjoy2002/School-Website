@@ -13,13 +13,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-%^ogsv0b)0os@d)mlpi3&@#z@y-m$jnd2u4vr*2u$wxn)^=lgf')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == 'True' # প্রোডাকশনে False থাকাই ভালো
+# Render-এ DEBUG ভেরিয়েবল না থাকলে এটি ডিফল্টভাবে False হবে
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
-    'cloudinary_storage',  # এটি অবশ্যই staticfiles এর উপরে থাকতে হবে
+    'cloudinary_storage',  
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -35,7 +36,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', 
+    'whitenoise.middleware.WhiteNoiseMiddleware', # অবশ্যই SecurityMiddleware এর নিচে থাকবে
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -87,10 +88,14 @@ TIME_ZONE = 'Asia/Dhaka'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
+# --- Static files (CSS, JavaScript, Images) ---
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+# WhiteNoise Configuration for Render
+# এখানে ManifestStorage বদলে শুধু CompressedStorage ব্যবহার করা হয়েছে ঝামেলা এড়াতে
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # --- Cloudinary Configuration ---
 CLOUDINARY_STORAGE = {
@@ -99,16 +104,11 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': 'BCoCQMQZ_ySeqCdQxzNVu7QVhMQ'
 }
 
-# এটি নিশ্চিত করবে যে সব মিডিয়া ফাইল ক্লাউডিনারিতে যাবে
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# WhiteNoise optimization (Manifest বদলে সাধারণ CompressedStorage ব্যবহার করা হলো যাতে ফাইল মিসিং ইরোড না দেয়)
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-
-# Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- ডাইনামিক SITE_ID কনফিগারেশন ---
