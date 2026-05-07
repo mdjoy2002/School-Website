@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/glightbox/3.2.0/css/glightbox.min.css">
+    
     <style>
         :root {
             --primary-color: #004a99;
@@ -18,7 +20,6 @@
             --bg-light: #f4f7f6;
         }
 
-        /* ফন্ট সেটিংস: বাংলার জন্য Nikosh এবং ইংরেজির জন্য Times New Roman */
         body { 
             font-family: 'Times New Roman', 'Nikosh', 'Hind Siliguri', serif; 
             background-color: var(--bg-light);
@@ -26,7 +27,6 @@
             overflow-x: hidden;
         }
 
-        /* Navbar & Dropdown Styling */
         .navbar { background-color: var(--primary-color) !important; border-bottom: 3px solid var(--secondary-color); padding: 10px 0; }
         .nav-link { font-size: 15px; font-weight: 600; color: #fff !important; margin: 0 5px; transition: 0.3s; cursor: pointer; }
         .nav-link i { margin-right: 5px; color: var(--secondary-color); }
@@ -49,7 +49,6 @@
             .section-title { margin: 50px 0; }
         }
 
-        /* Folder/Album Card Design */
         .event-folder {
             background: #fff;
             border-radius: 20px;
@@ -98,14 +97,23 @@
         .folder-name { padding: 15px; text-align: center; }
         .folder-name h5 { font-weight: 700; color: var(--primary-color); font-size: 1.1rem; }
 
-        /* Gallery Modal Styling */
         .modal-content { border-radius: 20px; border: none; }
-        .gallery-item { position: relative; border-radius: 12px; overflow: hidden; height: 140px; }
+        
+        /* উন্নত গ্যালারি আইটেম স্টাইল */
+        .gallery-item { 
+            position: relative; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            height: 140px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: 0.3s;
+        }
         @media (min-width: 768px) {
             .gallery-item { height: 200px; }
         }
-        .gallery-item img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; transition: 0.3s; }
-        .gallery-item:hover img { opacity: 0.9; }
+        .gallery-item img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; transition: 0.4s; }
+        .gallery-item:hover { transform: scale(1.03); }
+        .gallery-item:hover img { filter: brightness(0.8); }
 
         footer {
             background: #001d3d;
@@ -114,10 +122,6 @@
             margin-top: 60px;
         }
         .footer-logo-img { width: 60px; height: 60px; margin-bottom: 15px; border: 2px solid var(--secondary-color); padding: 2px; }
-        @media (min-width: 768px) {
-            footer { padding: 60px 0 30px; }
-            .footer-logo-img { width: 70px; height: 70px; }
-        }
     </style>
 </head>
 <body>
@@ -137,46 +141,6 @@
              <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> হোম</a></li>
-                    
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="studentCornerDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-graduate"></i> শিক্ষার্থী কর্নার
-                        </a>
-                        <ul class="dropdown-menu shadow border-0">
-                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'info' %}"><i class="fas fa-info-circle"></i> তথ্য</a></li>
-                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'seats' %}"><i class="fas fa-chair"></i> আসন সংখ্যা</a></li>
-                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'dress' %}"><i class="fas fa-tshirt"></i> ড্রেস</a></li>
-                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'class-routine' %}"><i class="fas fa-calendar-alt"></i> ক্লাস রুটিন</a></li>
-                            <li><a class="dropdown-item" href="{% url 'exam_routine' %}"><i class="fas fa-file-invoice"></i> পরীক্ষার রুটিন</a></li>
-                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'syllabus' %}"><i class="fas fa-book"></i> সিলেবাস</a></li>
-                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'holiday' %}"><i class="fas fa-umbrella-beach"></i> ছুটির তালিকা</a></li>
-                        </ul>
-                    </li>
-
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="admissionDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-plus"></i> ভর্তি তথ্য
-                        </a>
-                        <ul class="dropdown-menu shadow border-0">
-                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'form' %}"><i class="fas fa-file-signature"></i> ভর্তি আবেদন ফরম</a></li>
-                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'guide' %}"><i class="fas fa-clipboard-check"></i> ভর্তি নির্দেশিকা</a></li>
-                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'result' %}"><i class="fas fa-list-ol"></i> ভর্তি পরীক্ষার ফলাফল</a></li>
-                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'fees' %}"><i class="fas fa-tags"></i> বেতন ও ফি সমূহ</a></li>
-                        </ul>
-                    </li>
-
-                    <li class="nav-item"><a class="nav-link" href="{% url 'all_notices' %}"><i class="fas fa-file-alt"></i> নোটিশ</a></li>
-                    
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="resultDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-poll"></i> ফলাফল
-                        </a>
-                        <ul class="dropdown-menu shadow border-0">
-                            <li><a class="dropdown-item" href="{% url 'result_category' 'public' %}"><i class="fas fa-graduation-cap"></i> পাবলিক পরীক্ষার ফলাফল</a></li>
-                            <li><a class="dropdown-item" href="{% url 'result_category' 'internal' %}"><i class="fas fa-file-alt"></i> স্কুল ও কলেজের ফলাফল</a></li>
-                        </ul>
-                    </li>
-
                     <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users-cog"></i> শিক্ষক ও কর্মচারীবৃন্দ</a></li>
                     <li class="nav-item"><a class="nav-link active" href="{% url 'gallery' %}"><i class="fas fa-images"></i> গ্যালারি</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}"><i class="fas fa-envelope-open-text"></i> যোগাযোগ</a></li>
@@ -215,9 +179,9 @@
                                 <div class="row g-2 g-md-3">
                                     {% for img in category.images.all %}
                                     <div class="col-4 col-md-4 col-lg-3">
-                                        <div class="gallery-item shadow-sm">
-                                            <a href="{{ img.image.url }}" target="_blank">
-                                                <img src="{{ img.image.url }}" alt="{{ img.caption }}">
+                                        <div class="gallery-item">
+                                            <a href="{{ img.image.url }}" class="glightbox" data-gallery="gallery{{ category.id }}" data-title="{{ img.caption }}">
+                                                <img src="{{ img.image.url }}" alt="{{ img.caption }}" loading="lazy">
                                             </a>
                                         </div>
                                         {% if img.caption %}
@@ -251,8 +215,19 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/glightbox/3.2.0/js/glightbox.min.js"></script>
+    
     <script>
         AOS.init({ duration: 800, once: true, offset: 50 });
+
+        // Lightbox Initialize
+        const lightbox = GLightbox({
+            selector: '.glightbox',
+            touchNavigation: true,
+            loop: true,
+            autoplayVideos: true
+        });
     </script>
 </body>
 </html>
