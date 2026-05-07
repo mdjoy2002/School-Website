@@ -95,14 +95,14 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 # WhiteNoise Configuration
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
-# --- Cloudinary Configuration ---
+# --- Cloudinary Configuration (Using your latest credentials) ---
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dvgzjfzxp', 
     'API_KEY': '815481492328731',
     'API_SECRET': 'BCoCQMQZ_ySeqCdQxzNVu7QVhMQ'
 }
 
-# এটি নিশ্চিত করবে যে ছবিগুলো ক্লাউডিনারি থেকে লোড হচ্ছে
+# এটিই ছবি শো করানোর জন্য প্রধান সেটিংস
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MEDIA_URL = '/media/'
