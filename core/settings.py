@@ -13,7 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-%^ogsv0b)0os@d)mlpi3&@#z@y-m$jnd2u4vr*2u$wxn)^=lgf')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['*']
 
@@ -35,7 +35,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # অবশ্যই SecurityMiddleware এর ঠিক নিচে থাকবে
+    'whitenoise.middleware.WhiteNoiseMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -67,11 +67,17 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database (Neon PostgreSQL)
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'), # এটি Neon DB থেকে ডেটা পড়বে
+        default=os.environ.get('DATABASE_URL'),
         conn_max_age=600,
         ssl_require=True
     )
 }
+
+if not DATABASES['default']:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -87,26 +93,29 @@ TIME_ZONE = 'Asia/Dhaka'
 USE_I18N = True
 USE_TZ = True
 
-# --- Static files (CSS, JavaScript, Images) ---
-STATIC_URL = '/static/'
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-# WhiteNoise Configuration (অ্যাডমিন প্যানেলের ডিজাইন ঠিক করার জন্য এটি সবচেয়ে কার্যকর)
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-
-# --- Cloudinary Configuration (Media files storage) ---
+# --- Cloudinary Configuration (Using your credentials) ---
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'dvgzjfzxp'), #
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '815481492328731'), #
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'BCoCQMQZ_ySeqCdQxzNVu7QVhMQ') #
+    'CLOUD_NAME': 'dvgzjfzxp', 
+    'API_KEY': '815481492328731',
+    'API_SECRET': 'BCoCQMQZ_ySeqCdQxzNVu7QVhMQ'
 }
 
+# Media files storage
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MEDIA_URL = '/media/'
+# MEDIA_ROOT প্রয়োজন নেই যখন ক্লাউডিনারি ব্যবহার করা হয়, তবে ডিফল্ট হিসেবে রাখা হলো
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# WhiteNoise optimization for Static Files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- ডাইনামিক SITE_ID কনফিগারেশন ---
@@ -115,6 +124,6 @@ def get_site_id():
         from django.contrib.sites.models import Site
         return Site.objects.first().id
     except Exception:
-        return 1 # সাধারণত প্রথম সাইটের জন্য এটি 1 হয় 
+        return 2 
 
 SITE_ID = get_site_id()
