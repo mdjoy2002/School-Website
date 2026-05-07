@@ -19,7 +19,7 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
-    'cloudinary_storage',  # এটি অবশ্যই staticfiles এর উপরে থাকবে
+    'cloudinary_storage',  # এটি অবশ্যই staticfiles এর উপরে থাকতে হবে
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -99,14 +99,14 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': 'BCoCQMQZ_ySeqCdQxzNVu7QVhMQ'
 }
 
-# এটি নিশ্চিত করবে যে সব মিডিয়া ফাইল ক্লাউডিনারিতে যাবে
+# এটি নিশ্চিত করবে যে সব মিডিয়া ফাইল ক্লাউডিনারিতে যাবে
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# WhiteNoise optimization
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# WhiteNoise optimization (Manifest বদলে সাধারণ CompressedStorage ব্যবহার করা হলো যাতে ফাইল মিসিং ইরোড না দেয়)
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
