@@ -13,13 +13,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-%^ogsv0b)0os@d)mlpi3&@#z@y-m$jnd2u4vr*2u$wxn)^=lgf')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
-    'cloudinary_storage',  # এটি অবশ্যই staticfiles এর উপরে থাকতে হবে
+    'cloudinary_storage',  # অবশ্যই staticfiles এর উপরে থাকতে হবে
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -98,27 +98,25 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-# --- Cloudinary Configuration (Using your credentials) ---
+# --- Cloudinary Configuration (Updated with your latest keys) ---
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dvgzjfzxp', 
-    'API_KEY': '815481492328731',
-    'API_SECRET': 'BCoCQMQZ_ySeqCdQxzNVu7QVhMQ'
+    'API_KEY': '777835753428771', # তোমার নতুন API Key
+    'API_SECRET': 'TamqhIlargai125r-ay0_WMUNNA' # তোমার নতুন API Secret
 }
 
-# Media files storage - এটিই ছবি শো করানোর জন্য দায়ী
+# Media files storage
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# মিডিয়া ইউআরএল সরাসরি ক্লাউডিনারি পাথ ব্যবহার করবে
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# WhiteNoise optimization - অ্যাডমিন প্যানেলের CSS এর জন্য এটি জরুরি
+# WhiteNoise optimization
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
-# Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# --- ডাইনামিক SITE_ID কনফিগারেশন ---
+# --- dynamic SITE_ID configuration ---
 def get_site_id():
     try:
         from django.contrib.sites.models import Site
