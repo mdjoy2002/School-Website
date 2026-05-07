@@ -98,25 +98,26 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-# --- Cloudinary Configuration (Updated with your latest keys) ---
+# --- Cloudinary Configuration (Using your credentials) ---
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dvgzjfzxp', 
-    'API_KEY': '777835753428771', # তোমার নতুন API Key
-    'API_SECRET': 'TamqhIlargai125r-ay0_WMUNNA' # তোমার নতুন API Secret
+    'API_KEY': '815481492328731',
+    'API_SECRET': 'BCoCQMQZ_ySeqCdQxzNVu7QVhMQ'
 }
 
-# Media files storage
+# --- Media Storage Configuration (এটিই ছবি শো করানোর আসল সমাধান) ---
+# এই সেটিংটি জ্যাঙ্গোকে নির্দেশ দিবে ছবিগুলো সরাসরি ক্লাউডিনারিতে সেভ করতে এবং সেখান থেকে রিড করতে।
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# WhiteNoise optimization
+# WhiteNoise optimization (CSS এর জন্য যেমন আছে তেমনই রাখা হয়েছে)
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# --- dynamic SITE_ID configuration ---
+# --- ডাইনামিক SITE_ID কনফিগারেশন ---
 def get_site_id():
     try:
         from django.contrib.sites.models import Site
