@@ -2,8 +2,8 @@
 Django settings for core project.
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
 import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -19,6 +19,7 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
+    'cloudinary_storage',  # <--- এটি অবশ্যই staticfiles এর উপরে থাকতে হবে
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -28,8 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',       
     'django.contrib.sitemaps',
-    'cloudinary_storage', # Cloudinary স্টোরেজ
-    'cloudinary',         # Cloudinary অ্যাপ
+    'cloudinary',         
     'main_app', 
 ]
 
@@ -98,8 +98,7 @@ STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-# --- Cloudinary Configuration (Updated for Security) ---
-# এটি এখন সরাসরি রেন্ডারের এনভায়রনমেন্ট ভেরিয়েবল থেকে ডাটা নেবে
+# --- Cloudinary Configuration ---
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'), 
     'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
