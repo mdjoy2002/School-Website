@@ -13,13 +13,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-%^ogsv0b)0os@d)mlpi3&@#z@y-m$jnd2u4vr*2u$wxn)^=lgf')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = os.environ.get('DEBUG', 'False') == 'True' # প্রোডাকশনে False থাকাই ভালো
 
 ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
-    'cloudinary_storage',  # এটি অবশ্যই staticfiles এর উপরে থাকতে হবে
+    'cloudinary_storage',  # এটি অবশ্যই staticfiles এর উপরে থাকবে
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -73,12 +73,6 @@ DATABASES = {
     )
 }
 
-if not DATABASES['default']:
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -98,13 +92,14 @@ STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-# --- Cloudinary Configuration (Updated with your credentials) ---
+# --- Cloudinary Configuration ---
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dvgzjfzxp', 
     'API_KEY': '815481492328731',
     'API_SECRET': 'BCoCQMQZ_ySeqCdQxzNVu7QVhMQ'
 }
 
+# এটি নিশ্চিত করবে যে সব মিডিয়া ফাইল ক্লাউডিনারিতে যাবে
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MEDIA_URL = '/media/'
