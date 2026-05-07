@@ -13,13 +13,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-%^ogsv0b)0os@d)mlpi3&@#z@y-m$jnd2u4vr*2u$wxn)^=lgf')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
-    'cloudinary_storage',  # অবশ্যই staticfiles এর উপরে থাকতে হবে
+    'cloudinary_storage',  # এটি অবশ্যই staticfiles এর উপরে থাকতে হবে
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -73,7 +73,7 @@ DATABASES = {
     )
 }
 
-if not DATABASES['default']:
+if not DATABASES.get('default'):
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
@@ -98,31 +98,23 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-# --- Cloudinary Configuration (Using your credentials) ---
+# --- Cloudinary Configuration (Updated with your newest keys) ---
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dvgzjfzxp', 
     'API_KEY': '815481492328731',
     'API_SECRET': 'BCoCQMQZ_ySeqCdQxzNVu7QVhMQ'
 }
 
-# --- Media Storage Configuration (এটিই ছবি শো করানোর আসল সমাধান) ---
-# এই সেটিংটি জ্যাঙ্গোকে নির্দেশ দিবে ছবিগুলো সরাসরি ক্লাউডিনারিতে সেভ করতে এবং সেখান থেকে রিড করতে।
+# Media files storage - ক্লাউডিনারি স্টোরেজ ইঞ্জিন
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# WhiteNoise optimization (CSS এর জন্য যেমন আছে তেমনই রাখা হয়েছে)
+# WhiteNoise optimization
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# --- ডাইনামিক SITE_ID কনফিগারেশন ---
-def get_site_id():
-    try:
-        from django.contrib.sites.models import Site
-        return Site.objects.first().id
-    except Exception:
-        return 1 
-
-SITE_ID = get_site_id()
+# --- SITE_ID কনফিগারেশন ---
+SITE_ID = 1
