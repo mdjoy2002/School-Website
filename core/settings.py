@@ -13,13 +13,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-%^ogsv0b)0os@d)mlpi3&@#z@y-m$jnd2u4vr*2u$wxn)^=lgf')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
-    'cloudinary_storage',  # অবশ্যই staticfiles এর উপরে থাকতে হবে
+    'cloudinary_storage',  # এটি অবশ্যই staticfiles এর উপরে থাকবে
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -73,12 +73,6 @@ DATABASES = {
     )
 }
 
-if not DATABASES['default']:
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -93,29 +87,27 @@ TIME_ZONE = 'Asia/Dhaka'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
+# Static files (CSS, JavaScript)
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-# --- Cloudinary Configuration (Using your credentials) ---
+# --- Cloudinary Configuration (Credentials from your screen) ---
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dvgzjfzxp', 
     'API_KEY': '815481492328731',
     'API_SECRET': 'BCoCQMQZ_ySeqCdQxzNVu7QVhMQ'
 }
 
-# Media files storage
+# Media files storage (Cloudinary)
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MEDIA_URL = '/media/'
-# MEDIA_ROOT প্রয়োজন নেই যখন ক্লাউডিনারি ব্যবহার করা হয়, তবে ডিফল্ট হিসেবে রাখা হলো
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# WhiteNoise optimization for Static Files
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# WhiteNoise optimization (Manifest সরিয়ে সাধারণ Compressed ব্যবহার করা হলো যেন CSS মিস না হয়)
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
-# Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- ডাইনামিক SITE_ID কনফিগারেশন ---
@@ -124,6 +116,6 @@ def get_site_id():
         from django.contrib.sites.models import Site
         return Site.objects.first().id
     except Exception:
-        return 2 
+        return 1 
 
 SITE_ID = get_site_id()
