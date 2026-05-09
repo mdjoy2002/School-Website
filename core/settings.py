@@ -19,7 +19,7 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
-    'cloudinary_storage',  # এটি অবশ্যই staticfiles এর উপরে থাকতে হবে
+    # 'cloudinary_storage',  # Cloudinary বাদ দেওয়া হয়েছে
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -29,7 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',       
     'django.contrib.sitemaps',
-    'cloudinary',          
+    # 'cloudinary',          # Cloudinary বাদ দেওয়া হয়েছে
     'main_app', 
 ]
 
@@ -98,17 +98,8 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-# --- Cloudinary Configuration (Using your credentials) ---
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'dvgzjfzxp', 
-    'API_KEY': '815481492328731',
-    'API_SECRET': 'BCoCQMQZ_ySeqCdQxzNVu7QVhMQ'
-}
-
-# Media files storage - এটিই ছবি শো করানোর জন্য দায়ী
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-# মিডিয়া ইউআরএল সরাসরি ক্লাউডিনারি পাথ ব্যবহার করবে
+# Media files (PythonAnywhere Local Storage)
+# DEFAULT_FILE_STORAGE লাইনটি সরিয়ে ফেলা হয়েছে যাতে ডিফল্ট লোকাল স্টোরেজ ব্যবহার হয়
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -119,11 +110,5 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- ডাইনামিক SITE_ID কনফিগারেশন ---
-def get_site_id():
-    try:
-        from django.contrib.sites.models import Site
-        return Site.objects.first().id
-    except Exception:
-        return 1 
-
+# আপনি সরাসরি ১ সেট করতে চেয়েছিলেন, তাই ফাংশনটি সরিয়ে ১ করে দেওয়া হয়েছে।
 SITE_ID = 1

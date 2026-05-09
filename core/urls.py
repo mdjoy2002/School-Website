@@ -9,7 +9,7 @@ from django.urls import path
 from main_app import views # views ইমপোর্ট করা হয়েছে
 from django.conf import settings # settings ইমপোর্ট করা হয়েছে
 from django.conf.urls.static import static # static ইমপোর্ট করা হয়েছে
-from django.http import HttpResponse # robots.txt এর জন্য ইমপোর্ট করা হয়েছে
+from django.http import HttpResponse # robots.txt এর জন্য ইমপোর্ট করা হয়েছে
 
 # সাইটম্যাপের জন্য প্রয়োজনীয় ইমপোর্ট
 from django.contrib.sitemaps.views import sitemap
@@ -36,7 +36,7 @@ urlpatterns = [
     # ভর্তি তথ্য সেকশন (ডাইনামিক রুট)
     path('admission/<str:category>/', views.admission_detail, name='admission_detail'),
 
-    # --- নতুন সংযোজন: ফলাফল সেকশন (ডাইনামিক রুট) ---
+    # --- ফলাফল সেকশন (ডাইনামিক রুট) ---
     path('results/<str:category>/', views.result_category_view, name='result_category'),
     
     path('teachers/', views.teachers_view, name='teachers_page'), # শিক্ষকবৃন্দের পেজের রুট
@@ -46,10 +46,11 @@ urlpatterns = [
     # সাইটম্যাপের ইউআরএল পাথ
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 
-    # robots.txt পাথ যোগ করা হয়েছে গুগলের সুবিধার জন্য
-    path('robots.txt', lambda r: HttpResponse("User-agent: *\nDisallow: /admin/\nSitemap: https://khandekar-naser-uddin-high-school.onrender.com/sitemap.xml", content_type="text/plain")),
+    # robots.txt পাথ যোগ করা হয়েছে গুগলের সুবিধার জন্য
+    path('robots.txt', lambda r: HttpResponse("User-agent: *\nDisallow: /admin/", content_type="text/plain")),
 ]
 
-# ডেভেলপমেন্ট এবং প্রোডাকশনে মিডিয়া ও স্ট্যাটিক ফাইল দেখার জন্য
+# ডেভেলপমেন্ট এবং প্রোডাকশনে মিডিয়া ও স্ট্যাটিক ফাইল দেখার জন্য। 
+# ক্লাউডিনারি বাদ দিয়ে লোকাল স্টোরেজ ব্যবহার করার জন্য এই অংশটি অত্যন্ত গুরুত্বপূর্ণ।
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
