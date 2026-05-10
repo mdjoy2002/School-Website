@@ -20,6 +20,15 @@ sitemaps = {
     'static': StaticViewSitemap,
 }
 
+# robots.txt এর জন্য ফাংশন
+def robots_txt(request):
+    content = (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Sitemap: https://knuhighschool.pythonanywhere.com/sitemap.xml"
+    )
+    return HttpResponse(content, content_type="text/plain")
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'), # হোম পেজের রুট
@@ -46,11 +55,15 @@ urlpatterns = [
     # সাইটম্যাপের ইউআরএল পাথ
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 
-    # robots.txt পাথ যোগ করা হয়েছে গুগলের সুবিধার জন্য
-    path('robots.txt', lambda r: HttpResponse("User-agent: *\nDisallow: /admin/", content_type="text/plain")),
+    # robots.txt পাথ যোগ করা হয়েছে
+    path('robots.txt', robots_txt),
 ]
 
 # ডেভেলপমেন্ট এবং প্রোডাকশনে মিডিয়া ও স্ট্যাটিক ফাইল দেখার জন্য। 
-# ক্লাউডিনারি বাদ দিয়ে লোকাল স্টোরেজ ব্যবহার করার জন্য এই অংশটি অত্যন্ত গুরুত্বপূর্ণ।
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+else:
+    # প্রোডাকশনেও যাতে স্ট্যাটিক ফাইল কাজ করে তার জন্য
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
