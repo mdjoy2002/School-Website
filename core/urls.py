@@ -1,7 +1,7 @@
 """
 URL configuration for core project.
 
-The `urlpatterns` list routes URLs to views. For more information please see:
+The urlpatterns list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.0/topics/http/urls/
 """
 from django.contrib import admin
@@ -9,7 +9,7 @@ from django.urls import path
 from main_app import views # views ইমপোর্ট করা হয়েছে
 from django.conf import settings # settings ইমপোর্ট করা হয়েছে
 from django.conf.urls.static import static # static ইমপোর্ট করা হয়েছে
-from django.http import HttpResponse # robots.txt এর জন্য ইমপোর্ট করা হয়েছে
+from django.http import HttpResponse # robots.txt এবং google verification এর জন্য ইমপোর্ট করা হয়েছে
 
 # সাইটম্যাপের জন্য প্রয়োজনীয় ইমপোর্ট
 from django.contrib.sitemaps.views import sitemap
@@ -25,10 +25,14 @@ def robots_txt(request):
     content = (
         "User-agent: *\n"
         "Disallow: /admin/\n"  # অ্যাডমিন প্যানেল হাইড করা হয়েছে
-        "Allow: /\n"           # বাকি সব পেজ ইনডেক্স করার অনুমতি দেওয়া হয়েছে
+        "Allow: /\n"           # বাকি সব পেজ ইনডেক্স করার অনুমতি দেওয়া হয়েছে
         "Sitemap: https://knuhighschool.pythonanywhere.com/sitemap.xml"
     )
     return HttpResponse(content, content_type="text/plain")
+
+# গুগল ভেরিফিকেশন ফাইলের জন্য ফাংশন
+def google_verify(request):
+    return HttpResponse("google-site-verification: googlec5cbc4a5f7c18e19.html")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -58,6 +62,9 @@ urlpatterns = [
 
     # robots.txt পাথ
     path('robots.txt', robots_txt),
+
+    # গুগল সার্চ কনসোল ভেরিফিকেশন পাথ
+    path('googlec5cbc4a5f7c18e19.html', google_verify),
 ]
 
 # ডেভেলপমেন্ট এবং প্রোডাকশনে মিডিয়া ও স্ট্যাটিক ফাইল দেখার জন্য। 
