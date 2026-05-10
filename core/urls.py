@@ -20,11 +20,12 @@ sitemaps = {
     'static': StaticViewSitemap,
 }
 
-# robots.txt এর জন্য ফাংশন
+# robots.txt এর জন্য ফাংশন (Security এবং SEO এর জন্য আপডেট করা হয়েছে)
 def robots_txt(request):
     content = (
         "User-agent: *\n"
-        "Allow: /\n"
+        "Disallow: /admin/\n"  # অ্যাডমিন প্যানেল হাইড করা হয়েছে
+        "Allow: /\n"           # বাকি সব পেজ ইনডেক্স করার অনুমতি দেওয়া হয়েছে
         "Sitemap: https://knuhighschool.pythonanywhere.com/sitemap.xml"
     )
     return HttpResponse(content, content_type="text/plain")
@@ -55,7 +56,7 @@ urlpatterns = [
     # সাইটম্যাপের ইউআরএল পাথ
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 
-    # robots.txt পাথ যোগ করা হয়েছে
+    # robots.txt পাথ
     path('robots.txt', robots_txt),
 ]
 
