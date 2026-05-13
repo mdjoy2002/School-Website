@@ -160,7 +160,7 @@
                 <div class="card table-card">
                     <div class="card-header bg-custom p-3 d-flex justify-content-between align-items-center">
                         <h5 class="mb-0 fw-bold"><i class="fas fa-list me-2 text-warning"></i> বিস্তারিত তালিকা</h5>
-                        <span class="badge bg-warning text-dark">{{ data_list|length }} টি ফাইল পাওয়া গেছে</span>
+                        <span class="badge bg-warning text-dark">{{ items|length }} টি ফাইল পাওয়া গেছে</span>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -174,7 +174,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for item in data_list %}
+                                    {% for item in items %}
                                     <tr>
                                         <td class="ps-4">{{ forloop.counter }}</td>
                                         <td class="fw-bold">{{ item.title }}</td>
