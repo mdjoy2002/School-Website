@@ -188,17 +188,7 @@ class ContactMessage(models.Model):
         ordering = ['-created_at']
       
 
-# ১২. টিকার নিউজ
-class TickerNews(models.Model):
-    title = models.CharField(max_length=255, verbose_name="খবরের শিরোনাম")
-    is_active = models.BooleanField(default=True, verbose_name="সক্রিয় কি না")
-    created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return self.title
-
-    class Meta:
-        verbose_name_plural = "টিকার নিউজ"
 
 # --- প্রক্সি মডেলসমূহ ---
 class Headmaster(Teacher):

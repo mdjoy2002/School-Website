@@ -1,15 +1,11 @@
 from django.contrib import admin
-from .models import TickerNews
+
 from .models import (
     Notice, Slider, SchoolInfo, AboutImage, Teacher, 
     Headmaster, GeneralTeacher, Staff, GalleryCategory, GalleryImage,
     ContactMessage, ExamRoutine, StudentCornerData, AdmissionInfo, ResultData
 )
-@admin.register(TickerNews)
-class TickerNewsAdmin(admin.ModelAdmin):
-    list_display = ('title', 'is_active', 'created_at')
-    list_filter = ('is_active',)
-    search_fields = ('title',)
+
 
 # --- নোটিশ বোর্ড (Notice Management) সেকশন ---
 @admin.register(Notice)
