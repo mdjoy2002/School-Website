@@ -58,6 +58,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media', 
+                
+                # আপনার নিউজ টিকারের প্রসেসরটি এখানে যোগ করা হলো
+                'school_app.context_processors.ticker_context', 
             ],
         },
     },
