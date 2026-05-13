@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',       
     'django.contrib.sitemaps',
+    'school_app.context_processors.ticker_context',
     # 'cloudinary',          # Cloudinary বাদ দেওয়া হয়েছে
     'main_app', 
 ]

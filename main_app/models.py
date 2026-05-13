@@ -186,6 +186,18 @@ class ContactMessage(models.Model):
     class Meta:
         verbose_name_plural = "৪. প্রাপ্ত অভিযোগ ও বার্তা"
         ordering = ['-created_at']
+        from django.db import models
+
+class TickerNews(models.Model):
+    title = models.CharField(max_length=255, verbose_name="খবরের শিরোনাম")
+    is_active = models.BooleanField(default=True, verbose_name="সক্রিয় কি না")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name_plural = "টিকার নিউজ"
 
 # --- প্রক্সি মডেলসমূহ ---
 class Headmaster(Teacher):

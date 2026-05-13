@@ -315,23 +315,32 @@ footer {
         </div>
     </nav>
 
-    <div class="news-ticker shadow-sm">
-        <div class="container d-flex">
-            <div class="ticker-title"><i class="fas fa-bullhorn"></i> সর্বশেষ: </div>
-            <div class="ticker-wrap flex-grow-1">
-                <div class="ticker-content">
-                    {% for routine in ticker_routines %}
-                        • {{ routine.title }} (শ্রেণী: {{ routine.get_target_class_display }}) এর রুটিন প্রকাশিত হয়েছে &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    {% endfor %}
-                    {% for notice in ticker_notices %} 
-                        • {{ notice.title }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-                    {% empty %} 
-                        আমাদের বিদ্যালয়ে আপনাকে স্বাগতম। আধুনিক শিক্ষা ব্যবস্থায় আমরা প্রতিশ্রুতিবদ্ধ। ২০২৬ শিক্ষাবর্ষের ৬ষ্ঠ থেকে ১০ম শ্রেণির সিলেবাস ডাউনলোড করুন শিক্ষার্থী কর্ণার থেকে।
-                    {% endfor %}
-                </div>
+   <div class="news-ticker shadow-sm">
+    <div class="container d-flex">
+        <div class="ticker-title"><i class="fas fa-bullhorn"></i> সর্বশেষ: </div>
+        <div class="ticker-wrap flex-grow-1">
+            <div class="ticker-content">
+                <!-- ডাটাবেজ থেকে আসা কাস্টম টিকার নিউজ -->
+                {% for ticker in database_tickers %}
+                    • {{ ticker.title }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                {% endfor %}
+
+                <!-- আগের রুটিন ও নোটিশ লুপগুলো নিচে থাকবে -->
+                {% for routine in ticker_routines %}
+                    • {{ routine.title }} (শ্রেণী: {{ routine.get_target_class_display }}) এর রুটিন প্রকাশিত হয়েছে &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                {% endfor %}
+
+                {% for notice in ticker_notices %} 
+                    • {{ notice.title }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+                {% empty %} 
+                    {% if not database_tickers %}
+                        আমাদের বিদ্যালয়ে আপনাকে স্বাগতম। ২০২৬ শিক্ষাবর্ষের ৬ষ্ঠ থেকে ১০ম শ্রেণির সিলেবাস ডাউনলোড করুন শিক্ষার্থী কর্ণার (image_49551b.png) থেকে।
+                    {% endif %}
+                {% endfor %}
             </div>
         </div>
     </div>
+</div>
 
     <div class="container-fluid px-lg-5 my-4" data-aos="zoom-in">
         <div id="homepageSlider" class="carousel slide auto-gallery-slider shadow-lg rounded-4" data-bs-ride="carousel">
