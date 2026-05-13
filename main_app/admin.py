@@ -9,6 +9,7 @@ from .models import (
 class TickerNewsAdmin(admin.ModelAdmin):
     list_display = ('title', 'is_active', 'created_at')
     list_filter = ('is_active',)
+    search_fields = ('title',)
 
 # --- নোটিশ বোর্ড (Notice Management) সেকশন ---
 @admin.register(Notice)
