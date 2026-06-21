@@ -1,87 +1,71 @@
 {% extends 'myteacher/base.html' %}
+
 {% block content %}
 <div class="max-w-7xl mx-auto p-4 md:p-10">
-    <div class="bg-white p-6 md:p-8 rounded-3xl shadow-2xl border border-gray-100 mb-8">
-        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+    <div class="bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-900 text-white rounded-3xl p-8 shadow-2xl mb-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-                <h2 class="text-3xl font-extrabold text-slate-900">Student Corner</h2>
-                <p class="text-slate-500">Admission card, seat plan, results and assigned student list.</p>
+                <p class="text-xs uppercase tracking-[0.2em] text-indigo-300 mb-2 font-bold">Teacher Portal</p>
+                <h1 class="text-3xl font-extrabold">Student Corner</h1>
+                <p class="text-slate-300 mt-1">Manage assigned classes and student details.</p>
             </div>
             <div class="flex flex-wrap gap-3">
-                {% if can_generate_admit %}
-                <a href="{% url 'myteacher:id_cards' %}?class_level={{ selected_class }}" class="btn btn-info px-5 py-3 rounded-2xl font-bold">
+                
+                <a href="{% url 'myteacher:id_cards' %}?class_level={{ selected_class }}" class="inline-flex items-center rounded-xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-400 transition">
                     <i class="fas fa-id-card-alt me-2"></i>ID Cards
-                </a>
-                <a href="{% url 'myteacher:generate_admit_card' %}" class="btn btn-primary px-5 py-3 rounded-2xl font-bold">
-                    <i class="fas fa-id-card me-2"></i>Admit Card
-                </a>
-                {% endif %}
-                {% if can_generate_seat %}
-                <a href="{% url 'myteacher:seat_plan' %}" class="btn btn-secondary px-5 py-3 rounded-2xl font-bold">
-                    <i class="fas fa-map-marker-alt me-2"></i>Seat Plan
-                </a>
-                {% endif %}
-                <a href="{% url 'myteacher:student_results' %}" class="btn btn-outline-secondary px-5 py-3 rounded-2xl font-bold">
-                    <i class="fas fa-chart-line me-2"></i>Results
                 </a>
             </div>
         </div>
     </div>
 
-    <div class="bg-white p-6 md:p-8 rounded-3xl shadow-2xl border border-gray-100 mb-8">
+    <div class="bg-white p-6 md:p-8 rounded-3xl shadow-lg border border-slate-100">
         {% if assigned_classes %}
-        <div class="mb-6">
-            {% if assigned_classes|length > 1 %}
-            <label class="fw-bold mb-2">Select Class:</label>
-            <div class="mb-4">
-                <select id="classSelector" class="form-select" onchange="window.location.href='?class_level=' + this.value + (document.getElementById('searchInput')?.value ? '&search=' + document.getElementById('searchInput').value : '')">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+            <div class="w-full md:w-64">
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Select Class</label>
+                {% if assigned_classes|length > 1 %}
+                <select id="classSelector" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none" onchange="window.location.href='?class_level=' + this.value">
                     {% for class_level in assigned_classes %}
                     <option value="{{ class_level }}" {% if selected_class == class_level %}selected{% endif %}>Class {{ class_level }}</option>
                     {% endfor %}
                 </select>
+                {% else %}
+                <div class="text-lg font-bold text-indigo-700">Class {{ selected_class }}</div>
+                {% endif %}
             </div>
-            {% else %}
-            <h4 class="fw-bold mb-2">Assigned Class: Class {{ selected_class }}</h4>
-            {% endif %}
-            <p class="text-muted">Below are the students assigned to your class.</p>
+
+            <div class="w-full md:w-80">
+                <div class="relative">
+                    <i class="fas fa-search absolute left-4 top-3 text-slate-400"></i>
+                    <input id="searchInput" type="search" placeholder="Search student name..." class="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-11 pr-4 text-sm outline-none focus:border-indigo-500" value="{{ request.GET.search|default:'' }}" onkeydown="if(event.key === 'Enter'){window.location.href='?class_level={{ selected_class }}&search='+this.value;}" />
+                </div>
+            </div>
         </div>
 
-        <div class="table-responsive table-custom">
-            <table class="table table-hover align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th class="ps-3">Roll</th>
-                        <th>Student Name</th>
-                        <th>Guardian</th>
-                        <th>Mobile</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for student in class_students %}
-                    <tr>
-                        <td class="ps-3 fw-bold text-primary">{{ student.class_roll }}</td>
-                        <td class="fw-semibold">{{ student.full_name }}</td>
-                        <td>
-                            <div class="small fw-bold">{{ student.father_name }}</div>
-                            <div class="small text-muted">{{ student.mother_name }}</div>
-                        </td>
-                        <td>{{ student.mobile_num }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="4" class="text-center py-4 text-muted">No students assigned to this class.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="bg-slate-50 border border-slate-100 rounded-2xl p-6 text-center">
+            {% if class_students %}
+                <h3 class="text-lg font-bold text-slate-800">Total Students Found</h3>
+                <p class="text-4xl font-extrabold text-indigo-600 mt-2">{{ class_students|length }}</p>
+                <p class="text-sm text-slate-500 mt-1">Students are currently assigned to this class.</p>
+            {% else %}
+                <div class="text-slate-400">
+                    <i class="fas fa-user-slash text-3xl mb-2"></i>
+                    <p class="font-semibold">No students found in this class.</p>
+                </div>
+            {% endif %}
         </div>
+        
         {% else %}
-        <div class="text-center py-16 text-muted">
-            <i class="fas fa-info-circle fa-3x text-primary mb-3"></i>
-            <h4 class="fw-bold">No assigned classes found</h4>
-            <p>You need to have classes assigned to view the Student Corner. Please contact your administrator.</p>
+        <div class="text-center py-20 text-slate-400">
+            <i class="fas fa-user-slash text-4xl mb-4"></i>
+            <h4 class="text-lg font-bold text-slate-900">No assigned classes</h4>
+            <p>Please contact your administrator for access.</p>
         </div>
         {% endif %}
     </div>
 
-    {% include 'myteacher/student_list_content.html' with hide_assigned_selector=True %}
+    <div class="mt-8">
+        {% include 'myteacher/student_list_content.html' with hide_assigned_selector=True %}
+    </div>
 </div>
 {% endblock %}

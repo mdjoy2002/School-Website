@@ -1,0 +1,221 @@
+{% extends 'myteacher/base.html' %}
+{% block content %}
+<style>
+    .promotion-page {
+        min-height: calc(100vh - 90px);
+        padding: 40px 0;
+        background: radial-gradient(circle at top left, rgba(41, 128, 185, 0.16), transparent 35%),
+                    radial-gradient(circle at bottom right, rgba(242, 153, 74, 0.16), transparent 30%),
+                    #f8fafc;
+    }
+
+    .promotion-card {
+        border: none;
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 30px 70px rgba(15, 23, 42, 0.12);
+    }
+
+    .promotion-header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        color: white;
+        padding: 32px 30px;
+    }
+
+    .promotion-header h2 {
+        font-size: 2rem;
+        margin-bottom: 0.35rem;
+        letter-spacing: 0.03em;
+    }
+
+    .promotion-header p {
+        color: rgba(255,255,255,0.88);
+        font-size: 0.96rem;
+        max-width: 720px;
+    }
+
+    .promotion-body {
+        background: white;
+        padding: 30px;
+    }
+
+    .promotion-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 18px;
+        margin-bottom: 28px;
+    }
+
+    .promotion-metric {
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        padding: 20px;
+        background: #f8fafc;
+    }
+
+    .promotion-metric h5 {
+        margin: 0 0 8px;
+        font-size: 0.9rem;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    .promotion-metric p {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 900;
+        color: #111827;
+    }
+
+    .promotion-table {
+        overflow-x: auto;
+    }
+
+    .promotion-table table {
+        min-width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .promotion-table th,
+    .promotion-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .promotion-table th {
+        text-align: left;
+        background: #f8fafc;
+        color: #334155;
+        font-size: 0.88rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    .promotion-table tbody tr:hover {
+        background: #f1f5f9;
+    }
+
+    .promotion-submit {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 18px;
+    }
+
+    .promotion-submit button {
+        min-width: 220px;
+    }
+
+    @media (max-width: 768px) {
+        .promotion-header {
+            padding: 24px 20px;
+        }
+
+        .promotion-body {
+            padding: 22px;
+        }
+    }
+</style>
+
+<section class="promotion-page">
+    <div class="container">
+        <div class="promotion-card">
+            <div class="promotion-header">
+                <h2>Student Promotion Panel</h2>
+                <p>Promote selected students from Class {{ current_class }} to Class {{ next_class }} with editable roll numbers before saving. This page is designed for all screen sizes and displays a clean, modern promotion panel.</p>
+            </div>
+            <div class="promotion-body">
+                {% if status %}
+                <div class="alert alert-{{ status_type }} alert-dismissible fade show" role="alert">
+                    {{ status }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endif %}
+
+                {% if not next_class %}
+                <div class="alert alert-warning">
+                    Class {{ current_class }} cannot be promoted further.
+                </div>
+                {% endif %}
+
+                <div class="promotion-summary">
+                    <div class="promotion-metric">
+                        <h5>Selected Class</h5>
+                        <p>{{ current_class }}</p>
+                    </div>
+                    <div class="promotion-metric">
+                        <h5>Next Class</h5>
+                        <p>{{ next_class|default:'N/A' }}</p>
+                    </div>
+                    <div class="promotion-metric">
+                        <h5>Total Students</h5>
+                        <p>{{ students|length }}</p>
+                    </div>
+                </div>
+
+                <form method="get" class="mb-3">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-6">
+                            <label for="selected_class" class="form-label fw-semibold">Choose Class to Promote</label>
+                            <select id="selected_class" name="selected_class" class="form-select" onchange="this.form.submit()">
+                                {% for value, label in promotion_classes %}
+                                    {% if value in allowed_classes %}
+                                        <option value="{{ value }}" {% if value == selected_class %}selected{% endif %}>{{ label }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </form>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="selected_class" value="{{ selected_class }}" />
+
+                    <div class="promotion-table">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Select</th>
+                                    <th scope="col">Roll</th>
+                                    <th scope="col">Student Name</th>
+                                    <th scope="col">Father Name</th>
+                                    <th scope="col">Current Class</th>
+                                    <th scope="col">New Roll</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in students %}
+                                <tr>
+                                    <td><input class="form-check-input" type="checkbox" name="promote_student" value="{{ student.id }}"></td>
+                                    <td>{{ student.class_roll }}</td>
+                                    <td>{{ student.full_name }}</td>
+                                    <td>{{ student.father_name }}</td>
+                                    <td>{{ student.current_class }}</td>
+                                    <td>
+                                        <input type="number" name="roll_{{ student.id }}" value="{{ student.class_roll }}" min="1" class="form-control form-control-sm" />
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">No students found in Class {{ current_class }}.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="promotion-submit">
+                        {% if next_class and students %}
+                        <button type="submit" class="btn btn-success btn-lg rounded-pill">
+                            <i class="fas fa-level-up-alt me-2"></i>Promote Selected to Class {{ next_class }}
+                        </button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

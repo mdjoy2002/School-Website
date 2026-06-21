@@ -4,138 +4,183 @@
     <meta charset="UTF-8">
     <title>Academic Transcript</title>
     <style>
+        @page { size: A4 portrait; margin: 10mm; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Helvetica', Arial, sans-serif; background: #eee; }
-        .result-card { 
-            width: 210mm; min-height: 297mm; padding: 10mm; margin: 5mm auto; 
-            background: white; border: 1px solid #ccc; position: relative;
+        body { font-family: 'Helvetica', Arial, sans-serif; background: #fff; color: #000; font-size: 12px; line-height: 1.35; }
+        
+        /* প্রতিটি রেজাল্ট কার্ডের জন্য পেজ ব্রেক */
+        .pdf-wrapper { 
+            width: 100%; 
+            max-width: 190mm; 
+            margin: 0 auto; 
+            page-break-after: always; 
         }
-        /* লোগো ও স্কুলের নাম */
-        .header-section { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
-        .logo-img { width: 80px; height: 80px; object-fit: contain; }
-        .school-info { text-align: center; flex: 1; }
-        .school-info h1 { font-size: 22px; font-weight: bold; }
-        .transcript-title h2 { font-size: 16px; text-decoration: underline; margin: 5px 0; }
         
-        .grade-scale { font-size: 9px; border-collapse: collapse; }
-        .grade-scale td, .grade-scale th { border: 1px solid #000; padding: 1px 3px; text-align: center; }
+        .card { 
+            width: 100%; 
+            max-width: 190mm; 
+            margin: 0 auto; 
+            background: white; 
+            position: relative; 
+            border: 1px solid #000; 
+            padding: 1.6rem;
+        }
 
-        .info-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-        .info-table td { padding: 3px 5px; border: 1px solid #000; font-size: 11px; }
-        .info-table td:nth-child(odd) { font-weight: bold; width: 12%; background: #f9f9f9; }
-        
-        /* মেইন মার্কস টেবিল */
-        .marks-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; }
-        .marks-table th, .marks-table td { border: 1px solid #000; padding: 4px; text-align: center; font-size: 10px; }
-        .marks-table th { background: #f2f2f2; font-weight: bold; }
-        .marks-table .sub-name { text-align: left !important; padding-left: 5px !important; font-weight: bold; width: 25%; }
-
-        .summary-section { display: flex; justify-content: space-between; margin-top: 10px; }
-        .summary-table { width: 55%; border-collapse: collapse; }
-        .summary-table td { border: 1px solid #000; padding: 3px 6px; font-size: 11px; }
-        
-        .comments-box { width: 40%; border: 1px solid #000; padding: 5px; font-size: 11px; }
-        .footer-sig { display: flex; justify-content: space-between; margin-top: 50px; font-size: 12px; font-weight: bold; }
-        .sig-line { border-top: 1.5px solid #000; width: 180px; text-align: center; padding-top: 5px; }
-
-        @media print { body { background: none; } .result-card { border: none; margin: 0; } }
+        /* শেষ কার্ডের পর যেন বাড়তি পেজ না আসে */
+        .pdf-wrapper:last-child { page-break-after: auto; }
     </style>
 </head>
 <body>
 
-{% for summary in results %}
-<div class="result-card">
-    <div class="header-section">
-        <img src="logo.png" class="logo-img" alt="Logo">
-        <div class="school-info">
-            <h1>Khandaker Naser Uddin High School</h1>
-            <p>Boyra, Khulna | EIIN: 117407</p>
-            <div class="transcript-title">
-                <h2>ACADEMIC TRANSCRIPT</h2>
-                <p>Exam: {{ selected_exam }} | Session: {{ exam_year }}</p>
+{% for result_data in results %}
+    <div class="pdf-wrapper">
+        <div class="card">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.09; z-index: 0; pointer-events: none;">
+                <img src="/static/images/logo.png" style="width: 400px; height: 400px; object-fit: contain;">
+            </div>
+
+            <div style="position: relative; z-index: 1;">
+                
+                <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; border-bottom: 2px solid #000; padding-bottom: 1rem; align-items: center;">
+                    <div style="width: 90px; height: 110px; border: 1px solid #000; flex-shrink: 0; overflow: hidden;">
+                        {% if result_data.student.photo %}
+                            <img src="{{ result_data.student.photo.url }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            <div style="padding: 45px 10px; text-align: center; font-size: 12px; color: #999;">Photo</div>
+                        {% endif %}
+                    </div>
+
+                    <div style="flex: 1; text-align: center;">
+                        <img src="/static/images/logo.png" style="width: 50px; height: 50px; margin-bottom: 5px; display: block; margin-left: auto; margin-right: auto;" alt="Logo">
+                        <h2 style="margin: 0; font-size: 22px; font-weight: bold;">Khandaker Naser Uddin High School</h2>
+                        <p style="margin: 2px 0; font-size: 13px;">Boyra, Khulna | EIIN: 117407</p>
+                        <div style="margin-top: 5px;">
+                            <h3 style="margin: 0; font-size: 16px; text-decoration: underline;">ACADEMIC TRANSCRIPT</h3>
+                            <p style="margin: 3px 0; font-size: 12px;"><strong>Exam:</strong> {{ selected_exam }} | <strong>Session:</strong> {{ selected_year }}</p>
+                        </div>
+                    </div>
+
+                    <table style="font-size: 10px; border-collapse: collapse; margin-left: auto; flex-shrink: 0;">
+                        <tr><th style="border: 1px solid #000; padding: 2px;">Mark</th><th style="border: 1px solid #000; padding: 2px;">Grade</th><th style="border: 1px solid #000; padding: 2px;">GPA</th></tr>
+                        <tr><td style="border: 1px solid #000; padding: 2px; text-align: center;">80-100</td><td style="border: 1px solid #000; padding: 2px; text-align: center;">A+</td><td style="border: 1px solid #000; padding: 2px; text-align: center;">5.00</td></tr>
+                        <tr><td style="border: 1px solid #000; padding: 2px; text-align: center;">70-79</td><td style="border: 1px solid #000; padding: 2px; text-align: center;">A</td><td style="border: 1px solid #000; padding: 2px; text-align: center;">4.00</td></tr>
+                        <tr><td style="border: 1px solid #000; padding: 2px; text-align: center;">60-69</td><td style="border: 1px solid #000; padding: 2px; text-align: center;">A-</td><td style="border: 1px solid #000; padding: 2px; text-align: center;">3.50</td></tr>
+                        <tr><td style="border: 1px solid #000; padding: 2px; text-align: center;">50-59</td><td style="border: 1px solid #000; padding: 2px; text-align: center;">B</td><td style="border: 1px solid #000; padding: 2px; text-align: center;">3.00</td></tr>
+                        <tr><td style="border: 1px solid #000; padding: 2px; text-align: center;">40-49</td><td style="border: 1px solid #000; padding: 2px; text-align: center;">C</td><td style="border: 1px solid #000; padding: 2px; text-align: center;">2.00</td></tr>
+                        <tr><td style="border: 1px solid #000; padding: 2px; text-align: center;">33-39</td><td style="border: 1px solid #000; padding: 2px; text-align: center;">D</td><td style="border: 1px solid #000; padding: 2px; text-align: center;">1.00</td></tr>
+                        <tr><td style="border: 1px solid #000; padding: 2px; text-align: center;">0-32</td><td style="border: 1px solid #000; padding: 2px; text-align: center;">F</td><td style="border: 1px solid #000; padding: 2px; text-align: center;">0.00</td></tr>
+                    </table>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 0.85rem; font-size: 12px;">
+                    <tr>
+                        <td style="padding: 3px; border: 1px solid #000; font-size: 11px; font-weight: bold; width: 12%;">Name:</td>
+                        <td style="padding: 3px; border: 1px solid #000; font-size: 11px; width: 38%;">{{ result_data.student.full_name }}</td>
+                        <td style="padding: 3px; border: 1px solid #000; font-size: 11px; font-weight: bold; width: 12%;">Class:</td>
+                        <td style="padding: 3px; border: 1px solid #000; font-size: 11px; width: 38%;">Class {{ result_data.student.current_class }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 3px; border: 1px solid #000; font-size: 11px; font-weight: bold;">Father:</td>
+                        <td style="padding: 3px; border: 1px solid #000; font-size: 11px;">{{ result_data.student.father_name }}</td>
+                        <td style="padding: 3px; border: 1px solid #000; font-size: 11px; font-weight: bold;">Group:</td>
+                        <td style="padding: 3px; border: 1px solid #000; font-size: 11px;">{{ result_data.student.group|default:'N/A' }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 3px; border: 1px solid #000; font-size: 11px; font-weight: bold;">Mother:</td>
+                        <td style="padding: 3px; border: 1px solid #000; font-size: 11px;">{{ result_data.student.mother_name }}</td>
+                        <td style="padding: 3px; border: 1px solid #000; font-size: 11px; font-weight: bold;">Roll:</td>
+                        <td style="padding: 3px; border: 1px solid #000; font-size: 11px;">{{ result_data.student.class_roll }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 3px; border: 1px solid #000; font-size: 11px; font-weight: bold;">Student ID:</td>
+                        <td style="padding: 3px; border: 1px solid #000; font-size: 11px;">{{ result_data.student.student_id }}</td>
+                        <td style="padding: 3px; border: 1px solid #000; font-size: 11px; font-weight: bold;">Shift:</td>
+                        <td style="padding: 3px; border: 1px solid #000; font-size: 11px;">{{ result_data.student.shift }}</td>
+                    </tr>
+                </table>
+
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 0.85rem; font-size: 11px;">
+                    <thead>
+                        <tr style="background: #f2f2f2;">
+                            <th rowspan="2" style="border: 1px solid #000; padding: 3px; text-align: left; padding-left: 5px;">Subject</th>
+                            <th rowspan="2" style="border: 1px solid #000; padding: 3px; text-align: center;">Full</th>
+                            <th colspan="4" style="border: 1px solid #000; padding: 3px; text-align: center;">Obtained Marks</th>
+                            <th rowspan="2" style="border: 1px solid #000; padding: 3px; text-align: center;">Total</th>
+                            <th rowspan="2" style="border: 1px solid #000; padding: 3px; text-align: center;">GPA</th>
+                            <th rowspan="2" style="border: 1px solid #000; padding: 3px; text-align: center;">Grade</th>
+                        </tr>
+                        <tr style="background: #f2f2f2;">
+                            <th style="border: 1px solid #000; padding: 3px; text-align: center;">CQ</th>
+                            <th style="border: 1px solid #000; padding: 3px; text-align: center;">MCQ</th>
+                            <th style="border: 1px solid #000; padding: 3px; text-align: center;">Prac</th>
+                            <th style="border: 1px solid #000; padding: 3px; text-align: center;">CA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mark in result_data.marks %}
+                        <tr {% if mark.grade == 'F' or mark.combined_grade == 'F' %}style="color:#b91c1c; font-weight: 600;"{% endif %}>
+                            <td style="border: 1px solid #000; padding: 3px; font-weight: bold;">{{ mark.subject_name }}</td>
+                            <td style="border: 1px solid #000; padding: 3px; text-align: center;">{{ mark.full_mark|floatformat:0 }}</td>
+                            <td style="border: 1px solid #000; padding: 3px; text-align: center;">{{ mark.subjective_mark|floatformat:0 }}</td>
+                            <td style="border: 1px solid #000; padding: 3px; text-align: center;">{{ mark.objective_mark|floatformat:0 }}</td>
+                            <td style="border: 1px solid #000; padding: 3px; text-align: center;">{{ mark.practical_mark|floatformat:0 }}</td>
+                            <td style="border: 1px solid #000; padding: 3px; text-align: center;">{{ mark.class_test_mark|floatformat:0 }}</td>
+                            {% if mark.show_combined %}
+                                <td rowspan="{{ mark.group_rowspan }}" style="border: 1px solid #000; padding: 3px; text-align: center;"><strong>{{ mark.combined_total_mark|default:mark.total_mark|floatformat:0 }}</strong></td>
+                                <td rowspan="{{ mark.group_rowspan }}" style="border: 1px solid #000; padding: 3px; text-align: center;">{{ mark.combined_gpa|default:mark.gpa }}</td>
+                                <td rowspan="{{ mark.group_rowspan }}" style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold;">{{ mark.combined_grade|default:mark.grade }}</td>
+                            {% else %}
+                                <td></td><td></td><td></td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; margin-top: 0.5rem;">
+                    <table style="width: 48%; min-width: 180px; border-collapse: collapse; font-size: 12px;">
+                        <tr><td style="border: 1px solid #000; padding: 4px; font-size: 11px; font-weight: bold;">Total Obtained:</td><td style="border: 1px solid #000; padding: 4px; font-size: 11px;">{{ result_data.total_marks|floatformat:0 }}</td></tr>
+                        <tr><td style="border: 1px solid #000; padding: 4px; font-size: 11px; font-weight: bold;">Average GPA:</td><td style="border: 1px solid #000; padding: 4px; font-size: 11px;">{{ result_data.average_gpa }}</td></tr>
+                        <tr><td style="border: 1px solid #000; padding: 4px; font-size: 11px; font-weight: bold;">Final Grade:</td><td style="border: 1px solid #000; padding: 4px; font-size: 11px;"><strong style="{% if result_data.result_status == 'Fail' %}color:#b91c1c; font-weight: 700;{% endif %}">{{ result_data.overall_grade }}</strong></td></tr>
+                    </table>
+                    <div style="width: 45%; border: 1px solid #000; padding: 6px; font-size: 11px;">
+                        <strong>Comments:</strong>
+                        <div style="margin-top:6px;">
+                            {% if result_data.overall_grade == 'A+' %}
+                                <p style="margin:0; font-size:11px;"><strong>A+ (80-100):</strong> Excellent! Keep up the brilliant work.</p>
+                            {% elif result_data.overall_grade == 'A' %}
+                                <p style="margin:0; font-size:11px;"><strong>A (70-79):</strong> Very good! You are doing a great job.</p>
+                            {% elif result_data.overall_grade == 'A-' %}
+                                <p style="margin:0; font-size:11px;"><strong>A- (60-69):</strong> Good progress! Keep striving for more.</p>
+                            {% elif result_data.overall_grade == 'B' %}
+                                <p style="margin:0; font-size:11px;"><strong>B (50-59):</strong> Satisfactory! Try to focus more on your studies.</p>
+                            {% elif result_data.overall_grade == 'C' %}
+                                <p style="margin:0; font-size:11px;"><strong>C (40-49):</strong> Needs improvement. Work harder to achieve better results.</p>
+                            {% elif result_data.overall_grade == 'D' %}
+                                <p style="margin:0; font-size:11px;"><strong>D (33-39):</strong> Try harder! You have the potential to do better.</p>
+                            {% elif result_data.overall_grade == 'F' %}
+                                <p style="margin:0; font-size:11px;"><strong>F (0-32):</strong> Failure! Do not lose hope; dedicate more time to your studies.</p>
+                            {% else %}
+                                <div style="height: 30px; border-bottom: 1px dotted #000;"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 60px;">
+                    <div style="width: 160px; text-align: center;">
+                        <div style="border-top: 1.5px solid #000; width: 100%; margin-bottom: 5px;"></div>
+                        <div style="font-weight: bold; font-size: 11px;">Class Teacher</div>
+                    </div>
+                    <div style="width: 160px; text-align: center;">
+                        <img src="/static/images/sign.png" alt="Signature" style="width: 100%; max-width: 120px; height: auto; display: block; margin: 0 auto 5px;">
+                        <div style="border-top: 1.5px solid #000; width: 100%; margin-bottom: 5px;"></div>
+                        <div style="font-weight: bold; font-size: 11px;">Head Teacher</div>
+                    </div>
+                </div>
             </div>
         </div>
-        <table class="grade-scale">
-            <tr><th>Mark</th><th>Gr.</th><th>GPA</th></tr>
-            <tr><td>80+</td><td>A+</td><td>5.0</td></tr>
-            <tr><td>70-79</td><td>A</td><td>4.0</td></tr>
-            <tr><td>60-69</td><td>A-</td><td>3.5</td></tr>
-            <tr><td>40-59</td><td>B/C</td><td>2-3</td></tr>
-            <tr><td>0-39</td><td>F</td><td>0.0</td></tr>
-        </table>
     </div>
-
-    <table class="info-table">
-        <tr>
-            <td>Name:</td><td>{{ summary.student.full_name }}</td>
-            <td>Class:</td><td>{{ summary.student.current_class }}</td>
-            <td>Roll:</td><td>{{ summary.student.class_roll }}</td>
-        </tr>
-        <tr>
-            <td>Father:</td><td>{{ summary.student.father_name }}</td>
-            <td>Group:</td><td>{{ summary.student.group|default:'N/A' }}</td>
-            <td>ID:</td><td>{{ summary.student.student_id }}</td>
-        </tr>
-    </table>
-
-    <table class="marks-table">
-        <thead>
-            <tr style="background: #f2f2f2;">
-                <th rowspan="2" style="border: 1px solid #000; padding: 3px; text-align: left; padding-left: 5px;">Subject</th>
-                <th rowspan="2" style="border: 1px solid #000; padding: 3px; text-align: center;">Full</th>
-                <th colspan="4" style="border: 1px solid #000; padding: 3px; text-align: center;">Obtained Marks</th>
-                <th rowspan="2" style="border: 1px solid #000; padding: 3px; text-align: center;">Total</th>
-                <th rowspan="2" style="border: 1px solid #000; padding: 3px; text-align: center;">GPA</th>
-                <th rowspan="2" style="border: 1px solid #000; padding: 3px; text-align: center;">Grade</th>
-            </tr>
-            <tr style="background: #f2f2f2;">
-                <th style="border: 1px solid #000; padding: 3px; text-align: center;">CQ</th>
-                <th style="border: 1px solid #000; padding: 3px; text-align: center;">MCQ</th>
-                <th style="border: 1px solid #000; padding: 3px; text-align: center;">Prac</th>
-                <th style="border: 1px solid #000; padding: 3px; text-align: center;">CA</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for mark in summary.marks %}
-            <tr>
-                <td class="sub-name">{{ mark.subject_name }}</td>
-                <td>{{ mark.full_mark|floatformat:0 }}</td>
-                <td>{{ mark.subjective_mark|floatformat:0 }}</td>
-                <td>{{ mark.objective_mark|floatformat:0 }}</td>
-                <td>{{ mark.practical_mark|floatformat:0 }}</td>
-                <td>{{ mark.class_test_mark|floatformat:0 }}</td>
-                {% if mark.show_combined %}
-                    <td rowspan="{{ mark.group_rowspan }}"><b>{{ mark.combined_total_mark|default:mark.total_mark|floatformat:0 }}</b></td>
-                    <td rowspan="{{ mark.group_rowspan }}">{{ mark.combined_gpa|default:mark.gpa }}</td>
-                    <td rowspan="{{ mark.group_rowspan }}">{{ mark.combined_grade|default:mark.grade }}</td>
-                {% else %}
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                {% endif %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <div class="summary-section">
-        <table class="summary-table">
-            <tr><td>Total Obtained Marks:</td><td>{{ summary.total_marks|floatformat:0 }}</td></tr>
-            <tr><td>Average GPA:</td><td>{{ summary.average_gpa }}</td></tr>
-            <tr><td>Final Grade:</td><td>{{ summary.overall_grade }}</td></tr>
-            <tr><td>Result Status:</td><td>{{ summary.result_status }}</td></tr>
-        </table>
-        <div class="comments-box">
-            <strong>Comments:</strong><br>
-            <div style="height:40px;"></div>
-        </div>
-    </div>
-
-    <div class="footer-sig">
-        <div class="sig-line">Class Teacher</div>
-        <div class="sig-line">Head Teacher</div>
-    </div>
-</div>
 {% endfor %}
 
 </body>

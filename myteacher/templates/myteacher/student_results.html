@@ -1,225 +1,177 @@
 {% extends 'myteacher/base.html' %}
+
 {% block content %}
-
-<div class="container-fluid py-4">
-
-    <!-- HEADER -->
-    <div class="card border-0 shadow-sm rounded-4 mb-4 text-white"
-         style="background: linear-gradient(135deg, #6366f1, #06b6d4);">
-
-        <div class="card-body py-4">
-            <h2 class="fw-bold mb-1">📊 Result Cards</h2>
-            <p class="mb-0 opacity-75">
-                View and download student result cards by class and exam selection.
-            </p>
+<div class="container-fluid py-4 px-3 px-md-5">
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+        <div class="card-body p-4 p-md-5">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <h1 class="display-6 fw-bold text-dark mb-1">ফলাফল কার্ড</h1>
+                    <p class="text-muted mb-0">শ্রেণী, পরীক্ষা ও বছর নির্বাচন করে শিক্ষার্থীর ফলাফল কার্ড দেখুন এবং ডাউনলোড করুন।</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <span class="badge bg-light text-dark border px-3 py-2">শ্রেণী: {{ selected_class }}</span>
+                    <span class="badge bg-light text-dark border px-3 py-2">পরীক্ষা: {{ selected_exam }}</span>
+                    <span class="badge bg-light text-dark border px-3 py-2">বছর: {{ selected_year }}</span>
+                </div>
+            </div>
         </div>
     </div>
 
     {% if not allowed_classes %}
-
-        <div class="alert alert-warning shadow-sm rounded-3 border-0">
-            <i class="fas fa-exclamation-triangle me-2"></i>
-            You do not have any assigned classes. Contact the administrator for access.
-        </div>
-
+    <div class="alert alert-warning border-0 rounded-4 shadow-sm">
+        <i class="fas fa-exclamation-triangle me-2"></i> আপনাকে কোন ক্লাস অ্যাসাইন করা নেই। অ্যাডমিনের সাথে যোগাযোগ করুন।
+    </div>
     {% else %}
-
     <div class="row g-4">
-
-        <!-- LEFT PANEL -->
         <div class="col-lg-4">
-
-            <div class="card border-0 shadow-lg rounded-4 sticky-top" style="top: 20px;">
-
-                <div class="card-header border-0 text-white rounded-top-4"
-                     style="background: linear-gradient(135deg, #0ea5e9, #22c55e);">
-
-                    <h5 class="fw-bold mb-0">🔎 Filters & Students</h5>
-
-                </div>
-
-                <div class="card-body">
-
-                    <!-- FILTER FORM -->
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4 text-primary"><i class="fas fa-filter me-2"></i>ফিল্টার ও শিক্ষার্থী</h5>
                     <form method="get" id="filterForm">
-
-                        <!-- CLASS -->
                         <div class="mb-3">
-                            <label class="form-label fw-semibold text-primary">Select Class</label>
-                            <select name="class_level"
-                                    class="form-select shadow-sm border-primary"
-                                    onchange="document.getElementById('filterForm').submit()">
-
+                            <label class="form-label fw-semibold text-secondary small">ক্লাস নির্বাচন</label>
+                            <select name="class_level" class="form-select border-0 bg-light py-2" onchange="document.getElementById('filterForm').submit()">
                                 {% for class_level in allowed_classes %}
-                                <option value="{{ class_level }}"
-                                    {% if selected_class == class_level %}selected{% endif %}>
-                                    Class {{ class_level }}
-                                </option>
+                                <option value="{{ class_level }}" {% if selected_class == class_level %}selected{% endif %}>Class {{ class_level }}</option>
                                 {% endfor %}
-
                             </select>
                         </div>
-
-                        <!-- EXAM -->
                         <div class="mb-3">
-                            <label class="form-label fw-semibold text-success">Select Exam</label>
-                            <select name="exam_type"
-                                    class="form-select shadow-sm border-success"
-                                    onchange="document.getElementById('filterForm').submit()">
-
+                            <label class="form-label fw-semibold text-secondary small">পরীক্ষা নির্বাচন</label>
+                            <select name="exam_type" class="form-select border-0 bg-light py-2" onchange="document.getElementById('filterForm').submit()">
                                 {% for exam in exam_choices %}
-                                <option value="{{ exam }}"
-                                    {% if selected_exam == exam %}selected{% endif %}>
-                                    {{ exam }}
-                                </option>
+                                <option value="{{ exam }}" {% if selected_exam == exam %}selected{% endif %}>{{ exam }}</option>
                                 {% endfor %}
-
                             </select>
                         </div>
-
-                        <!-- YEAR -->
                         <div class="mb-3">
-                            <label class="form-label fw-semibold text-warning">Select Year</label>
-                            <select name="exam_year"
-                                    class="form-select shadow-sm border-warning"
-                                    onchange="document.getElementById('filterForm').submit()">
+                            <label class="form-label fw-semibold text-secondary small">বছর নির্বাচন</label>
+                            <select name="exam_year" class="form-select border-0 bg-light py-2" onchange="document.getElementById('filterForm').submit()">
                                 {% for year in exam_years %}
                                 <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>{{ year }}</option>
                                 {% endfor %}
                             </select>
                         </div>
-
-                        <!-- SEARCH -->
                         <div class="mb-3">
-                            <label class="form-label fw-semibold text-info">Search Student</label>
-
-                            <div class="input-group shadow-sm">
-                                <input type="text"
-                                       name="search"
-                                       class="form-control border-info"
-                                       placeholder="Name or ID"
-                                       value="{{ search_query }}">
-
-                                <button class="btn btn-info text-white">
-                                    <i class="fas fa-search"></i>
-                                </button>
+                            <div class="input-group">
+                                <input type="text" name="search" class="form-control border-0 bg-light" placeholder="শিক্ষার্থীর নাম বা আইডি..." value="{{ search_query }}">
+                                <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
                             </div>
                         </div>
-
                     </form>
 
                     <hr class="my-4">
 
-                    <h6 class="fw-bold mb-3">
-                        👨‍🎓 Students
-                        <span class="badge bg-primary">{{ class_students.count }}</span>
-                    </h6>
-
-                    <div class="list-group overflow-auto" style="max-height: 520px;">
-
-                        {% if class_students %}
-
-                            {% for student in class_students %}
-
-                            <!-- TOGGLE LINK -->
-                            <a href="?class_level={{ selected_class }}&exam_type={{ selected_exam }}&exam_year={{ selected_year }}&student_id={{ student.id }}{% if search_query %}&search={{ search_query }}{% endif %}"
-                               class="list-group-item list-group-item-action border-0 mb-2 rounded-3 shadow-sm {% if result_data and result_data.student.id == student.id %}active{% endif %}">
-
-                                <div class="d-flex justify-content-between align-items-center">
-
-                                    <div>
-                                        <div class="fw-bold">
-                                            {{ student.full_name|truncatechars:24 }}
-                                        </div>
-                                        <small class="text-muted">
-                                            Roll: {{ student.class_roll }} • ID: {{ student.student_id }}
-                                        </small>
-                                    </div>
-
-                                    <i class="fas fa-chevron-right text-primary"></i>
-
-                                </div>
-
-                            </a>
-
-                            {% endfor %}
-
-                        {% else %}
-
-                            <div class="text-center text-muted py-4">
-                                <i class="fas fa-user-slash fa-2x mb-2 text-danger"></i>
-                                <p class="mb-0">No students found</p>
-                            </div>
-
-                        {% endif %}
-
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="fw-bold mb-0">শিক্ষার্থী তালিকা</h6>
+                        <span class="badge bg-primary-subtle text-primary rounded-pill">{{ class_students.count }}</span>
                     </div>
 
+                    <div class="list-group overflow-auto student-list" style="max-height: 420px;">
+                        {% for student in class_students %}
+                        <a href="?class_level={{ selected_class }}&exam_type={{ selected_exam }}&exam_year={{ selected_year }}&student_id={{ student.id }}"
+                           class="list-group-item list-group-item-action border-0 mb-2 rounded-3 d-flex gap-2 align-items-center p-2 {% if result_data and result_data.student.id == student.id %}selected{% else %}bg-light{% endif %}">
+                            <div style="width:44px; height:44px; flex-shrink:0; border-radius:6px; overflow:hidden; background:#f8fafc; display:flex; align-items:center; justify-content:center;">
+                                {% if student.photo %}
+                                    <img src="{{ student.photo.url }}" style="width:100%; height:100%; object-fit:cover;">
+                                {% else %}
+                                    <div style="font-size:12px; color:#6b7280; padding:4px; text-align:center;">No
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold small mb-0">{{ student.full_name }}</div>
+                                <div class="small text-muted">Roll: {{ student.class_roll }} • ID: {{ student.student_id }}</div>
+                            </div>
+                            <div class="text-end small text-muted" style="min-width:60px;">{{ student.get_current_class_display }}</div>
+                        </a>
+                        {% empty %}
+                        <div class="text-center text-muted p-3">কোনো শিক্ষার্থী পাওয়া যায়নি।</div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- RIGHT PANEL -->
         <div class="col-lg-8">
-
-            {% if result_data %}
-
-                <!-- ACTION BUTTONS -->
-                <div class="d-flex gap-2 mb-3 flex-wrap">
-
-                    <a href="{% url 'myteacher:student_result_pdf' result_data.student.id %}?exam_type={{ selected_exam }}&exam_year={{ selected_year }}"
-                       class="btn btn-success shadow-sm">
-
-                        <i class="fas fa-download me-2"></i>Download PDF
-                    </a>
-
-                    <button class="btn btn-outline-dark shadow-sm" onclick="window.print()">
-                        <i class="fas fa-print me-2"></i>Print
-                    </button>
-
-                </div>
-
-                <!-- RESULT CARD -->
-                <div class="card border-0 shadow-lg rounded-4 p-3"
-                     style="border-top: 4px solid #06b6d4;">
-
-                    {% include 'myteacher/result_card_display.html' %}
-
-                </div>
-
-            {% else %}
-
-                <div class="card border-0 shadow-sm rounded-4 d-flex align-items-center justify-content-center"
-                     style="min-height: 520px; background: linear-gradient(135deg, #f8fafc, #e2e8f0);">
-
-                    <div class="text-center text-muted p-4">
-
-                        <i class="fas fa-clipboard-list fa-3x mb-3 text-primary"></i>
-
-                        <h5 class="fw-bold">Select a Student</h5>
-                        <p class="mb-0">
-                            Click a student to view result card. Click again to hide it.
-                        </p>
-
+            <div class="card border-0 shadow-sm rounded-4 p-4 min-vh-50">
+                {% if result_data %}
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3 gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="width:64px; height:64px; border:1px solid #e6e9ee; overflow:hidden; border-radius:6px;">
+                            {% if result_data.student.photo %}
+                                <img src="{{ result_data.student.photo.url }}" style="width:100%; height:100%; object-fit:cover;">
+                            {% else %}
+                                <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#9ca3af;">No</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-dark mb-0">{{ result_data.student.full_name }}</h4>
+                            <small class="text-muted">Roll: {{ result_data.student.class_roll }} • {{ selected_exam }} - {{ selected_year }}</small>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'myteacher:student_result_pdf' result_data.student.id %}?exam_type={{ selected_exam }}&exam_year={{ selected_year }}" class="btn btn-outline-success px-3">
+                            <i class="fas fa-file-pdf me-1"></i> PDF
+                        </a>
+                        <button class="btn btn-outline-secondary px-3" onclick="window.print()">
+                            <i class="fas fa-print me-1"></i> Print
+                        </button>
                     </div>
                 </div>
-
-            {% endif %}
-
+                <div class="result-print-card">
+                    {% include 'myteacher/result_card_display.html' %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-file-signature fa-4x text-light mb-3"></i>
+                    <h5 class="text-muted">শিক্ষার্থী নির্বাচন করুন</h5>
+                </div>
+                {% endif %}
+            </div>
         </div>
     </div>
-
     {% endif %}
 </div>
 
-<!-- PRINT STYLE -->
 <style>
-@media print {
-    .col-lg-4 { display: none !important; }
-    .col-lg-8 { flex: 0 0 100%; max-width: 100%; }
-    .btn, .input-group, .card-header { display: none !important; }
-    body { background: white !important; }
-}
+    .list-group-item { transition: all 0.18s ease-in-out; }
+    .list-group-item:hover { transform: translateX(6px); box-shadow: 0 1px 6px rgba(15,23,42,0.06); }
+    .list-group-item.selected, .list-group-item.selected * { color: #fff !important; }
+    .list-group-item.selected { background: linear-gradient(90deg,#0ea5a4,#0284c7) !important; box-shadow: 0 6px 18px rgba(2,6,23,0.08); }
+    .student-list { padding-right: 6px; }
+    .student-list::-webkit-scrollbar { width: 8px; }
+    .student-list::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 6px; }
+    @media print {
+        @page { size: A4 portrait; margin: 10mm; }
+        html, body { width: 100%; height: auto; margin: 0; padding: 0; background: white !important; }
+        body * { visibility: hidden !important; }
+        .result-print-card, .result-print-card * { visibility: visible !important; }
+        .result-print-card {
+            position: static !important;
+            display: block !important;
+            width: 100% !important;
+            max-width: 190mm !important;
+            margin: 0 auto !important;
+            padding: 0 !important;
+            overflow: visible !important;
+            background: white !important;
+            box-shadow: none !important;
+            font-size: 12px !important;
+            line-height: 1.35 !important;
+            page-break-inside: avoid !important;
+            page-break-after: avoid !important;
+        }
+        .result-print-card .card { box-shadow: none !important; border: none !important; }
+        .result-print-card .card, .result-print-card .card-body { width: 100% !important; max-width: 190mm !important; padding: 0 !important; }
+        .result-print-card .btn, .result-print-card form, .result-print-card .input-group, .result-print-card .card-header, .result-print-card .list-group { display: none !important; }
+        .result-print-card table { font-size: 11px !important; }
+        .result-print-card h2 { font-size: 24px !important; }
+        .result-print-card h3 { font-size: 17px !important; }
+        .result-print-card p { font-size: 12px !important; }
+        .result-print-card th, .result-print-card td { border-color: #000 !important; }
+        body { background: white !important; }
+    }
 </style>
-
 {% endblock %}

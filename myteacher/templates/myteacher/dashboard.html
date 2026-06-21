@@ -81,6 +81,7 @@
                     <a href="{% url 'myteacher:student_corner' %}" class="btn btn-outline-secondary py-3 rounded-pill fw-bold shadow-sm">
                         <i class="fas fa-graduation-cap me-2"></i>Student Corner
                     </a>
+                   
                     <a href="{% url 'myteacher:view_routine' %}" class="btn btn-outline-info py-3 rounded-pill fw-bold shadow-sm">
                         <i class="fas fa-calendar-check me-2"></i>View Routine
                     </a>
@@ -100,7 +101,11 @@
                     <h5 class="fw-bold mb-0"><i class="fas fa-users text-primary me-2"></i>Class {{ teacher.class_teacher_of }} Students</h5>
                     <span class="badge-class shadow-sm">{{ class_students.count }} Students</span>
                 </div>
-                
+                 {% if teacher.is_class_teacher %}
+                    <a href="{% url 'myteacher:student_promotion' %}" class="btn btn-outline-success py-3 rounded-pill fw-bold shadow-sm">
+                        <i class="fas fa-level-up-alt me-2"></i>Promote Students
+                    </a>
+                    {% endif %}
                 <div class="table-responsive table-custom">
                     <table class="table table-hover align-middle mb-0">
                         <thead>

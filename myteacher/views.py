@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Student, TeacherSubjectAssignment, Mark, Subject, ExamRoutine, TeacherClassAssignment, Teacher
 from django.http import HttpResponse, HttpResponseForbidden
@@ -32,6 +33,14 @@ def calculate_grade_and_gpa(score):
     return 'F', '0.00'
 
 
+CLASS_PROMOTION_MAP = {
+    '6': '7',
+    '7': '8',
+    '8': '9',
+    '9': '10',
+}
+
+
 @login_required
 def home(request):
     # শিক্ষক লগইন করা থাকলে তাকে ড্যাশবোর্ডে পাঠান
@@ -48,8 +57,10 @@ def dashboard_view(request):
     # Get all assignments for this teacher
     assignments = TeacherSubjectAssignment.objects.filter(teacher=teacher)
     
-    # Get all classes assigned to this teacher
-    assigned_classes = TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)
+    # Get all classes assigned to this teacher (from both class assignments and subject assignments)
+    class_assign_qs = TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)
+    subj_class_qs = TeacherSubjectAssignment.objects.filter(teacher=teacher).values_list('subject__class_level', flat=True)
+    assigned_classes = list(set(list(class_assign_qs) + list(subj_class_qs)))
     
     # Get students from all assigned classes
     class_students = None
@@ -73,7 +84,7 @@ def mark_entry_view(request):
     assignments = TeacherSubjectAssignment.objects.filter(teacher=teacher)
     
     # Get assigned classes for this teacher
-    assigned_classes = TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)
+    assigned_classes = list(set(list(TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)) + list(TeacherSubjectAssignment.objects.filter(teacher=teacher).values_list('subject__class_level', flat=True))))
     
     selected_class = request.GET.get('class_level')
     selected_subject = request.GET.get('subject_id')
@@ -183,7 +194,7 @@ def mark_entry_view(request):
 def mark_entry_history_view(request):
     teacher = request.user.teacher
     assignments = TeacherSubjectAssignment.objects.filter(teacher=teacher)
-    assigned_classes = TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)
+    assigned_classes = list(set(list(TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)) + list(TeacherSubjectAssignment.objects.filter(teacher=teacher).values_list('subject__class_level', flat=True))))
 
     selected_class = request.GET.get('class_level')
     selected_subject = request.GET.get('subject_id')
@@ -232,10 +243,7 @@ def manage_routine_view(request):
     if not teacher.is_class_teacher and not is_head_teacher:
         return HttpResponseForbidden("আপনি রুটিন তৈরি বা সম্পাদনা করার অনুমোদিত নন।")
 
-    if is_head_teacher:
-        routines = ExamRoutine.objects.all().order_by('exam_date', 'class_name')
-    else:
-        routines = ExamRoutine.objects.filter(class_name=teacher.class_teacher_of).order_by('exam_date', 'class_name')
+    routines = ExamRoutine.objects.all().order_by('exam_date', 'class_name')
 
     edit_mode = False
     routine_id = ''
@@ -256,10 +264,7 @@ def manage_routine_view(request):
             c = request.POST.get('class_name')
             g = request.POST.get('group_name') if c in ['9', '10'] else ''
             
-            # Validate only class teacher or head/admin may save routines
-            if not is_head_teacher and c != teacher.class_teacher_of:
-                return HttpResponseForbidden("আপনি এই ক্লাসের জন্য রুটিন তৈরি বা সম্পাদনা করার অনুমোদিত নন।")
-            
+            # Class teachers and head/admin may save routines for any class
             et = request.POST.get('exam_type')
             ey = request.POST.get('exam_year') or datetime.date.today().year
             s = request.POST.get('subject')
@@ -359,9 +364,6 @@ def delete_routine(request, id):
         return HttpResponseForbidden("আপনি রুটিন মুছে ফেলার অনুমোদিত নন।")
 
     routine = get_object_or_404(ExamRoutine, id=id)
-    if not is_head_teacher and routine.class_name != teacher.class_teacher_of:
-        return HttpResponseForbidden("আপনি এই রুটিনটি মুছে ফেলার অনুমোদিত নন।")
-
     routine.delete()
     return redirect('myteacher:manage_routine')
 
@@ -372,9 +374,6 @@ def copy_routine(request, from_id, target_class):
         return HttpResponseForbidden("আপনি রুটিন কপি করার অনুমোদিত নন।")
 
     original = get_object_or_404(ExamRoutine, id=from_id)
-    if not is_head_teacher and original.class_name != teacher.class_teacher_of:
-        return HttpResponseForbidden("আপনি এই রুটিনটি কপি করার অনুমোদিত নন।")
-
     original.pk = None  # নতুন অবজেক্ট তৈরির জন্য
     original.class_name = target_class
     original.group_name = original.group_name if target_class in ['9', '10'] else ''
@@ -403,10 +402,7 @@ def view_routine(request):
         row = {'date': exam_date, 'cells': []}
 
         def find_routine(class_name, group_name=''):
-            try:
-                return routines.get(class_name=class_name, group_name=group_name, exam_date=exam_date)
-            except ExamRoutine.DoesNotExist:
-                return None
+            return routines.filter(class_name=class_name, group_name=group_name, exam_date=exam_date).order_by('exam_time', 'id').first()
 
         for class_val in ['6', '7', '8']:
             routine = find_routine(class_val)
@@ -515,6 +511,92 @@ def id_cards_view(request):
 
 
 @login_required
+def student_promotion_view(request):
+    teacher = request.user.teacher
+    is_admin_or_head = is_head_or_admin(teacher, request.user)
+
+    if not teacher.is_class_teacher and not is_admin_or_head:
+        return HttpResponseForbidden("আপনি এই অপারেশনটি করার অনুমোদিত নন।")
+
+    if is_admin_or_head:
+        allowed_classes = [value for value, _ in Student.CLASS_CHOICES]
+    else:
+        if teacher.is_class_teacher and teacher.class_teacher_of:
+            allowed_classes = [teacher.class_teacher_of]
+        else:
+            allowed_classes = get_teacher_allowed_classes(teacher)
+
+    allowed_classes = sorted(set([c for c in allowed_classes if c]), key=lambda x: int(x))
+    if not allowed_classes:
+        return HttpResponseForbidden("আপনার কোনো ক্লাস প্রোমোশন করার অনুমোদিত নেই।")
+
+    selected_class = request.GET.get('selected_class') or request.POST.get('selected_class')
+    if selected_class and selected_class not in allowed_classes:
+        return HttpResponseForbidden("আপনি এই ক্লাসের জন্য অনুমোদিত নন।")
+
+    if not selected_class:
+        selected_class = allowed_classes[0]
+
+    next_class = CLASS_PROMOTION_MAP.get(selected_class)
+    students = Student.objects.filter(current_class=selected_class).order_by('class_roll')
+    status = None
+    status_type = None
+
+    if request.method == 'POST':
+        selected_class = request.POST.get('selected_class') or selected_class
+        if selected_class not in allowed_classes:
+            return HttpResponseForbidden("আপনি এই ক্লাসের জন্য অনুমোদিত নন।")
+
+        next_class = CLASS_PROMOTION_MAP.get(selected_class)
+        selected_ids = request.POST.getlist('promote_student')
+        promoted_count = 0
+
+        if not next_class:
+            status = f"Class {selected_class} থেকে আর কোন ক্লাসে প্রোমোট করা যাবে না।"
+            status_type = 'warning'
+        elif not selected_ids:
+            status = 'কমপক্ষে একজন ছাত্র নির্বাচন করুন প্রোমোশন করার জন্য।'
+            status_type = 'danger'
+        else:
+            for student_id in selected_ids:
+                student = Student.objects.filter(id=student_id, current_class=selected_class).first()
+                if not student:
+                    continue
+
+                roll_value = request.POST.get(f'roll_{student.id}')
+                if roll_value:
+                    try:
+                        student.class_roll = int(roll_value)
+                    except (ValueError, TypeError):
+                        pass
+
+                student.current_class = next_class
+                student.save()
+                promoted_count += 1
+
+            if promoted_count:
+                status = f'{promoted_count} জন ছাত্র/ছাত্রী এখন ক্লাস {next_class} এ প্রোমোট হয়েছে।'
+                status_type = 'success'
+            else:
+                status = 'কোন ছাত্র/ছাত্রী প্রোমোট হয়নি।'
+                status_type = 'warning'
+
+            return redirect(f"{reverse('myteacher:student_promotion')}?selected_class={selected_class}")
+
+    return render(request, 'myteacher/student_promotion.html', {
+        'teacher': teacher,
+        'students': students,
+        'current_class': selected_class,
+        'next_class': next_class,
+        'status': status,
+        'status_type': status_type,
+        'promotion_classes': Student.CLASS_CHOICES,
+        'allowed_classes': allowed_classes,
+        'selected_class': selected_class,
+    })
+
+
+@login_required
 def seat_plan_view(request):
     teacher = request.user.teacher
     assigned_class = teacher.class_teacher_of if teacher.is_class_teacher else None
@@ -531,11 +613,11 @@ def is_head_or_admin(teacher, user):
 
 
 def get_teacher_allowed_classes(teacher):
-    return list(TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True))
+    return list(set(list(TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)) + list(TeacherSubjectAssignment.objects.filter(teacher=teacher).values_list('subject__class_level', flat=True))))
 
 
 def get_teacher_class_teacher_classes(teacher):
-    assigned_classes = list(TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True))
+    assigned_classes = list(set(list(TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)) + list(TeacherSubjectAssignment.objects.filter(teacher=teacher).values_list('subject__class_level', flat=True))))
     if not assigned_classes and teacher.is_class_teacher and teacher.class_teacher_of:
         assigned_classes = [teacher.class_teacher_of]
     return assigned_classes
@@ -711,8 +793,34 @@ def get_student_result_summary(student, exam_type, exam_year=None):
     if subject_count > 0 and total_possible_marks > 0:
         average_mark = total_marks / subject_count
         overall_percentage = (total_marks / total_possible_marks * Decimal('100.00'))
-        overall_grade, overall_gpa = calculate_grade_and_gpa(overall_percentage)
         average_gpa = (total_gpa / subject_count).quantize(Decimal('0.00'))
+
+        # If any subject is failed, final result must be F
+        if fail_count > 0:
+            overall_grade = 'F'
+            overall_gpa = Decimal('0.00')
+        else:
+            try:
+                avg_gpa_float = float(average_gpa)
+            except Exception:
+                avg_gpa_float = 0.0
+
+            if avg_gpa_float >= 5.0:
+                overall_grade = 'A+'
+            elif avg_gpa_float >= 4.0:
+                overall_grade = 'A'
+            elif avg_gpa_float >= 3.5:
+                overall_grade = 'A-'
+            elif avg_gpa_float >= 3.0:
+                overall_grade = 'B'
+            elif avg_gpa_float >= 2.0:
+                overall_grade = 'C'
+            elif avg_gpa_float >= 1.0:
+                overall_grade = 'D'
+            else:
+                overall_grade = 'F'
+            overall_gpa = average_gpa
+
         result_status = 'Pass' if fail_count == 0 else 'Fail'
     else:
         average_mark = Decimal('0.00')

@@ -28,7 +28,9 @@
     
     .footer { display: flex; justify-content: space-between; align-items: flex-end; z-index: 1; margin-top: 5px; }
     .seat-no { font-size: 9px; font-weight: bold; }
-    .sign-box { border-top: 1.2px solid #000; width: 80px; text-align: center; font-size: 9px; font-weight: bold; padding-top: 2px; }
+    .sign-box { width: 80px; text-align: center; font-size: 9px; font-weight: bold; padding-top: 2px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .sign-box img { width: 100%; max-width: 80px; height: auto; display: block; margin: 0 auto; }
+    .sign-box .sign-line { width: 100%; max-width: 80px; height: 1.5px; background: #000; }
     
     @media print { body { background: #fff; } .no-print { display: none !important; } .page { margin: 0 !important; box-shadow: none !important; page-break-after: always; } }
 </style>
@@ -72,7 +74,11 @@
 
         <div class="footer">
             <div class="seat-no">SL: {{ forloop.counter|stringformat:"03d" }}</div>
-            <div class="sign-box">Head Teacher</div>
+            <div class="sign-box">
+                <img src="/static/images/sign.png" alt="Headmaster Signature">
+                <div class="sign-line"></div>
+                Head Teacher
+            </div>
         </div>
     </div>
 

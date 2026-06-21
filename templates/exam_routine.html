@@ -170,22 +170,18 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead>
                                 <tr class="text-center">
-                                    <th class="py-3 px-3">প্রকাশের তারিখ</th>
-                                    <th class="py-3 px-3 text-start">রুটিনের শিরোনাম</th>
-                                    <th class="py-3 px-3">শ্রেণী</th>
+                                    <th class="py-3 px-3 text-start">পরীক্ষা</th>
+                                    <th class="py-3 px-3">বছর</th>
                                     <th class="py-3 px-3">ডাউনলোড</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for routine in routines %}
                                 <tr>
-                                    <td class="text-center fw-bold text-muted px-3">{{ routine.created_at|date:"d M, Y" }}</td>
-                                    <td class="ps-3 ps-md-4 px-3">
+                                    <td class="ps-3 ps-md-4 px-3 text-start">
                                         <span class="fw-bold d-block">{{ routine.title }}</span>
                                     </td>
-                                    <td class="text-center px-3">
-                                        <span class="badge bg-info text-dark">Class: {{ routine.target_class }}</span>
-                                    </td>
+                                    <td class="text-center px-3 fw-bold">{{ routine.created_at|date:"Y" }}</td>
                                     <td class="text-center px-3">
                                         <a href="{{ routine.pdf_file.url }}" target="_blank" class="btn btn-download btn-sm px-3 px-md-4">
                                             <i class="fas fa-download me-1"></i> <span class="d-none d-sm-inline">PDF</span> ডাউনলোড
@@ -194,7 +190,7 @@
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="4" class="text-center py-5 text-muted">
+                                    <td colspan="3" class="text-center py-5 text-muted">
                                         <i class="fas fa-folder-open fs-1 d-block mb-3 opacity-25"></i>
                                         বর্তমানে কোনো পরীক্ষার রুটিন পাওয়া যায়নি।
                                     </td>
