@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import (
     Notice, Slider, SchoolInfo, Teacher, GalleryCategory, 
@@ -143,11 +143,43 @@ def result_category_view(request, category):
 
 # শিক্ষক ও কর্মচারীবৃন্দের জন্য আলাদা পেজের ভিউ
 def teachers_view(request):
+    if request.method == 'POST':
+        if not request.user.is_authenticated or not (request.user.is_staff or request.user.is_superuser):
+            messages.error(request, "আপনার অনুমতি নেই। লগইন করে পুনরায় চেষ্টা করুন।")
+            return redirect('teachers_page')
+
+        teacher_id = request.POST.get('teacher_id')
+        teacher = get_object_or_404(Teacher, id=teacher_id)
+        teacher.subject = request.POST.get('subject', '').strip()
+        selected_designation = request.POST.get('designation')
+        allowed_designations = {
+            'HEAD': ['Headmaster'],
+            'TEACHER': ['Senior Teacher', 'Assistant Teacher'],
+            'STAFF': ['Night Guard', 'Cleaner', 'Aya'],
+        }.get(teacher.teacher_type, [])
+        if selected_designation in allowed_designations:
+            teacher.designation = selected_designation
+        teacher.save()
+        messages.success(request, "শিক্ষক তথ্য সফলভাবে হালনাগাদ করা হয়েছে।")
+        return redirect('teachers_page')
+
     # সকল শিক্ষক ও কর্মচারীদের ডাটা সিরিয়াল অনুযায়ী নিয়ে আসা
     teachers = Teacher.objects.all().order_by('order')
+    designation_options_by_type = {
+        'HEAD': [('Headmaster', 'প্রতিষ্ঠান প্রধান')],
+        'TEACHER': [
+            ('Senior Teacher', 'সিনিয়র শিক্ষক'),
+            ('Assistant Teacher', 'সহকারী শিক্ষক'),
+        ],
+        'STAFF': [
+            ('Kormochari', 'কর্মচারী'),
+        ],
+    }
     
     context = {
         'teachers': teachers,
+        'designation_options_by_type': designation_options_by_type,
+        'can_edit_teachers': request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser),
     }
     
     return render(request, 'teachers.html', context)

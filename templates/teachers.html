@@ -248,7 +248,10 @@
                         </div>
                         <div class="card-body px-4 pb-4">
                             <h4 class="fw-bold text-dark mb-1">{{ teacher.name }}</h4>
-                            <span class="designation-badge">{{ teacher.designation }}</span>
+                            <span class="designation-badge">{{ teacher.get_designation_display }}</span>
+                            {% if teacher.subject %}
+                            <p class="mb-2 text-secondary">বিষয়: {{ teacher.subject }}</p>
+                            {% endif %}
                             <div class="contact-box text-start">
                                 {% if teacher.phone %}<p><i class="fas fa-phone-alt"></i> {{ teacher.phone }}</p>{% endif %}
                                 {% if teacher.email %}<p><i class="fas fa-envelope"></i> {{ teacher.email }}</p>{% endif %}
@@ -271,7 +274,10 @@
                         </div>
                         <div class="card-body d-flex flex-column">
                             <h5 class="fw-bold text-dark mb-2">{{ teacher.name }}</h5>
-                            <span class="designation-badge mx-auto">{{ teacher.designation }}</span>
+                            <span class="designation-badge mx-auto">{{ teacher.get_designation_display }}</span>
+                            {% if teacher.subject %}
+                            <p class="mb-2 text-secondary">বিষয়: {{ teacher.subject }}</p>
+                            {% endif %}
                             <div class="contact-box text-start mt-auto">
                                 {% if teacher.phone %}<p><i class="fas fa-phone-alt"></i> {{ teacher.phone }}</p>{% endif %}
                                 {% if teacher.email %}<p class="small"><i class="fas fa-envelope"></i> {{ teacher.email }}</p>{% endif %}
@@ -294,9 +300,10 @@
                         </div>
                         <div class="card-body d-flex flex-column">
                             <h5 class="fw-bold text-dark mb-2">{{ teacher.name }}</h5>
-                            <span class="designation-badge mx-auto bg-light text-muted">{{ teacher.designation }}</span>
+                            <span class="designation-badge mx-auto bg-light text-muted">{{ teacher.get_designation_display }}</span>
                             <div class="contact-box text-start mt-auto">
                                 {% if teacher.phone %}<p><i class="fas fa-phone-alt"></i> {{ teacher.phone }}</p>{% endif %}
+                                {% if teacher.email %}<p class="small"><i class="fas fa-envelope"></i> {{ teacher.email }}</p>{% endif %}
                             </div>
                         </div>
                     </div>

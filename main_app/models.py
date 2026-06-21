@@ -86,9 +86,22 @@ class Teacher(models.Model):
         ('TEACHER', 'সহকারী শিক্ষক'),
         ('STAFF', 'কর্মচারী'),
     )
+    DESIGNATION_CHOICES = [
+        ('Headmaster', 'প্রতিষ্ঠান প্রধান'),
+        ('Assistant Headmaster', 'সহকারী প্রধান শিক্ষক'),
+        ('Senior Teacher', 'সিনিয়র শিক্ষক'),
+        ('Assistant Teacher', 'সহকারী শিক্ষক'),
+        ('Office Staff', 'অফিস স্টাফ'),
+        ('Clerk', 'ক্লার্ক'),
+        ('Accountant', 'হিসাবরক্ষক'),
+        ('Night Guard', 'নৈশ প্রহরী'),
+        ('Cleaner', 'পরিচ্ছন্ন কর্মী'),
+        ('Aya', 'আয়া'),
+    ]
     teacher_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='TEACHER', verbose_name="ধরণ")
     name = models.CharField(max_length=100, verbose_name="নাম")
-    designation = models.CharField(max_length=100, verbose_name="পদবী")
+    designation = models.CharField(max_length=50, choices=DESIGNATION_CHOICES, blank=True, verbose_name="পদবী")
+    subject = models.CharField(max_length=200, blank=True, null=True, verbose_name="বিষয়")
     image = models.ImageField(upload_to='teachers/', verbose_name="ছবি")
     phone = models.CharField(max_length=15, blank=True, null=True, verbose_name="ফোন নম্বর")
     email = models.EmailField(blank=True, null=True, verbose_name="ইমেইল")

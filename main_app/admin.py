@@ -85,7 +85,7 @@ class SchoolInfoAdmin(admin.ModelAdmin):
 # ১. প্রতিষ্ঠান প্রধান সেকশন
 @admin.register(Headmaster)
 class HeadmasterAdmin(admin.ModelAdmin):
-    list_display = ('name', 'designation')
+    list_display = ('name', 'designation', 'subject')
     exclude = ('teacher_type',)
 
     def get_queryset(self, request):
@@ -98,7 +98,7 @@ class HeadmasterAdmin(admin.ModelAdmin):
 # ২. সহকারী শিক্ষক সেকশন
 @admin.register(GeneralTeacher)
 class GeneralTeacherAdmin(admin.ModelAdmin):
-    list_display = ('name', 'designation', 'order')
+    list_display = ('name', 'designation', 'subject', 'order')
     list_editable = ('order',)
     exclude = ('teacher_type',)
 
@@ -114,7 +114,7 @@ class GeneralTeacherAdmin(admin.ModelAdmin):
 class StaffAdmin(admin.ModelAdmin):
     list_display = ('name', 'designation', 'order')
     list_editable = ('order',)
-    exclude = ('teacher_type',)
+    exclude = ('teacher_type', 'subject')
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(teacher_type='STAFF')
