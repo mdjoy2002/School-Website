@@ -18,7 +18,18 @@ class Notice(models.Model):
         verbose_name_plural = "১. নোটিশ বোর্ড"
         ordering = ['-created_at']
 
-# ২. স্লাইডার
+# ২. টিকার নিউজ
+class TickerNews(models.Model):
+    title = models.CharField(max_length=255, verbose_name="খবরের শিরোনাম")
+    is_active = models.BooleanField(default=True, verbose_name="সক্রিয় কি না")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self): return self.title
+
+    class Meta:
+        verbose_name_plural = "টিকার নিউজ"
+
+# ৩. স্লাইডার
 class Slider(models.Model):
     title = models.CharField(max_length=200, verbose_name="স্লাইডার শিরোনাম")
     image = models.ImageField(upload_to='sliders/', verbose_name="স্লাইডার ইমেজ")

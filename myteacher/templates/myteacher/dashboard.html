@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* আধুনিক এবং রেসপন্সিভ স্টাইলিং */
+    .dashboard-container { animation: fadeIn 0.5s ease-out; }
+    
+    .profile-card { 
+        border-radius: 20px; 
+        border: none; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.07); 
+        background: #ffffff;
+        transition: transform 0.3s ease;
+    }
+    .profile-card:hover { transform: translateY(-3px); }
+
+    .header-gradient {
+        background: linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%);
+        color: #ffffff;
+        padding: 2rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+    }
+
+    .table-custom { border-radius: 15px; border: 1px solid #e9ecef; }
+    .table thead { background-color: #f8f9fa; }
+    
+    .btn-profile { background-color: #f8f9fa; color: #333; border: 1px solid #dee2e6; font-weight: 600; }
+    .btn-profile:hover { background-color: #e9ecef; }
+    
+    .badge-class { background: #3498db; color: #fff; padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.85rem; }
+
+    @media (max-width: 768px) {
+        .header-gradient { padding: 1.5rem; text-align: center; }
+        .dashboard-container { padding: 1rem !important; }
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
+
+<div class="container py-4 dashboard-container">
+    <div class="header-gradient shadow-sm d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h2 class="fw-bold mb-1">Teacher Dashboard</h2>
+            <p class="mb-0 text-white-50">Welcome, {{ teacher.teacher_name }}</p>
+        </div>
+        <span class="badge bg-white text-primary fs-6 px-3 py-2 rounded-pill shadow-sm">{{ teacher.designation }}</span>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-xl-4 col-lg-4 col-md-12">
+            <div class="card profile-card p-4 h-100 border-top border-4 border-primary">
+                <div class="text-center mb-4">
+                    <img src="{{ teacher.teacher_img.url }}" class="rounded-circle mb-3 shadow-sm" style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #f8f9fa;">
+                    <h5 class="fw-bold mb-0">{{ teacher.teacher_name }}</h5>
+                    <p class="text-muted small">ID: {{ teacher.teacher_id }}</p>
+                </div>
+                
+                <div class="d-grid gap-2 mb-4">
+                    <a href="{% url 'myteacher:profile' %}" class="btn btn-profile py-2 rounded-pill">
+                        <i class="fas fa-user-circle me-2"></i>View Full Profile
+                    </a>
+                </div>
+                
+                <h6 class="mb-3 fw-bold text-uppercase text-muted small"><i class="fas fa-book-reader me-2"></i>Assigned Subjects</h6>
+                <ul class="list-unstyled mb-0">
+                    {% for a in assignments %}
+                    <li class="mb-2 p-2 bg-light rounded d-flex justify-content-between align-items-center">
+                        <span class="text-truncate" style="max-width: 70%;">{{ a.subject.subject_name }}</span>
+                        <span class="badge bg-secondary">Class-{{ a.subject.class_level }}</span>
+                    </li>
+                    {% empty %}
+                    <li class="text-muted text-center py-2">No subjects assigned.</li>
+                    {% endfor %}
+                </ul>
+                
+                <div class="mt-4 d-grid gap-2">
+                    <a href="{% url 'myteacher:mark_entry' %}" class="btn btn-primary py-3 rounded-pill fw-bold shadow-sm">
+                        <i class="fas fa-edit me-2"></i>Go to Mark Entry
+                    </a>
+                    <a href="{% url 'myteacher:student_corner' %}" class="btn btn-outline-secondary py-3 rounded-pill fw-bold shadow-sm">
+                        <i class="fas fa-graduation-cap me-2"></i>Student Corner
+                    </a>
+                    <a href="{% url 'myteacher:view_routine' %}" class="btn btn-outline-info py-3 rounded-pill fw-bold shadow-sm">
+                        <i class="fas fa-calendar-check me-2"></i>View Routine
+                    </a>
+                    {% if can_manage_routine %}
+                        <a href="{% url 'myteacher:manage_routine' %}" class="btn btn-outline-primary py-3 rounded-pill fw-bold shadow-sm">
+                            <i class="fas fa-calendar-alt me-2"></i>Manage Routine
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if teacher.is_class_teacher %}
+        <div class="col-xl-8 col-lg-8 col-md-12">
+            <div class="card profile-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-users text-primary me-2"></i>Class {{ teacher.class_teacher_of }} Students</h5>
+                    <span class="badge-class shadow-sm">{{ class_students.count }} Students</span>
+                </div>
+                
+                <div class="table-responsive table-custom">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-3">Roll</th>
+                                <th>Student Name</th>
+                                <th>Parents' Name</th>
+                                <th>Mobile</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in class_students %}
+                            <tr>
+                                <td class="ps-3 fw-bold text-primary">{{ s.class_roll }}</td>
+                                <td class="fw-semibold">{{ s.full_name }}</td>
+                                <td>
+                                    <div class="small fw-bold">{{ s.father_name }}</div>
+                                    <div class="small text-muted">{{ s.mother_name }}</div>
+                                </td>
+                                <td>{{ s.mobile_num }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center py-4 text-muted">No students found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-xl-8 col-lg-8 col-md-12">
+            <div class="card profile-card p-5 text-center d-flex align-items-center justify-content-center h-100 border">
+                <i class="fas fa-info-circle fa-3x text-primary mb-3"></i>
+                <h4 class="fw-bold">No Class Assigned</h4>
+                <p class="text-muted">You are not currently assigned as a Class Teacher.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

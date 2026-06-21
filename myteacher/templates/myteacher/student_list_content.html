@@ -1,0 +1,189 @@
+<style>
+    :root {
+        --deep-slate: #1e293b;
+        --amber-accent: #b45309;
+        --border-soft: #e2e8f0;
+        --bg-main: #fcfcfd;
+        --text-dark: #0f172a;
+        --text-muted: #64748b;
+        --seat-green: #059669;
+        --result-blue: #2563eb;
+        --list-cyan: #0891b2;
+    }
+
+    .student-list-card { background: #ffffff; border-radius: 18px; border: 1px solid var(--border-soft); box-shadow: 0 12px 24px rgba(15,23,42,0.06); overflow: hidden; }
+    .student-list-toolbar { background: #ffffff; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .student-list-toolbar-left { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .student-list-toolbar-right { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .search-wrapper { position: relative; display: flex; align-items: center; }
+    .search-wrapper i { position: absolute; left: 12px; color: var(--text-muted); }
+    .search-input { background: #f8fafc; border: 1px solid var(--border-soft); padding: 12px 14px 12px 40px; border-radius: 12px; width: 220px; font-size: 14px; color: var(--text-dark); }
+    .search-input:focus { border-color: var(--amber-accent); outline: none; }
+    .custom-select { background: #f8fafc; border: 1px solid var(--border-soft); padding: 12px 14px; border-radius: 12px; font-weight: 700; color: var(--deep-slate); cursor: pointer; min-width: 160px; }
+    .custom-table { width: 100%; border-collapse: collapse; }
+    .custom-table thead { background: var(--deep-slate); }
+    .custom-table th { padding: 18px 20px; font-size: 12px; text-transform: uppercase; color: #e2e8f0; letter-spacing: 1px; font-weight: 700; text-align: left; }
+    .custom-table td { padding: 18px 20px; border-bottom: 1px solid #f1f5f9; color: var(--text-dark); font-size: 14px; vertical-align: middle; }
+    .custom-table tbody tr:hover { background-color: #f8fafc; }
+    .name-wrapper { display: flex; align-items: center; gap: 14px; }
+    .student-img { width: 52px; height: 52px; border-radius: 14px; object-fit: cover; border: 2px solid #fff; box-shadow: 0 4px 12px rgba(15,23,42,0.08); }
+    .student-name-text { display: block; font-weight: 700; color: var(--deep-slate); }
+    .student-meta { display: block; color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+    .id-badge { background: #fffbeb; color: var(--amber-accent); padding: 6px 12px; border-radius: 10px; font-family: 'Monaco', monospace; font-weight: 800; font-size: 13px; border: 1px solid #fde68a; display: inline-flex; align-items: center; }
+    .generate-btn { background: var(--amber-accent); color: white; padding: 11px 18px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer; transition: 0.2s ease; font-size: 13px; }
+    .generate-btn.seat-btn { background: var(--seat-green); }
+    .generate-btn.result-btn { background: var(--result-blue); }
+    .generate-btn.list-btn { background: var(--list-cyan); }
+    .generate-btn:hover { opacity: 0.95; transform: translateY(-1px); }
+    .empty-state { text-align: center; padding: 100px 0; color: var(--text-muted); }
+    @media (max-width: 1024px) {
+        .student-list-toolbar { flex-direction: column; align-items: stretch; }
+        .student-list-toolbar-left, .student-list-toolbar-right { width: 100%; justify-content: stretch; }
+        .search-input, .custom-select { width: 100%; }
+    }
+    @media print {
+        .no-print { display: none !important; }
+        .student-list-card { border: none; box-shadow: none; }
+    }
+</style>
+
+<form id="studentForm" method="POST" target="_blank" class="student-list-card">
+    {% csrf_token %}
+    <input type="hidden" name="class_filter" id="hiddenClassId" value="{{ selected_class }}">
+
+    <div class="student-list-toolbar no-print">
+        <div class="student-list-toolbar-left">
+            <select name="exam_name" id="exam_name" class="custom-select" required>
+                <option value="">Select Examination</option>
+                <option value="Half Yearly Examination">Half Yearly Examination</option>
+                <option value="Annual Examination">Annual Examination</option>
+                <option value="Pre-Test Examination">Pre-Test Examination</option>
+                <option value="Test Examination">Test Examination</option>
+            </select>
+
+            <select name="exam_year" id="exam_year" class="custom-select" required>
+                <option value="">Select Year</option>
+                <option value="2026">2026</option>
+            </select>
+
+            {% if can_generate_admit %}
+            <button type="button" data-url="{% url 'myteacher:generate_admit_card' %}" onclick="submitForm(this.dataset.url)" class="generate-btn">
+                <i class="fas fa-id-card"></i> ADMIT
+            </button>
+            {% endif %}
+            {% if can_generate_seat %}
+            <button type="button" data-url="{% url 'myteacher:generate_seat_plan' %}" onclick="submitForm(this.dataset.url)" class="generate-btn seat-btn">
+                <i class="fas fa-th"></i> SEAT
+            </button>
+            {% endif %}
+            <a href="{% url 'myteacher:student_results' %}" class="generate-btn result-btn">
+                <i class="fas fa-file-invoice"></i> RESULT
+            </a>
+            <button type="button" onclick="printStudentList()" class="generate-btn list-btn">
+                <i class="fas fa-print"></i> STUDENT LIST (A4)
+            </button>
+        </div>
+
+        <div class="student-list-toolbar-right">
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search by name or ID" value="{{ search_query }}">
+            </div>
+            {% if not hide_assigned_selector %}
+            <select id="classFilter" class="custom-select" onchange="applyFilters()">
+                <option value="">Select Class</option>
+                {% for class_level in assigned_classes %}
+                    <option value="{{ class_level }}" {% if selected_class == class_level %}selected{% endif %}>Class {{ class_level }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th style="width: 55px; text-align: center;"><input type="checkbox" id="select_all" style="transform: scale(1.2); cursor: pointer;"></th>
+                    <th>Student</th>
+                    <th>Unique ID</th>
+                    <th>Class</th>
+                    <th>Section</th>
+                    <th>Group</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if students %}
+                    {% for student in students %}
+                        <tr>
+                            <td style="text-align: center;"><input type="checkbox" name="student_ids[]" value="{{ student.id }}" class="student-checkbox" style="transform: scale(1.2); cursor: pointer;"></td>
+                            <td>
+                                <div class="name-wrapper">
+                                    <img src="{{ student.photo.url }}" class="student-img" alt="{{ student.full_name }}" onerror="this.src='https://ui-avatars.com/api/?name={{ student.full_name|urlencode }}&background=1e293b&color=fff'">
+                                    <div>
+                                        <span class="student-name-text">{{ student.full_name }}</span>
+                                        <span class="student-meta">Roll {{ student.class_roll }} · {{ student.shift }} Shift · {{ student.mobile_num }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="id-badge">{{ student.student_id }}</span></td>
+                            <td><strong>Class {{ student.current_class }}</strong></td>
+                            <td>{{ student.shift }}</td>
+                            <td>{{ student.group|default:'General' }}</td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="empty-state">No students found. Please select a class or update the search query.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</form>
+
+<script>
+    function submitForm(actionUrl) {
+        const form = document.getElementById('studentForm');
+        const checked = document.querySelectorAll('input[name="student_ids[]"]:checked').length;
+
+        if (checked === 0) {
+            alert('Please select at least one student!');
+            return;
+        }
+
+        const examName = document.getElementById('exam_name').value;
+        const examYear = document.getElementById('exam_year').value;
+        if (!examName || !examYear) {
+            alert('Please select Examination and Year!');
+            return;
+        }
+
+        form.action = actionUrl;
+        form.submit();
+    }
+
+    function printStudentList() {
+        window.print();
+    }
+
+    document.getElementById('select_all').addEventListener('change', function() {
+        document.querySelectorAll('.student-checkbox').forEach(cb => cb.checked = this.checked);
+    });
+
+    function applyFilters() {
+        const classVal = document.getElementById('classFilter').value;
+        const searchVal = document.getElementById('searchInput').value;
+        const params = new URLSearchParams();
+        if (classVal) params.set('class_filter', classVal);
+        if (searchVal) params.set('search', searchVal);
+        window.location.href = window.location.pathname + '?' + params.toString();
+    }
+
+    document.getElementById('searchInput').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            applyFilters();
+        }
+    });
+</script>

@@ -5,11 +5,12 @@ The urlpatterns list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.0/topics/http/urls/
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 from main_app import views # views ইমপোর্ট করা হয়েছে
 from django.conf import settings # settings ইমপোর্ট করা হয়েছে
 from django.conf.urls.static import static # static ইমপোর্ট করা হয়েছে
 from django.http import HttpResponse # robots.txt এবং google verification এর জন্য ইমপোর্ট করা হয়েছে
+from django.contrib.auth import views as auth_views  # Auth views import korlam
 
 # সাইটম্যাপের জন্য প্রয়োজনীয় ইমপোর্ট
 from django.contrib.sitemaps.views import sitemap
@@ -65,6 +66,10 @@ urlpatterns = [
 
     # গুগল সার্চ কনসোল ভেরিফিকেশন পাথ
     path('googlec5cbc4a5f7c18e19.html', google_verify),
+    # teacher অ্যাপের ইউআরএল অন্তর্ভুক্ত করা হয়েছে
+    path('myteacher/', include('myteacher.urls')),
+    path('accounts/login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+    path('students/', include('students.urls')),
 ]
 
 # ডেভেলপমেন্ট এবং প্রোডাকশনে মিডিয়া ও স্ট্যাটিক ফাইল দেখার জন্য। 

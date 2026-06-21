@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import (
-    Notice, Slider, SchoolInfo, AboutImage, Teacher, 
+    Notice, TickerNews, Slider, SchoolInfo, AboutImage, Teacher, 
     Headmaster, GeneralTeacher, Staff, GalleryCategory, GalleryImage,
     ContactMessage, ExamRoutine, StudentCornerData, AdmissionInfo, ResultData
 )
@@ -13,6 +13,13 @@ class NoticeAdmin(admin.ModelAdmin):
     list_display = ('title', 'show_on_ticker', 'show_on_dashboard', 'is_active', 'created_at')
     list_editable = ('show_on_ticker', 'show_on_dashboard', 'is_active')
     list_filter = ('show_on_ticker', 'show_on_dashboard', 'is_active', 'created_at')
+    search_fields = ('title',)
+
+@admin.register(TickerNews)
+class TickerNewsAdmin(admin.ModelAdmin):
+    list_display = ('title', 'is_active', 'created_at')
+    list_editable = ('is_active',)
+    list_filter = ('is_active', 'created_at')
     search_fields = ('title',)
 
 admin.site.register(Slider)

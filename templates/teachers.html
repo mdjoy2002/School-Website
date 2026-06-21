@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
     
     <style>
         :root {
@@ -28,7 +29,7 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            overflow-x: hidden;
+            overflow-x: visible;
         }
 
         /* Navbar & Dropdown Styling */
@@ -142,7 +143,13 @@
             margin-top: 10px;
             font-size: 0.85rem;
         }
-        .contact-box p { margin: 3px 0; color: #555; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .contact-box p {
+            margin: 3px 0;
+            color: #555;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            text-overflow: unset;
+        }
         .contact-box i { width: 20px; color: var(--secondary-color); }
 
         /* Footer & Logo */

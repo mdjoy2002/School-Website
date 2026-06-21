@@ -1,0 +1,56 @@
+Student
+    student_profile id, name, class7, 
+    student img, full name, father name, mother name, student id(7 digit manully input hobe) , class(6-10), class roll(01-50), sfhit(day) mobile num, group(null hote pare)
+    
+
+
+
+
+Teacher
+    mark_submission class, exam
+    class 10=pretest, test
+    class 6-9= half yearly, annual(class test=20 mark), 
+    markid, class , h
+
+    mark subbmission 
+    class 7 , subject  , half early/annual
+    mark id, class, h/a, subject , 
+    table 
+    mark id(6 digit uniq, Auto, sample=100254), student id, subject_name , objective_mark, subjective_mark, class test, practical_mark(if priactical then type or optional), Total Mark, 
+
+    subject list.
+    subject_name , type 1/2/0  , class (6-10), has_practical?True False,                                                                                                                  
+
+    result page 
+    class 7, 
+
+    teacher model 
+    teacher id,teacher user , teacher name, designation, mobile, email, teacher img, 
+    class (6-10)
+    assign_subject
+    assisngsubid(6 digit uniq, Auto, sample=100254), subject id, teacher id
+
+    input section
+    assign_subject theke tar je class and subject assing kroa ase sei wise drop down show korbe select kore then show dile
+    then akta table asbe mark joma deyar
+    oi class er student show korbe
+    teacher oi student er mark input diye then submit korle db te save hobe 
+    tumi amk total view, html code. provide korba 
+    note: model = Student, TeacherSubjectAssignment,  Mark
+
+    mark show  view
+    naim 30 50 20 print(button)
+    anik 20 40 10 print
+     
+ 
+Full texts
+    exam routine
+	id 	class_name 	group_name 	exam_type 	subject_code 	exam_year 	exam_time 	subject_name 	exam_date
+
+
+    input
+    exam type, year, class name  (get request)
+    model: student profile, routine table , class model, year model 
+    
+    output 
+    new url page e akta template. template er php code debo oita theke django url view template 

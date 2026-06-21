@@ -17,9 +17,12 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['*']
 
+# --- LOGIN SETTINGS ---
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'myteacher:dashboard' # এখানে সরাসরি ইউআরএল নেম দেওয়া হয়েছে
+
 # Application definition
 INSTALLED_APPS = [
-    # 'cloudinary_storage',  # Cloudinary বাদ দেওয়া হয়েছে
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -29,9 +32,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',       
     'django.contrib.sitemaps',
-   
-    # 'cloudinary',          # Cloudinary বাদ দেওয়া হয়েছে
     'main_app', 
+    'myteacher',
+    'students'
 ]
 
 MIDDLEWARE = [
@@ -58,8 +61,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media', 
-                
-                
+                'main_app.context_processors.ticker_context',
             ],
         },
     },
@@ -67,20 +69,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-# Database (Neon PostgreSQL)
+# ==============================================================================
+# DATABASE CONFIGURATION
+# ==============================================================================
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600,
-        ssl_require=True
-    )
-}
-
-if not DATABASES['default']:
-    DATABASES['default'] = {
+    'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
+}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -101,17 +98,15 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-# Media files (PythonAnywhere Local Storage)
-# DEFAULT_FILE_STORAGE লাইনটি সরিয়ে ফেলা হয়েছে যাতে ডিফল্ট লোকাল স্টোরেজ ব্যবহার হয়
+# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# WhiteNoise optimization - অ্যাডমিন প্যানেলের CSS এর জন্য এটি জরুরি
+# WhiteNoise optimization
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- ডাইনামিক SITE_ID কনফিগারেশন ---
-# আপনি সরাসরি ১ সেট করতে চেয়েছিলেন, তাই ফাংশনটি সরিয়ে ১ করে দেওয়া হয়েছে।
 SITE_ID = 1

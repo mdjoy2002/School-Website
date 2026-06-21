@@ -1,0 +1,90 @@
+{% extends 'myteacher/base.html' %}
+{% block content %}
+<div class="container py-5">
+    <div class="card shadow-sm rounded-4 border-0">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="mb-1">Mark Entry History</h3>
+                    <p class="text-muted mb-0">View submitted marks and edit existing entries.</p>
+                </div>
+                <div>
+                    <a href="{% url 'myteacher:mark_entry' %}" class="btn btn-primary">New Mark Entry</a>
+                </div>
+            </div>
+
+            <form method="GET" class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <label class="form-label">Class</label>
+                    <select name="class_level" class="form-select" onchange="this.form.submit()">
+                        <option value="">-- Select Class --</option>
+                        {% for class_level in assigned_classes %}
+                            <option value="{{ class_level }}" {% if selected_class == class_level %}selected{% endif %}>Class {{ class_level }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Subject</label>
+                    <select name="subject_id" class="form-select" onchange="this.form.submit()">
+                        <option value="">-- All Subjects --</option>
+                        {% for a in assignments %}
+                            {% if not selected_class or a.subject.class_level == selected_class %}
+                                <option value="{{ a.subject.id }}" {% if selected_subject == a.subject.id|stringformat:"s" %}selected{% endif %}>{{ a.subject.subject_name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Exam Type</label>
+                    <select name="exam_type" class="form-select" onchange="this.form.submit()">
+                        <option value="">-- All Exams --</option>
+                        <option value="Half Yearly" {% if selected_exam == 'Half Yearly' %}selected{% endif %}>Half Yearly</option>
+                        <option value="Annual" {% if selected_exam == 'Annual' %}selected{% endif %}>Annual</option>
+                        <option value="Pretest" {% if selected_exam == 'Pretest' %}selected{% endif %}>Pretest</option>
+                        <option value="Test" {% if selected_exam == 'Test' %}selected{% endif %}>Test</option>
+                    </select>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Roll</th>
+                            <th>Student</th>
+                            <th>Subject</th>
+                            <th>Exam</th>
+                            <th>Class</th>
+                            <th>Total</th>
+                            <th>Grade</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if marks %}
+                            {% for mark in marks %}
+                                <tr>
+                                    <td>{{ mark.student.class_roll }}</td>
+                                    <td>{{ mark.student.full_name }}</td>
+                                    <td>{{ mark.subject.subject_name }}</td>
+                                    <td>{{ mark.exam_type }}</td>
+                                    <td>{{ mark.student.current_class }}</td>
+                                    <td>{{ mark.total_mark }}</td>
+                                    <td>{{ mark.total_mark|floatformat:0 }}</td>
+                                    <td>
+                                        <a href="{% url 'myteacher:mark_entry' %}?class_level={{ mark.student.current_class }}&subject_id={{ mark.subject.id }}&exam_type={{ mark.exam_type }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-5">No marks found. Select a class above to view marks.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

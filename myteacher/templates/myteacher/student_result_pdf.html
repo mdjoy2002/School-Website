@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Academic Transcript</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Helvetica', Arial, sans-serif; background: #eee; }
+        .result-card { 
+            width: 210mm; min-height: 297mm; padding: 10mm; margin: 5mm auto; 
+            background: white; border: 1px solid #ccc; position: relative;
+        }
+        /* লোগো ও স্কুলের নাম */
+        .header-section { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
+        .logo-img { width: 80px; height: 80px; object-fit: contain; }
+        .school-info { text-align: center; flex: 1; }
+        .school-info h1 { font-size: 22px; font-weight: bold; }
+        .transcript-title h2 { font-size: 16px; text-decoration: underline; margin: 5px 0; }
+        
+        .grade-scale { font-size: 9px; border-collapse: collapse; }
+        .grade-scale td, .grade-scale th { border: 1px solid #000; padding: 1px 3px; text-align: center; }
+
+        .info-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        .info-table td { padding: 3px 5px; border: 1px solid #000; font-size: 11px; }
+        .info-table td:nth-child(odd) { font-weight: bold; width: 12%; background: #f9f9f9; }
+        
+        /* মেইন মার্কস টেবিল */
+        .marks-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; }
+        .marks-table th, .marks-table td { border: 1px solid #000; padding: 4px; text-align: center; font-size: 10px; }
+        .marks-table th { background: #f2f2f2; font-weight: bold; }
+        .marks-table .sub-name { text-align: left !important; padding-left: 5px !important; font-weight: bold; width: 25%; }
+
+        .summary-section { display: flex; justify-content: space-between; margin-top: 10px; }
+        .summary-table { width: 55%; border-collapse: collapse; }
+        .summary-table td { border: 1px solid #000; padding: 3px 6px; font-size: 11px; }
+        
+        .comments-box { width: 40%; border: 1px solid #000; padding: 5px; font-size: 11px; }
+        .footer-sig { display: flex; justify-content: space-between; margin-top: 50px; font-size: 12px; font-weight: bold; }
+        .sig-line { border-top: 1.5px solid #000; width: 180px; text-align: center; padding-top: 5px; }
+
+        @media print { body { background: none; } .result-card { border: none; margin: 0; } }
+    </style>
+</head>
+<body>
+
+{% for summary in results %}
+<div class="result-card">
+    <div class="header-section">
+        <img src="logo.png" class="logo-img" alt="Logo">
+        <div class="school-info">
+            <h1>Khandaker Naser Uddin High School</h1>
+            <p>Boyra, Khulna | EIIN: 117407</p>
+            <div class="transcript-title">
+                <h2>ACADEMIC TRANSCRIPT</h2>
+                <p>Exam: {{ selected_exam }} | Session: {{ exam_year }}</p>
+            </div>
+        </div>
+        <table class="grade-scale">
+            <tr><th>Mark</th><th>Gr.</th><th>GPA</th></tr>
+            <tr><td>80+</td><td>A+</td><td>5.0</td></tr>
+            <tr><td>70-79</td><td>A</td><td>4.0</td></tr>
+            <tr><td>60-69</td><td>A-</td><td>3.5</td></tr>
+            <tr><td>40-59</td><td>B/C</td><td>2-3</td></tr>
+            <tr><td>0-39</td><td>F</td><td>0.0</td></tr>
+        </table>
+    </div>
+
+    <table class="info-table">
+        <tr>
+            <td>Name:</td><td>{{ summary.student.full_name }}</td>
+            <td>Class:</td><td>{{ summary.student.current_class }}</td>
+            <td>Roll:</td><td>{{ summary.student.class_roll }}</td>
+        </tr>
+        <tr>
+            <td>Father:</td><td>{{ summary.student.father_name }}</td>
+            <td>Group:</td><td>{{ summary.student.group|default:'N/A' }}</td>
+            <td>ID:</td><td>{{ summary.student.student_id }}</td>
+        </tr>
+    </table>
+
+    <table class="marks-table">
+        <thead>
+            <tr style="background: #f2f2f2;">
+                <th rowspan="2" style="border: 1px solid #000; padding: 3px; text-align: left; padding-left: 5px;">Subject</th>
+                <th rowspan="2" style="border: 1px solid #000; padding: 3px; text-align: center;">Full</th>
+                <th colspan="4" style="border: 1px solid #000; padding: 3px; text-align: center;">Obtained Marks</th>
+                <th rowspan="2" style="border: 1px solid #000; padding: 3px; text-align: center;">Total</th>
+                <th rowspan="2" style="border: 1px solid #000; padding: 3px; text-align: center;">GPA</th>
+                <th rowspan="2" style="border: 1px solid #000; padding: 3px; text-align: center;">Grade</th>
+            </tr>
+            <tr style="background: #f2f2f2;">
+                <th style="border: 1px solid #000; padding: 3px; text-align: center;">CQ</th>
+                <th style="border: 1px solid #000; padding: 3px; text-align: center;">MCQ</th>
+                <th style="border: 1px solid #000; padding: 3px; text-align: center;">Prac</th>
+                <th style="border: 1px solid #000; padding: 3px; text-align: center;">CA</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mark in summary.marks %}
+            <tr>
+                <td class="sub-name">{{ mark.subject_name }}</td>
+                <td>{{ mark.full_mark|floatformat:0 }}</td>
+                <td>{{ mark.subjective_mark|floatformat:0 }}</td>
+                <td>{{ mark.objective_mark|floatformat:0 }}</td>
+                <td>{{ mark.practical_mark|floatformat:0 }}</td>
+                <td>{{ mark.class_test_mark|floatformat:0 }}</td>
+                {% if mark.show_combined %}
+                    <td rowspan="{{ mark.group_rowspan }}"><b>{{ mark.combined_total_mark|default:mark.total_mark|floatformat:0 }}</b></td>
+                    <td rowspan="{{ mark.group_rowspan }}">{{ mark.combined_gpa|default:mark.gpa }}</td>
+                    <td rowspan="{{ mark.group_rowspan }}">{{ mark.combined_grade|default:mark.grade }}</td>
+                {% else %}
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="summary-section">
+        <table class="summary-table">
+            <tr><td>Total Obtained Marks:</td><td>{{ summary.total_marks|floatformat:0 }}</td></tr>
+            <tr><td>Average GPA:</td><td>{{ summary.average_gpa }}</td></tr>
+            <tr><td>Final Grade:</td><td>{{ summary.overall_grade }}</td></tr>
+            <tr><td>Result Status:</td><td>{{ summary.result_status }}</td></tr>
+        </table>
+        <div class="comments-box">
+            <strong>Comments:</strong><br>
+            <div style="height:40px;"></div>
+        </div>
+    </div>
+
+    <div class="footer-sig">
+        <div class="sig-line">Class Teacher</div>
+        <div class="sig-line">Head Teacher</div>
+    </div>
+</div>
+{% endfor %}
+
+</body>
+</html>

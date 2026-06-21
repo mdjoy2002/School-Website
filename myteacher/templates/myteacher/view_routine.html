@@ -1,0 +1,119 @@
+{% extends 'myteacher/base.html' %}
+{% block content %}
+<div class="max-w-[1400px] mx-auto p-4 md:p-8">
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-6">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h2 class="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
+                    <i class="fas fa-calendar-alt text-indigo-600"></i> Routine Master Filter
+                </h2>
+            </div>
+            <form action="" method="GET" class="flex flex-wrap gap-3 items-center">
+                <select name="year" onchange="this.form.submit()" class="bg-white border border-slate-300 text-slate-700 text-sm rounded-lg px-4 py-2 font-semibold outline-none focus:ring-2 focus:ring-indigo-500">
+                    {% for year in years %}
+                        <option value="{{ year }}" {% if selected_year|stringformat:"s" == year|stringformat:"s" %}selected{% endif %}>Year {{ year }}</option>
+                    {% endfor %}
+                </select>
+
+                <select name="type" onchange="this.form.submit()" class="bg-white border border-slate-300 text-slate-700 text-sm rounded-lg px-4 py-2 font-semibold outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="" {% if selected_type == '' %}selected{% endif %}>All Exam Types</option>
+                    {% for exam_type in exam_types %}
+                        <option value="{{ exam_type }}" {% if selected_type == exam_type %}selected{% endif %}>{{ exam_type }}</option>
+                    {% endfor %}
+                </select>
+
+                <button type="button" onclick="window.print()" class="bg-slate-800 text-white px-5 py-2 rounded-lg font-bold hover:bg-black transition flex items-center gap-2 no-print">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <a href="{% url 'myteacher:manage_routine' %}" class="bg-indigo-600 text-white px-5 py-2 rounded-lg font-bold hover:bg-indigo-700 transition flex items-center gap-2 no-print">
+                    <i class="fas fa-edit"></i> Manage
+                </a>
+                <a href="{% url 'myteacher:dashboard' %}" class="bg-slate-900 text-white px-5 py-2 rounded-lg font-bold hover:bg-slate-800 transition flex items-center gap-2 no-print">
+                    <i class="fas fa-house"></i> Dashboard
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <div class="bg-white p-4 md:p-10 rounded-2xl shadow-xl border border-slate-200">
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-extrabold text-indigo-950 uppercase tracking-tight">Khondokar Naser Uddin Secondary School</h1>
+            <p class="text-md font-bold text-slate-600 mt-2 tracking-[0.2em] uppercase border-b-2 border-indigo-900 inline-block px-10 pb-1">
+                {% if selected_type %}{{ selected_type }}{% else %}Master{% endif %} Exam Routine - {{ selected_year }}
+            </p>
+        </div>
+
+        {% if date_rows %}
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="bg-indigo-950 text-white">
+                        <th rowspan="2" class="p-4 text-center text-xs uppercase border border-indigo-800 w-32">Date & Day</th>
+                        <th class="p-3 text-center text-xs uppercase border border-indigo-800">Class 6</th>
+                        <th class="p-3 text-center text-xs uppercase border border-indigo-800">Class 7</th>
+                        <th class="p-3 text-center text-xs uppercase border border-indigo-800">Class 8</th>
+                        <th colspan="3" class="p-3 text-center text-xs uppercase border border-indigo-800 bg-indigo-900">Class 9</th>
+                        <th colspan="3" class="p-3 text-center text-xs uppercase border border-indigo-800 bg-slate-900">Class 10</th>
+                    </tr>
+                    <tr class="bg-slate-100 text-slate-700 text-[9px] font-bold uppercase">
+                        <th class="border border-slate-300 p-2">General</th>
+                        <th class="border border-slate-300 p-2">General</th>
+                        <th class="border border-slate-300 p-2">General</th>
+                        <th class="border border-slate-300 p-2 bg-indigo-50">Sci</th>
+                        <th class="border border-slate-300 p-2 bg-indigo-50">Com</th>
+                        <th class="border border-slate-300 p-2 bg-indigo-50">Arts</th>
+                        <th class="border border-slate-300 p-2 bg-slate-200">Sci</th>
+                        <th class="border border-slate-300 p-2 bg-slate-200">Com</th>
+                        <th class="border border-slate-300 p-2 bg-slate-200">Arts</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in date_rows %}
+                    <tr>
+                        <td class="p-3 bg-slate-50 border border-slate-300 text-center">
+                            <div class="font-bold text-slate-800 text-[11px]">{{ row.date|date:"d M, Y" }}</div>
+                            <div class="text-[9px] text-indigo-600 font-extrabold uppercase mt-1">{{ row.date|date:"l" }}</div>
+                        </td>
+                        {% for cell in row.cells %}
+                        {% if cell.subject_name %}
+                        <td class="p-2 border border-slate-300 text-center align-middle bg-white">
+                            <div class="font-bold text-slate-900 text-[10px] leading-tight mb-1">{{ cell.subject_name }}</div>
+                            <div class="text-[9px] text-slate-600 font-medium">{{ cell.exam_time }}</div>
+                            {% if not selected_type %}
+                            <div class="text-[7px] text-indigo-500 font-bold mt-1 leading-none">[{{ cell.exam_type }}]</div>
+                            {% endif %}
+                        </td>
+                        {% else %}
+                        <td class="p-2 border border-slate-200 text-slate-300 text-center bg-slate-50/30 text-[10px] italic">-</td>
+                        {% endif %}
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-20 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+            <i class="fas fa-folder-open text-4xl text-slate-300 mb-3"></i>
+            <p class="text-slate-500 font-medium">No routine schedules found for this year.</p>
+        </div>
+        {% endif %}
+
+        <div class="hidden print:flex justify-between mt-24 px-10">
+            <div class="text-center">
+                <div class="border-t-2 border-black w-40 mb-1"></div>
+                <p class="text-[10px] font-bold uppercase">Exam Controller</p>
+            </div>
+            <div class="text-center text-slate-300 font-bold text-2xl italic">
+                KNHSS SEAL
+            </div>
+            <div class="text-center">
+                <div class="border-t-2 border-black w-40 mb-1"></div>
+                <p class="text-[10px] font-bold uppercase">Headmaster</p>
+            </div>
+        </div>
+    </div>
+
+    <p class="no-print text-center text-slate-400 text-[10px] mt-8 uppercase tracking-widest">&copy; {{ now_year }} Khondokar Naser Uddin Secondary School | Smart Management System</p>
+</div>
+{% endblock %}

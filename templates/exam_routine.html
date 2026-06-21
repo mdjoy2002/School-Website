@@ -8,13 +8,14 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
 
     <style>
         /* ফন্ট সেটিংস: বাংলার জন্য Nikosh এবং ইংরেজির জন্য Times New Roman */
         body { 
             font-family: 'Times New Roman', 'Nikosh', 'Hind Siliguri', serif; 
             background-color: #f4f7f6;
-            overflow-x: hidden;
+            overflow-x: visible;
         }
 
         /* Navbar & Dropdown Styling */
@@ -60,7 +61,7 @@
             margin-bottom: 20px;
         }
         .table thead { background-color: #004a99; color: white; }
-        .table thead th { white-space: nowrap; }
+        .table thead th { white-space: normal; }
         
         .btn-download {
             background-color: #ffc107;
@@ -68,7 +69,7 @@
             font-weight: bold;
             border-radius: 50px;
             transition: 0.3s;
-            white-space: nowrap;
+            white-space: normal;
         }
         .btn-download:hover { background-color: #e0a800; transform: translateY(-2px); color: #004a99; }
 

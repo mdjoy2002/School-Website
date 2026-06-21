@@ -1,0 +1,170 @@
+{% extends 'myteacher/base.html' %}
+{% block content %}
+<style>
+    body { font-family: 'Times New Roman', Times, serif; background-color: #e0e0e0; }
+    .page-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .control-panel { background: #fff; padding: 15px 25px; border-radius: 8px; margin-bottom: 30px; display: flex; gap: 20px; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08); flex-wrap: wrap; }
+    .control-panel select, .control-panel button { font-size: 14px; }
+    .control-panel .download-selected { background-color: #27ae60; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    .control-panel .class-select { padding: 10px 14px; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 26px; }
+    .card-holder { position: relative; }
+    .card-checkbox { position: absolute; top: -10px; left: -10px; z-index: 10; transform: scale(1.3); }
+    .id-card { width: 210px; min-height: 332px; background: #ffffff; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); border: 2px solid #1a2a6c; overflow: hidden; position: relative; }
+    .header { background: linear-gradient(135deg, #1a2a6c, #2c3e92); height: 42px; display: flex; align-items: center; gap: 8px; padding: 0 10px; color: #ffffff; }
+    .logo-circle { width: 28px; height: 28px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #f37021; flex-shrink: 0; }
+    .logo-circle img { max-width: 70%; max-height: 70%; }
+    .school-name { font-size: 10px; font-weight: 800; line-height: 1.1; text-transform: uppercase; }
+    .slogan-bar { background: #f77728; color: white; font-size: 8px; text-align: center; padding: 3px 0; font-weight: 700; }
+    .id-card-label { background-color: #000; color: white; text-align: center; font-size: 8px; font-weight: 700; padding: 2px 0; margin: 6px auto 0; width: 58%; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+    .photo-area { display: flex; justify-content: center; margin: 8px 0 4px; }
+    .profile-photo { width: 54px; height: 54px; border: 1px solid #2c3e92; border-radius: 4px; overflow: hidden; background-color: #f0f0f0; }
+    .profile-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .student-id-text { text-align: center; font-size: 8.5pt; font-weight: 700; margin-bottom: 4px; color: #2c3e92; }
+    .name-bar { background-color: #2c3e92; color: white; text-align: center; font-size: 9pt; font-weight: 800; padding: 4px 0; text-transform: uppercase; margin: 4px 10px 8px; border-radius: 4px; }
+    .details-container { padding: 0 10px 10px; font-size: 7.5pt; color: #222222; line-height: 1.35; }
+    .row { display: flex; align-items: center; margin-bottom: 2px; }
+    .label { min-width: 38px; font-weight: 700; color: #2c3e92; font-size: 7.4pt; }
+    .colon { min-width: 8px; text-align: center; font-weight: 700; color: #f37021; }
+    .value { font-weight: 700; flex: 1; color: #2a2a2a; font-size: 7.4pt; }
+    .dual-row { display: flex; gap: 6px; margin-bottom: 2px; }
+    .half-col { flex: 1; display: flex; align-items: center; }
+    .small-label { min-width: 36px; font-weight: 700; color: #2c3e92; font-size: 7pt; }
+    .footer-container { position: absolute; bottom: 8px; width: 100%; display: flex; justify-content: center; padding: 0 10px; box-sizing: border-box; }
+    .signature-box { text-align: center; display: flex; flex-direction: column; align-items: center; }
+    .sig-image { width: 65px; height: auto; display: block; margin-bottom: -5px; mix-blend-mode: multiply; }
+    .sig-line { width: 58px; border-top: 0.8px solid #000; margin-bottom: 1px; }
+    .sig-text { font-size: 6.5pt; font-weight: 700; color: #1a2a6c; }
+    .bottom-border { position: absolute; bottom: 0; width: 100%; height: 5px; background: #f37021; }
+    .download-action { margin-top: 12px; display: flex; justify-content: center; }
+    .download-button { background: #27ae60; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 700; }
+    .note-box { margin-top: 10px; font-size: 12px; color: #334155; }
+    @media print { .control-panel, .download-action { display: none; } .page-container { padding: 0; } }
+</style>
+
+<div class="page-container">
+    <div class="control-panel">
+        <div>
+            <label class="fw-bold me-2">Select Class:</label>
+            <select id="classSelector" class="class-select" onchange="location.href='?class_level=' + this.value">
+                {% for class_level in assigned_classes %}
+                <option value="{{ class_level }}" {% if selected_class == class_level %}selected{% endif %}>Class {{ class_level }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button class="download-selected" onclick="downloadSelectedCards()" {% if not can_download %}disabled{% endif %}>
+            Download Selected ID Cards
+        </button>
+        {% if not can_download %}
+        <div class="note-box">Only the assigned class teacher or head/admin may download ID cards for this class.</div>
+        {% endif %}
+    </div>
+
+    <div class="card-grid">
+        {% for student in students %}
+        <div class="card-holder">
+            {% if can_download %}
+            <input type="checkbox" class="card-checkbox" data-id="card-{{ student.id }}" data-name="{{ student.full_name }}">
+            {% endif %}
+            <div class="id-card" id="card-{{ student.id }}">
+                <div class="header">
+                    <div class="logo-circle"><img src="/static/images/logo.png" alt="Logo"></div>
+                    <div class="school-name">Khandoker Naser<br>Uddin High School</div>
+                </div>
+                <div class="slogan-bar">A HOME OF QUALITY & MORALITY</div>
+                <div class="id-card-label">STUDENT ID CARD</div>
+                <div class="photo-area">
+                    <div class="profile-photo">
+                        <img src="{{ student.photo.url }}" alt="{{ student.full_name }}">
+                    </div>
+                </div>
+                <div class="student-id-text">ID: {{ student.student_id }}</div>
+                <div class="name-bar">{{ student.full_name }}</div>
+                <div class="details-container">
+                    <div class="row"><span class="label">Father</span><span class="colon">:</span><span class="value">{{ student.father_name }}</span></div>
+                    <div class="row"><span class="label">Mother</span><span class="colon">:</span><span class="value">{{ student.mother_name }}</span></div>
+                    <div class="dual-row">
+                        <div class="half-col"><span class="small-label">Roll</span><span class="colon">:</span><span class="value">{{ student.class_roll }}</span></div>
+                        <div class="half-col"><span class="small-label">Class</span><span class="colon">:</span><span class="value">{{ student.current_class }}</span></div>
+                    </div>
+                    <div class="dual-row">
+                        <div class="half-col"><span class="small-label">Shift</span><span class="colon">:</span><span class="value">{{ student.shift }}</span></div>
+                        <div class="half-col"><span class="small-label">Group</span><span class="colon">:</span><span class="value">{{ student.group|default:'General' }}</span></div>
+                    </div>
+                    <div class="row"><span class="label">Mobile</span><span class="colon">:</span><span class="value">{{ student.mobile_num }}</span></div>
+                    <div class="row"><span class="label">Year</span><span class="colon">:</span><span class="value">{{ current_year }}</span></div>
+                </div>
+                <div class="footer-container">
+                    <div class="signature-box">
+                        <img src="/static/images/sign.png" class="sig-image" alt="Signature">
+                        <div class="sig-line"></div>
+                        <div class="sig-text">Headmaster</div>
+                        <div class="sig-text">Mob: 01714939122</div>
+                    </div>
+                </div>
+                <div class="bottom-border"></div>
+            </div>
+            {% if can_download %}
+            <div class="download-action">
+                <button class="download-button" onclick="downloadCardImage('card-{{ student.id }}', '{{ student.full_name|slugify }}')">Download</button>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="note-box">No students found for this class.</div>
+        {% endfor %}
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script>
+    async function renderCardToBlob(cardId) {
+        const element = document.getElementById(cardId);
+        const canvas = await html2canvas(element, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            onclone: (clonedDoc) => {
+                clonedDoc.querySelectorAll('.card-checkbox, .download-action').forEach(el => {
+                    el.style.display = 'none';
+                });
+            }
+        });
+        return await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    }
+
+    function downloadCardImage(cardId, studentSlug) {
+        renderCardToBlob(cardId).then(blob => {
+            if (!blob) {
+                alert('Download failed. Please try again.');
+                return;
+            }
+            saveAs(blob, `${studentSlug}_ID_Card.png`);
+        });
+    }
+
+    async function downloadSelectedCards() {
+        const zipButton = document.querySelector('.download-selected');
+        if (zipButton && zipButton.disabled) return;
+
+        const selected = document.querySelectorAll('.card-checkbox:checked');
+        if (!selected.length) { alert('Please select at least one card.'); return; }
+
+        const zip = new JSZip();
+        for (let i = 0; i < selected.length; i++) {
+            const checkbox = selected[i];
+            const id = checkbox.getAttribute('data-id');
+            const name = checkbox.getAttribute('data-name').replace(/\s+/g, '_');
+            const blob = await renderCardToBlob(id);
+            if (blob) {
+                zip.file(`${name}_${i+1}_ID_Card.png`, blob);
+            }
+        }
+
+        const content = await zip.generateAsync({ type: 'blob' });
+        saveAs(content, 'student_id_cards.zip');
+    }
+</script>
+{% endblock %}

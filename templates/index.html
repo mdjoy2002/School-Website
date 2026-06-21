@@ -16,13 +16,12 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://knuhighschool.pythonanywhere.com/">
 
+    {% load static %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    
-    {% load static %} 
-    
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
     
     <!-- Google Site Name Schema -->
     <script type="application/ld+json">
@@ -39,7 +38,7 @@
             font-family: 'Times New Roman', 'Nikosh', 'Hind Siliguri', serif; 
             background-color: #f8f9fa; 
             color: #333;
-            overflow-x: hidden; 
+            overflow-x: visible; 
             margin: 0;
             padding: 0;
         }
@@ -119,7 +118,7 @@
             color: #fff !important; 
             padding: 15px 12px !important;
             font-size: 15px;
-            white-space: nowrap;
+            white-space: normal;
         }
 
         .nav-link i { margin-right: 5px; color: #ffc107; }
@@ -187,6 +186,8 @@
             .school-name-en { font-size: 13px; }
             .brand-info p { font-size: 12px; }
             .login-btn { width: 100%; margin-top: 10px; }
+            .ticker-wrap { white-space: normal; flex-wrap: wrap; }
+            .ticker-content { display: block; animation: none; }
         }
 
         @media (min-width: 992px) {
@@ -249,7 +250,7 @@ footer {
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
                             <li><a class="dropdown-item" href="#"><i class="fas fa-user-graduate"></i> শিক্ষার্থী লগইন</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-user-tie"></i> শিক্ষক লগইন</a></li>
+                            <li><a class="dropdown-item" href="{% url 'login' %}"><i class="fas fa-user-tie"></i> শিক্ষক লগইন</a></li>
                             <li><hr class="dropdown-divider bg-white opacity-25"></li>
                             <li><a class="dropdown-item" href="#"><i class="fas fa-user-shield"></i> এডমিন প্যানেল</a></li>
                         </ul>
@@ -334,7 +335,7 @@ footer {
                     • {{ notice.title }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
                 {% empty %} 
                     {% if not database_tickers %}
-                        আমাদের বিদ্যালয়ে আপনাকে স্বাগতম। ২০২৬ শিক্ষাবর্ষের ৬ষ্ঠ থেকে ১০ম শ্রেণির সিলেবাস ডাউনলোড করুন শিক্ষার্থী কর্ণার (image_49551b.png) থেকে।
+                        আমাদের বিদ্যালয়ে আপনাকে স্বাগতম। ২০২৬ শিক্ষাবর্ষের ৬ষ্ঠ থেকে ১০ম শ্রেণির সিলেবাস ডাউনলোড করুন শিক্ষার্থী কর্ণার থেকে।
                     {% endif %}
                 {% endfor %}
             </div>

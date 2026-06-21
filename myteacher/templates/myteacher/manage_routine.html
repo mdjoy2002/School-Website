@@ -1,0 +1,146 @@
+{% extends 'myteacher/base.html' %}
+{% block content %}
+<div class="max-w-7xl mx-auto p-4 md:p-10">
+    <div class="bg-white p-6 md:p-8 rounded-3xl shadow-2xl border border-gray-100">
+        
+        <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+            <div>
+                <h2 class="text-3xl font-extrabold text-slate-900">📅 Routine Manager</h2>
+                <p class="text-slate-500">Manage exam schedules and bulk apply to classes.</p>
+            </div>
+            <div class="flex gap-3 flex-wrap">
+                <form method="POST" onsubmit="return confirm('সব রুটিন কি মুছে ফেলতে চান?')">
+                    {% csrf_token %}
+                    <button type="submit" name="clear_all" class="bg-red-50 text-red-600 px-6 py-3 rounded-2xl font-bold hover:bg-red-600 hover:text-white transition flex items-center gap-2">
+                        <i class="fas fa-trash-alt"></i> Clear All Routine
+                    </button>
+                </form>
+                <a href="{% url 'myteacher:view_routine' %}" class="bg-indigo-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-indigo-700 transition flex items-center gap-2">
+                    <i class="fas fa-table"></i> View Routine
+                </a>
+                <a href="{% url 'myteacher:dashboard' %}" class="bg-slate-900 text-white px-6 py-3 rounded-2xl font-bold hover:bg-slate-800 transition">Dashboard</a>
+            </div>
+        </div>
+
+        <div class="mb-10">
+            <form method="POST" class="bg-slate-50 p-6 md:p-8 rounded-3xl border border-slate-200 shadow-inner">
+                {% csrf_token %}
+                <input type="hidden" name="routine_id" value="{{ routine_id }}">
+                <input type="hidden" name="exam_year" value="{{ exam_year }}">
+
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-5 mb-8">
+                    <div class="flex flex-col">
+                        <label class="text-xs font-bold mb-2 ml-1">Main Class</label>
+                        <select name="class_name" id="class_name" class="p-3 rounded-xl border bg-white" required onchange="toggleGroup()">
+                            <option value="">Choose...</option>
+                            <option value="6" {% if class_name == '6' %}selected{% endif %}>Class 6</option>
+                            <option value="7" {% if class_name == '7' %}selected{% endif %}>Class 7</option>
+                            <option value="8" {% if class_name == '8' %}selected{% endif %}>Class 8</option>
+                            <option value="9" {% if class_name == '9' %}selected{% endif %}>Class 9</option>
+                            <option value="10" {% if class_name == '10' %}selected{% endif %}>Class 10</option>
+                        </select>
+                    </div>
+                    <div id="group_box" class="flex flex-col {% if class_name != '9' and class_name != '10' %}hidden{% endif %}">
+                        <label class="text-xs font-bold mb-2 ml-1 text-indigo-600">Main Group (9-10)</label>
+                        <select name="group_name" class="p-3 rounded-xl border bg-white">
+                            <option value="" {% if group_name == '' %}selected{% endif %}>General</option>
+                            <option value="Science" {% if group_name == 'Science' %}selected{% endif %}>Science</option>
+                            <option value="Commerce" {% if group_name == 'Commerce' %}selected{% endif %}>Commerce</option>
+                            <option value="Arts" {% if group_name == 'Arts' %}selected{% endif %}>Arts</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col"><label class="text-xs font-bold mb-2 ml-1">Subject Name</label><input type="text" name="subject" value="{{ subject }}" class="p-3 rounded-xl border bg-white" required></div>
+                    <div class="flex flex-col"><label class="text-xs font-bold mb-2 ml-1 text-indigo-600">Subject Code</label><input type="text" name="subject_code" value="{{ subject_code }}" class="p-3 rounded-xl border bg-white"></div>
+                    <div class="flex flex-col"><label class="text-xs font-bold mb-2 ml-1">Date</label><input type="date" name="date" value="{{ date }}" class="p-3 rounded-xl border bg-white" required></div>
+                    <div class="flex flex-col"><label class="text-xs font-bold mb-2 ml-1">Time</label><input type="text" name="time" value="{{ time }}" class="p-3 rounded-xl border bg-white"></div>
+                    <div class="flex flex-col"><label class="text-xs font-bold mb-2 ml-1">Exam Type</label>
+                        <select name="exam_type" class="p-3 rounded-xl border bg-white">
+                            <option value="Half Yearly" {% if exam_type == 'Half Yearly' %}selected{% endif %}>Half Yearly</option>
+                            <option value="Annual Exam" {% if exam_type == 'Annual Exam' %}selected{% endif %}>Annual Exam</option>
+                            <option value="Test Exam" {% if exam_type == 'Test Exam' %}selected{% endif %}>Test Exam</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-8 p-6 bg-white rounded-3xl border border-dashed border-indigo-200">
+                    <div class="flex flex-col lg:flex-row gap-8">
+                        <div class="flex-1">
+                            <p class="text-sm font-bold text-slate-800 mb-4 uppercase">Also apply to:</p>
+                            <div class="flex flex-wrap gap-5">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="apply_to" value="6" class="w-5 h-5 rounded text-indigo-600" {% if '6' in selected_apply_to %}checked{% endif %}> Class 6
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="apply_to" value="7" class="w-5 h-5 rounded text-indigo-600" {% if '7' in selected_apply_to %}checked{% endif %}> Class 7
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="apply_to" value="8" class="w-5 h-5 rounded text-indigo-600" {% if '8' in selected_apply_to %}checked{% endif %}> Class 8
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="apply_to" value="9" class="w-5 h-5 rounded text-indigo-600" {% if '9' in selected_apply_to %}checked{% endif %}> Class 9
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="apply_to" value="10" class="w-5 h-5 rounded text-indigo-600" {% if '10' in selected_apply_to %}checked{% endif %}> Class 10
+                            </label>
+                        </div>
+                        </div>
+                        <div class="flex-1 border-t border-slate-200 pt-6 lg:pt-0 lg:border-t-0 lg:border-l lg:pl-8">
+                            <p class="text-sm font-bold text-slate-800 mb-4 uppercase">If 9 or 10 is selected, apply to:</p>
+                            <div class="flex flex-wrap gap-5">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" name="bulk_groups" value="Science" class="w-5 h-5 rounded text-indigo-600" {% if 'Science' in selected_bulk_groups %}checked{% endif %}> Science
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" name="bulk_groups" value="Commerce" class="w-5 h-5 rounded text-indigo-600" {% if 'Commerce' in selected_bulk_groups %}checked{% endif %}> Commerce
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" name="bulk_groups" value="Arts" class="w-5 h-5 rounded text-indigo-600" {% if 'Arts' in selected_bulk_groups %}checked{% endif %}> Arts
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" name="save_routine" class="w-full bg-indigo-600 text-white font-extrabold py-4 rounded-2xl hover:bg-indigo-700 transition">{{ edit_mode|yesno:'Update Routine,Publish & Save Routine' }}</button>
+            </form>
+        </div>
+
+        <div class="overflow-x-auto rounded-3xl border border-slate-200 shadow-sm">
+            <table class="w-full text-left bg-white">
+                <thead class="bg-slate-50 border-b">
+                    <tr><th class="p-5 text-xs font-bold uppercase">Class & Group</th><th class="p-5 text-xs font-bold uppercase">Subject</th><th class="p-5 text-xs font-bold uppercase">Date & Time</th><th class="p-5 text-xs font-bold uppercase text-center">Quick Copy</th><th class="p-5 text-xs font-bold uppercase text-center">Action</th></tr>
+                </thead>
+                <tbody class="divide-y">
+                    {% for r in routines %}
+                    <tr class="hover:bg-indigo-50/30 transition">
+                        <td class="p-5"><span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold text-[10px] uppercase">Class {{ r.class_name }}</span></td>
+                        <td class="p-5 font-bold">{{ r.subject_name }}<div class="text-[10px] text-indigo-500">Code: {{ r.subject_code }}</div></td>
+                        <td class="p-5 text-sm font-bold text-slate-700">{{ r.exam_date|date:"d M, Y" }}<div class="text-[10px] text-slate-400 uppercase">{{ r.exam_time }}</div></td>
+                        <td class="p-5 text-center">
+                            <div class="flex justify-center gap-1">
+                            <a href="{% url 'myteacher:copy_routine' r.id '7' %}" class="px-2 py-1 bg-slate-50 border rounded-md text-[9px] font-extrabold hover:bg-indigo-600 hover:text-white transition">+C7</a>
+                            <a href="{% url 'myteacher:copy_routine' r.id '8' %}" class="px-2 py-1 bg-slate-50 border rounded-md text-[9px] font-extrabold hover:bg-indigo-600 hover:text-white transition">+C8</a>
+                            <a href="{% url 'myteacher:copy_routine' r.id '9' %}" class="px-2 py-1 bg-slate-50 border rounded-md text-[9px] font-extrabold hover:bg-indigo-600 hover:text-white transition">+C9</a>
+                            <a href="{% url 'myteacher:copy_routine' r.id '10' %}" class="px-2 py-1 bg-slate-50 border rounded-md text-[9px] font-extrabold hover:bg-indigo-600 hover:text-white transition">+C10</a>
+                        </div>
+                                                </td>
+                        <td class="p-5 text-center">
+                            <div class="flex items-center justify-center gap-3">
+                                <a href="?edit={{ r.id }}" class="text-indigo-600 font-bold text-xs hover:underline">Edit</a>
+                                <a href="{% url 'myteacher:delete_routine' r.id %}" class="text-red-500 font-bold text-xs hover:underline">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleGroup() {
+    const val = document.getElementById('class_name').value;
+    document.getElementById('group_box').classList.toggle('hidden', !(val == '9' || val == '10'));
+}
+</script>
+{% endblock %}

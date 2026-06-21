@@ -1,0 +1,87 @@
+{% extends 'myteacher/base.html' %}
+{% block content %}
+<div class="max-w-7xl mx-auto p-4 md:p-10">
+    <div class="bg-white p-6 md:p-8 rounded-3xl shadow-2xl border border-gray-100 mb-8">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h2 class="text-3xl font-extrabold text-slate-900">Student Corner</h2>
+                <p class="text-slate-500">Admission card, seat plan, results and assigned student list.</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                {% if can_generate_admit %}
+                <a href="{% url 'myteacher:id_cards' %}?class_level={{ selected_class }}" class="btn btn-info px-5 py-3 rounded-2xl font-bold">
+                    <i class="fas fa-id-card-alt me-2"></i>ID Cards
+                </a>
+                <a href="{% url 'myteacher:generate_admit_card' %}" class="btn btn-primary px-5 py-3 rounded-2xl font-bold">
+                    <i class="fas fa-id-card me-2"></i>Admit Card
+                </a>
+                {% endif %}
+                {% if can_generate_seat %}
+                <a href="{% url 'myteacher:seat_plan' %}" class="btn btn-secondary px-5 py-3 rounded-2xl font-bold">
+                    <i class="fas fa-map-marker-alt me-2"></i>Seat Plan
+                </a>
+                {% endif %}
+                <a href="{% url 'myteacher:student_results' %}" class="btn btn-outline-secondary px-5 py-3 rounded-2xl font-bold">
+                    <i class="fas fa-chart-line me-2"></i>Results
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 md:p-8 rounded-3xl shadow-2xl border border-gray-100 mb-8">
+        {% if assigned_classes %}
+        <div class="mb-6">
+            {% if assigned_classes|length > 1 %}
+            <label class="fw-bold mb-2">Select Class:</label>
+            <div class="mb-4">
+                <select id="classSelector" class="form-select" onchange="window.location.href='?class_level=' + this.value + (document.getElementById('searchInput')?.value ? '&search=' + document.getElementById('searchInput').value : '')">
+                    {% for class_level in assigned_classes %}
+                    <option value="{{ class_level }}" {% if selected_class == class_level %}selected{% endif %}>Class {{ class_level }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% else %}
+            <h4 class="fw-bold mb-2">Assigned Class: Class {{ selected_class }}</h4>
+            {% endif %}
+            <p class="text-muted">Below are the students assigned to your class.</p>
+        </div>
+
+        <div class="table-responsive table-custom">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-3">Roll</th>
+                        <th>Student Name</th>
+                        <th>Guardian</th>
+                        <th>Mobile</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in class_students %}
+                    <tr>
+                        <td class="ps-3 fw-bold text-primary">{{ student.class_roll }}</td>
+                        <td class="fw-semibold">{{ student.full_name }}</td>
+                        <td>
+                            <div class="small fw-bold">{{ student.father_name }}</div>
+                            <div class="small text-muted">{{ student.mother_name }}</div>
+                        </td>
+                        <td>{{ student.mobile_num }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center py-4 text-muted">No students assigned to this class.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-16 text-muted">
+            <i class="fas fa-info-circle fa-3x text-primary mb-3"></i>
+            <h4 class="fw-bold">No assigned classes found</h4>
+            <p>You need to have classes assigned to view the Student Corner. Please contact your administrator.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {% include 'myteacher/student_list_content.html' with hide_assigned_selector=True %}
+</div>
+{% endblock %}
