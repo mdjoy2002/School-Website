@@ -111,10 +111,17 @@
                             <small class="text-muted">Roll: {{ result_data.student.class_roll }} • {{ selected_exam }} - {{ selected_year }}</small>
                         </div>
                     </div>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-2 align-items-center">
+                        {% if can_download %}
                         <a href="{% url 'myteacher:student_result_pdf' result_data.student.id %}?exam_type={{ selected_exam }}&exam_year={{ selected_year }}" class="btn btn-outline-success px-3">
                             <i class="fas fa-file-pdf me-1"></i> PDF
                         </a>
+                        {% else %}
+                        <button class="btn btn-outline-secondary px-3" disabled>
+                            <i class="fas fa-file-pdf me-1"></i> PDF
+                        </button>
+                        <span class="text-muted small">Download restricted to assigned class teachers and headmaster.</span>
+                        {% endif %}
                         <button class="btn btn-outline-secondary px-3" onclick="window.print()">
                             <i class="fas fa-print me-1"></i> Print
                         </button>

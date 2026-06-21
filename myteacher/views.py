@@ -53,29 +53,30 @@ def teacher_profile(request):
 @login_required
 def dashboard_view(request):
     teacher = request.user.teacher
-    
-    # Get all assignments for this teacher
+    is_head_teacher = is_head_or_admin(teacher, request.user)
+
+    # Get all assignments for this teacher (subject-level class assignments for view only)
     assignments = TeacherSubjectAssignment.objects.filter(teacher=teacher)
-    
-    # Get all classes assigned to this teacher (from both class assignments and subject assignments)
     class_assign_qs = TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)
     subj_class_qs = TeacherSubjectAssignment.objects.filter(teacher=teacher).values_list('subject__class_level', flat=True)
-    assigned_classes = list(set(list(class_assign_qs) + list(subj_class_qs)))
-    
-    # Get students from all assigned classes
+    assigned_classes = sorted(set(list(class_assign_qs) + list(subj_class_qs)), key=lambda x: int(x))
+
+    # Determine dashboard student list
     class_students = None
-    if assigned_classes:
-        class_students = Student.objects.filter(current_class__in=assigned_classes).order_by('current_class', 'class_roll')
+    if is_head_teacher:
+        class_students = Student.objects.all().order_by('current_class', 'class_roll')
     elif teacher.is_class_teacher and teacher.class_teacher_of:
-        # Fallback to old system if teacher is class teacher
         class_students = Student.objects.filter(current_class=teacher.class_teacher_of).order_by('class_roll')
-        
+    elif assigned_classes:
+        class_students = Student.objects.filter(current_class__in=assigned_classes).order_by('current_class', 'class_roll')
+
     return render(request, 'myteacher/dashboard.html', {
         'teacher': teacher,
         'assignments': assignments,
         'class_students': class_students,
-        'assigned_classes': list(assigned_classes),
-        'can_manage_routine': teacher.is_class_teacher or is_head_or_admin(teacher, request.user),
+        'assigned_classes': assigned_classes,
+        'can_manage_routine': teacher.is_class_teacher or is_head_teacher,
+        'is_head_teacher': is_head_teacher,
     })
 
 @login_required
@@ -430,13 +431,16 @@ def student_corner_view(request):
     teacher = request.user.teacher
     is_head_teacher = is_head_or_admin(teacher, request.user)
     class_teacher_classes = get_teacher_class_teacher_classes(teacher)
+    own_class_teacher_classes = get_teacher_own_class_teacher_classes(teacher)
     
     if is_head_teacher:
         assigned_classes = list(Student.objects.order_by('current_class').values_list('current_class', flat=True).distinct())
     else:
         assigned_classes = get_teacher_allowed_classes(teacher)
-        if not assigned_classes and class_teacher_classes:
-            assigned_classes = class_teacher_classes
+        if teacher.class_teacher_of and teacher.class_teacher_of not in assigned_classes:
+            assigned_classes.insert(0, teacher.class_teacher_of)
+        if not assigned_classes and own_class_teacher_classes:
+            assigned_classes = own_class_teacher_classes
     
     selected_class = request.GET.get('class_level')
     search_query = request.GET.get('search', '').strip()
@@ -469,8 +473,8 @@ def student_corner_view(request):
         'class_students': class_students,
         'students': students,
         'search_query': search_query,
-        'can_generate_admit': bool(class_teacher_classes) or is_head_teacher,
-        'can_generate_seat': bool(class_teacher_classes) or is_head_teacher,
+        'can_generate_admit': is_head_teacher or (teacher.is_class_teacher and selected_class == teacher.class_teacher_of),
+        'can_generate_seat': is_head_teacher or (teacher.is_class_teacher and selected_class == teacher.class_teacher_of),
         'is_head_teacher': is_head_teacher,
     })
 
@@ -621,6 +625,12 @@ def get_teacher_class_teacher_classes(teacher):
     if not assigned_classes and teacher.is_class_teacher and teacher.class_teacher_of:
         assigned_classes = [teacher.class_teacher_of]
     return assigned_classes
+
+
+def get_teacher_own_class_teacher_classes(teacher):
+    if teacher.is_class_teacher and teacher.class_teacher_of:
+        return [teacher.class_teacher_of]
+    return []
 
 
 def get_teacher_viewable_classes(teacher, user):
@@ -870,6 +880,7 @@ def student_results_view(request):
     selected_year = request.GET.get('exam_year') or str(datetime.date.today().year)
     search_query = request.GET.get('search', '').strip()
     student_pk = request.GET.get('student_id', '').strip()
+    is_head_teacher = is_head_or_admin(teacher, request.user)
 
     class_students = Student.objects.none()
     student_summary = None
@@ -891,6 +902,8 @@ def student_results_view(request):
             selected_student = get_object_or_404(Student, id=int(student_pk), current_class=selected_class)
             student_summary = get_student_result_summary(selected_student, selected_exam, selected_year)
 
+    can_download = is_head_teacher or (teacher.is_class_teacher and selected_class == teacher.class_teacher_of)
+
     return render(request, 'myteacher/student_results.html', {
         'teacher': teacher,
         'allowed_classes': all_classes,
@@ -904,6 +917,8 @@ def student_results_view(request):
         'class_students': class_students,
         'result_data': student_summary,
         'class_summary': class_summary,
+        'can_download': can_download,
+        'is_head_teacher': is_head_teacher,
     })
 
     if selected_class:
@@ -945,6 +960,10 @@ def student_results_pdf_view(request, student_id):
     student = get_object_or_404(Student, id=student_id)
 
     student_summary = get_student_result_summary(student, selected_exam, selected_year)
+    is_head_teacher = is_head_or_admin(teacher, request.user)
+    if not is_head_teacher and not (teacher.is_class_teacher and student.current_class == teacher.class_teacher_of):
+        return HttpResponseForbidden("Download permission denied.")
+
     context = {
         'results': [student_summary],
         'selected_exam': selected_exam,
@@ -1012,8 +1031,9 @@ def generate_seat_plan(request):
 
         # Validate that all students belong to assigned classes
         students = Student.objects.filter(id__in=student_ids)
+        own_class_teacher_classes = get_teacher_own_class_teacher_classes(teacher)
         for student in students:
-            if not is_head_teacher and student.current_class not in class_teacher_classes:
+            if not is_head_teacher and student.current_class not in own_class_teacher_classes:
                 return HttpResponseForbidden("You are not authorized to generate seat plan for this student!")
         
         students = students.order_by('current_class', 'class_roll')
@@ -1039,20 +1059,20 @@ def student_list_view(request):
         students_qs = Student.objects.all()
     else:
         allowed_classes = get_teacher_allowed_classes(teacher)
-        class_teacher_classes = get_teacher_class_teacher_classes(teacher)
-        if class_teacher_classes:
-            allowed_classes = list(set(allowed_classes) | set(class_teacher_classes))
+        own_class_teacher_classes = get_teacher_own_class_teacher_classes(teacher)
+        if own_class_teacher_classes:
+            allowed_classes = list(set(allowed_classes) | set(own_class_teacher_classes))
         students_qs = Student.objects.filter(current_class__in=allowed_classes)
 
     if class_filter:
         students_qs = students_qs.filter(current_class=class_filter)
 
     students = students_qs.order_by('current_class', 'class_roll')
-    class_teacher_classes = get_teacher_class_teacher_classes(teacher)
+    can_generate = is_head_teacher or (teacher.is_class_teacher and class_filter == teacher.class_teacher_of)
     return render(request, 'myteacher/student_list.html', {
         'students': students,
         'selected_class': class_filter,
         'is_head_teacher': is_head_teacher,
-        'can_generate_admit': bool(class_teacher_classes) or is_head_teacher,
-        'can_generate_seat': bool(class_teacher_classes) or is_head_teacher,
+        'can_generate_admit': can_generate,
+        'can_generate_seat': can_generate,
     })
