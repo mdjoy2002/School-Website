@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django import forms
 from .models import Subject, Mark, Teacher, TeacherSubjectAssignment, ExamRoutine
 
 # Subject Admin
@@ -28,7 +29,28 @@ class SubjectAssignmentAdmin(admin.ModelAdmin):
     list_filter = ('teacher', 'subject__class_level', 'created_at')
     search_fields = ('teacher__teacher_name', 'subject__subject_name')
     readonly_fields = ('assisngsubid', 'created_at')
-    
+
+    def get_form(self, request, obj=None, **kwargs):
+        # Create a ModelForm that excludes already-assigned subjects from the subject field
+        class _AssignmentForm(forms.ModelForm):
+            class Meta:
+                model = TeacherSubjectAssignment
+                fields = '__all__'
+
+            def __init__(self, *args, **inner_kwargs):
+                super().__init__(*args, **inner_kwargs)
+                # All subject ids already assigned
+                assigned_ids = list(TeacherSubjectAssignment.objects.values_list('subject_id', flat=True))
+                # If editing an existing assignment, allow its subject to remain selectable
+                if self.instance and getattr(self.instance, 'pk', None):
+                    try:
+                        assigned_ids.remove(self.instance.subject_id)
+                    except ValueError:
+                        pass
+                self.fields['subject'].queryset = Subject.objects.exclude(pk__in=assigned_ids)
+
+        return _AssignmentForm
+
     def get_class_level(self, obj):
         return f"Class {obj.subject.class_level}"
     get_class_level.short_description = 'Class'
