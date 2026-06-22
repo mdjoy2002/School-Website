@@ -78,6 +78,7 @@ def student_corner_detail(request, category_name):
         'seats': 'SEAT',
         'dress': 'DRESS',
         'class-routine': 'CLASS_ROUTINE',
+        'exam-routine': 'EXAM_ROUTINE',
         'syllabus': 'SYLLABUS',
         'holiday': 'HOLIDAY',
     }
@@ -88,6 +89,7 @@ def student_corner_detail(request, category_name):
         'seats': 'শ্রেণী ভিত্তিক আসন সংখ্যা',
         'dress': 'স্কুল-কলেজের ড্রেস সম্পর্কিত তথ্য',
         'class-routine': 'ক্লাস রুটিন',
+        'exam-routine': 'পরীক্ষার রুটিন',
         'syllabus': 'সিলেবাস',
         'holiday': 'ছুটির তালিকা',
     }
