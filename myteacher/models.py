@@ -140,9 +140,10 @@ class Mark(models.Model):
 
     def clean(self):
         from django.core.exceptions import ValidationError
-        if self.subject.is_religion_based and self.student.religion != self.subject.religion:
+        subject_religion = self.subject.effective_religion
+        if self.subject.is_religion_based and self.student.religion != subject_religion:
             raise ValidationError({
-                'student': f"Student religion must match subject religion ({self.subject.religion}).",
+                'student': f"Student religion must match subject religion ({subject_religion}).",
                 'subject': f"Subject religion must match student religion ({self.student.religion}).",
             })
 
@@ -151,7 +152,9 @@ class Mark(models.Model):
                 student=self.student,
                 exam_type=self.exam_type,
                 exam_year=self.exam_year,
-                subject__religion__in=['Islam', 'Hindu', 'Buddhist', 'Christian'],
+            ).filter(
+                models.Q(subject__religion=subject_religion) |
+                models.Q(subject__religion='None', subject__subject_name__icontains=subject_religion)
             )
             if self.pk is not None:
                 existing = existing.exclude(pk=self.pk)
