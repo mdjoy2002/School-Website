@@ -8,8 +8,9 @@ from django.conf import settings
 # 1. Subject Model
 class Subject(models.Model):
     TYPE_CHOICES = [
-        ('1', '1St'),
+        ('1', '1st'),
         ('2', '2nd'),
+        ('4', '4th'),
         ('0', 'NA'),
     ]
     

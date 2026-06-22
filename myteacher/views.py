@@ -33,6 +33,27 @@ def calculate_grade_and_gpa(score):
     return 'F', '0.00'
 
 
+def calculate_grade_from_gpa(gpa):
+    try:
+        gpa = float(gpa)
+    except (TypeError, ValueError):
+        return 'F'
+
+    if gpa >= 5.0:
+        return 'A+'
+    if gpa >= 4.0:
+        return 'A'
+    if gpa >= 3.5:
+        return 'A-'
+    if gpa >= 3.0:
+        return 'B'
+    if gpa >= 2.0:
+        return 'C'
+    if gpa >= 1.0:
+        return 'D'
+    return 'F'
+
+
 CLASS_PROMOTION_MAP = {
     '6': '7',
     '7': '8',
@@ -660,15 +681,51 @@ def get_student_result_summary(student, exam_type, exam_year=None):
     total_gpa = Decimal('0.00')
     subject_count = 0
     fail_count = 0
+    optional_benefit = Decimal('0.00')
 
     # Group Bangla/English papers into one combined subject grade
     grouped_marks = {}
     for mark in marks:
+        subject_type = mark.subject.subject_type
         lower_name = mark.subject.subject_name.strip().lower()
+
+        if subject_type == '4':
+            obtained = mark.total_mark
+            subject_max = mark.subject.full_mark_value
+            percentage = (obtained / subject_max * Decimal('100.00')) if subject_max else Decimal('0.00')
+            grade, gpa = calculate_grade_and_gpa(percentage)
+            try:
+                benefit = max(Decimal(gpa) - Decimal('2.00'), Decimal('0.00'))
+            except Exception:
+                benefit = Decimal('0.00')
+            optional_benefit += benefit
+
+            subject_type_label = '4th'
+            subject_name = f"{mark.subject.subject_name} ({subject_type_label} Subject)"
+
+            subject_results.append({
+                'subject_name': subject_name,
+                'subject_type': mark.subject.get_subject_type_display() if hasattr(mark.subject, 'get_subject_type_display') else mark.subject.subject_type,
+                'objective_mark': mark.objective_mark,
+                'subjective_mark': mark.subjective_mark,
+                'class_test_mark': mark.class_test_mark,
+                'practical_mark': mark.practical_mark or Decimal('0.00'),
+                'total_mark': obtained,
+                'full_mark': subject_max,
+                'grade': grade,
+                'gpa': gpa,
+                'group_rowspan': 1,
+                'show_combined': True,
+                'optional': True,
+                'benefit': benefit.quantize(Decimal('0.00')),
+            })
+            continue
+
         is_combined_subject = (
-            mark.subject.subject_type in ['1', '2'] and
+            subject_type in ['1', '2'] and
             ('bangla' in lower_name or 'english' in lower_name)
         )
+
         if is_combined_subject:
             grouped_marks.setdefault(lower_name, []).append(mark)
         else:
@@ -676,14 +733,15 @@ def get_student_result_summary(student, exam_type, exam_year=None):
             subject_max = mark.subject.full_mark_value
             percentage = (obtained / subject_max * Decimal('100.00')) if subject_max else Decimal('0.00')
             grade, gpa = calculate_grade_and_gpa(percentage)
-            subject_type = mark.subject.subject_type
             subject_type_label = None
             if subject_type == '1':
                 subject_type_label = '1st'
             elif subject_type == '2':
                 subject_type_label = '2nd'
+            elif subject_type == '4':
+                subject_type_label = '4th'
             subject_name = mark.subject.subject_name
-            if subject_type_label:
+            if subject_type_label and subject_type != '4':
                 subject_name = f"{subject_name} {subject_type_label}"
 
             subject_results.append({
@@ -810,26 +868,11 @@ def get_student_result_summary(student, exam_type, exam_year=None):
             overall_grade = 'F'
             overall_gpa = Decimal('0.00')
         else:
-            try:
-                avg_gpa_float = float(average_gpa)
-            except Exception:
-                avg_gpa_float = 0.0
-
-            if avg_gpa_float >= 5.0:
-                overall_grade = 'A+'
-            elif avg_gpa_float >= 4.0:
-                overall_grade = 'A'
-            elif avg_gpa_float >= 3.5:
-                overall_grade = 'A-'
-            elif avg_gpa_float >= 3.0:
-                overall_grade = 'B'
-            elif avg_gpa_float >= 2.0:
-                overall_grade = 'C'
-            elif avg_gpa_float >= 1.0:
-                overall_grade = 'D'
-            else:
-                overall_grade = 'F'
-            overall_gpa = average_gpa
+            final_gpa = average_gpa + optional_benefit
+            if final_gpa > Decimal('5.00'):
+                final_gpa = Decimal('5.00')
+            overall_gpa = final_gpa.quantize(Decimal('0.00'))
+            overall_grade = calculate_grade_from_gpa(overall_gpa)
 
         result_status = 'Pass' if fail_count == 0 else 'Fail'
     else:
@@ -851,6 +894,7 @@ def get_student_result_summary(student, exam_type, exam_year=None):
         'average_gpa': average_gpa,
         'overall_gpa': overall_gpa,
         'overall_grade': overall_grade,
+        'optional_benefit': optional_benefit.quantize(Decimal('0.00')),
         'result_status': result_status,
         'has_marks': subject_count > 0,
     }
