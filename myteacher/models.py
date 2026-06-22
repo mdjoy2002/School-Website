@@ -128,6 +128,20 @@ class Mark(models.Model):
                 'subject': f"Subject religion must match student religion ({self.student.religion}).",
             })
 
+        if self.subject.is_religion_based:
+            existing = Mark.objects.filter(
+                student=self.student,
+                exam_type=self.exam_type,
+                exam_year=self.exam_year,
+                subject__religion__in=['Islam', 'Hindu', 'Buddhist', 'Christian'],
+            )
+            if self.pk is not None:
+                existing = existing.exclude(pk=self.pk)
+            if existing.exists():
+                raise ValidationError({
+                    'subject': 'A religion-based subject mark already exists for this student in the same exam and year.',
+                })
+
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)

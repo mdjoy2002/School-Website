@@ -71,6 +71,12 @@
         </div>
     </div>
 
+    {% if selected_subject_obj and selected_subject_obj.is_religion_based %}
+    <div class="alert alert-info border-info-subtle rounded-4 mb-4">
+        <strong>Religion filter:</strong> Only <span class="text-capitalize">{{ selected_subject_obj.religion }}</span> students are shown for <strong>{{ selected_subject_obj.subject_name }}</strong>.
+    </div>
+    {% endif %}
+
     {% if students %}
     <form method="POST">
         {% csrf_token %}
