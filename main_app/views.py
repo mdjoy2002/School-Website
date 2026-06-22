@@ -98,9 +98,9 @@ def student_corner_detail(request, category_name):
     # আপনার টেমপ্লেটের লুপের সাথে মিল রাখার জন্য data_list বদলে items করা হয়েছে
     if db_category == 'EXAM_ROUTINE':
         student_corner_items = list(StudentCornerData.objects.filter(category=db_category).order_by('-created_at'))
-        exam_routines = list(ExamRoutine.objects.all().order_by('-created_at'))
+        exam_routine = list(ExamRoutine.objects.all().order_by('-created_at'))
         items = sorted(
-            student_corner_items + exam_routines,
+            student_corner_items + exam_routine,
             key=lambda obj: obj.created_at,
             reverse=True
         )
