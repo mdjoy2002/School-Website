@@ -22,6 +22,13 @@ class Student(models.Model):
         ('Commerce', 'Commerce'),
     ]
 
+    RELIGION_CHOICES = [
+        ('Islam', 'Islam'),
+        ('Hindu', 'Hindu'),
+        ('Buddhist', 'Buddhist'),
+        ('Christian', 'Christian'),
+    ]
+
     # প্রয়োজনীয় ফিল্ডসমূহ
     photo = models.ImageField(upload_to='students/', verbose_name="Student Photo")
     full_name = models.CharField(max_length=100, verbose_name="Full Name")
@@ -36,6 +43,7 @@ class Student(models.Model):
     shift = models.CharField(max_length=10, default='Day', verbose_name="Shift")
     mobile_num = models.CharField(max_length=15, verbose_name="Mobile Number")
     group = models.CharField(max_length=20, choices=GROUP_CHOICES, null=True, blank=True, verbose_name="Group")
+    religion = models.CharField(max_length=10, choices=RELIGION_CHOICES, default='Islam', verbose_name="Religion")
 
     def __str__(self):
         return f"{self.full_name} ({self.student_id})"

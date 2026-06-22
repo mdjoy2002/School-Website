@@ -14,6 +14,14 @@ class Subject(models.Model):
         ('0', 'NA'),
     ]
     
+    RELIGION_CHOICES = [
+        ('None', 'None'),
+        ('Islam', 'Islam'),
+        ('Hindu', 'Hindu'),
+        ('Buddhist', 'Buddhist'),
+        ('Christian', 'Christian'),
+    ]
+    
     CLASS_CHOICES = [
         ('6', 'Class 6'),
         ('7', 'Class 7'),
@@ -24,6 +32,7 @@ class Subject(models.Model):
 
     subject_name = models.CharField(max_length=100, verbose_name="Subject Name")
     subject_type = models.CharField(max_length=1, choices=TYPE_CHOICES, verbose_name="Type")
+    religion = models.CharField(max_length=10, choices=RELIGION_CHOICES, default='None', verbose_name="Religion")
     class_level = models.CharField(max_length=2, choices=CLASS_CHOICES, verbose_name="Class")
     has_practical = models.BooleanField(default=False, verbose_name="Has Practical?")
     full_mark = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name="Full Mark")
@@ -55,12 +64,21 @@ class Subject(models.Model):
     @property
     def full_mark_value(self):
         return self.full_mark if self.full_mark is not None else self.get_default_full_mark()
+
+    @property
+    def is_religion_based(self):
+        return self.religion != 'None'
+
     def __str__(self):
         type_label = self.get_subject_type_display() if hasattr(self, 'get_subject_type_display') else None
-        # Don't show 'NA' label for type '0'
+        religion_label = self.get_religion_display() if hasattr(self, 'get_religion_display') else self.religion
+        parts = [self.subject_name]
         if type_label and type_label not in ('NA', ''):
-            return f"{self.subject_name} {type_label} (Class {self.class_level})"
-        return f"{self.subject_name} (Class {self.class_level})"
+            parts.append(type_label)
+        if self.is_religion_based:
+            parts.append(f"({religion_label})")
+        parts.append(f"(Class {self.class_level})")
+        return ' '.join(parts)
 
     class Meta:
         verbose_name = "Subject"
@@ -101,6 +119,18 @@ class Mark(models.Model):
     def total_mark(self):
         practical = self.practical_mark if self.practical_mark else 0
         return self.objective_mark + self.subjective_mark + self.class_test_mark + practical
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.subject.is_religion_based and self.student.religion != self.subject.religion:
+            raise ValidationError({
+                'student': f"Student religion must match subject religion ({self.subject.religion}).",
+                'subject': f"Subject religion must match student religion ({self.student.religion}).",
+            })
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.student.full_name} - {self.subject.subject_name} ({self.total_mark}) - {self.exam_type}"

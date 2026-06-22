@@ -127,7 +127,13 @@ def mark_entry_view(request):
             return HttpResponseForbidden("You are not authorized to enter marks for this subject/class.")
 
         selected_subject_obj = assignment.subject
-        students = Student.objects.filter(current_class=selected_class).order_by('class_roll')
+        if selected_subject_obj.is_religion_based:
+            students = Student.objects.filter(
+                current_class=selected_class,
+                religion=selected_subject_obj.religion,
+            ).order_by('class_roll')
+        else:
+            students = Student.objects.filter(current_class=selected_class).order_by('class_roll')
         subject_full_mark = selected_subject_obj.full_mark_value
         
         for student in students:
@@ -155,10 +161,14 @@ def mark_entry_view(request):
         if s_class not in assigned_classes:
             return HttpResponseForbidden("Unauthorized access!")
         
-        if not assignments.filter(subject_id=subject_id, subject__class_level=s_class).exists():
+        assignment = assignments.filter(subject_id=subject_id, subject__class_level=s_class).first()
+        if not assignment:
             return HttpResponseForbidden("Unauthorized access!")
+        selected_subject_obj = assignment.subject
 
         students_to_mark = Student.objects.filter(current_class=s_class)
+        if selected_subject_obj.is_religion_based:
+            students_to_mark = students_to_mark.filter(religion=selected_subject_obj.religion)
         
         for student in students_to_mark:
             obj = request.POST.get(f'obj_{student.id}', 0) or 0
@@ -675,6 +685,10 @@ def get_student_result_summary(student, exam_type, exam_year=None):
             marks = marks.filter(exam_year=exam_year)
         except (TypeError, ValueError):
             pass
+    # Only include religion-based subjects matching the student's religion.
+    marks = marks.filter(
+        Q(subject__religion='None') | Q(subject__religion=student.religion)
+    )
     subject_results = []
     total_marks = Decimal('0.00')
     total_possible_marks = Decimal('0.00')
