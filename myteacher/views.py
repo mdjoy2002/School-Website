@@ -130,7 +130,7 @@ def mark_entry_view(request):
         if selected_subject_obj.is_religion_based:
             students = Student.objects.filter(
                 current_class=selected_class,
-                religion=selected_subject_obj.religion,
+                religion=selected_subject_obj.effective_religion,
             ).order_by('class_roll')
         else:
             students = Student.objects.filter(current_class=selected_class).order_by('class_roll')
@@ -168,7 +168,7 @@ def mark_entry_view(request):
 
         students_to_mark = Student.objects.filter(current_class=s_class)
         if selected_subject_obj.is_religion_based:
-            students_to_mark = students_to_mark.filter(religion=selected_subject_obj.religion)
+            students_to_mark = students_to_mark.filter(religion=selected_subject_obj.effective_religion)
         
         for student in students_to_mark:
             obj = request.POST.get(f'obj_{student.id}', 0) or 0
@@ -685,10 +685,13 @@ def get_student_result_summary(student, exam_type, exam_year=None):
             marks = marks.filter(exam_year=exam_year)
         except (TypeError, ValueError):
             pass
-    # Only include religion-based subjects matching the student's religion.
-    marks = marks.filter(
-        Q(subject__religion='None') | Q(subject__religion=student.religion)
-    )
+
+    filtered_marks = []
+    for mark in marks:
+        if mark.subject.is_religion_based and mark.subject.effective_religion != mark.student.religion:
+            continue
+        filtered_marks.append(mark)
+    marks = filtered_marks
     subject_results = []
     total_marks = Decimal('0.00')
     total_possible_marks = Decimal('0.00')

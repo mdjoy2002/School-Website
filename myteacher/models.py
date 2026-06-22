@@ -65,9 +65,27 @@ class Subject(models.Model):
     def full_mark_value(self):
         return self.full_mark if self.full_mark is not None else self.get_default_full_mark()
 
+    def infer_religion_from_name(self):
+        name = self.subject_name.strip().lower()
+        if 'islam' in name:
+            return 'Islam'
+        if 'hindu' in name:
+            return 'Hindu'
+        if 'buddhist' in name:
+            return 'Buddhist'
+        if 'christian' in name:
+            return 'Christian'
+        return 'None'
+
+    @property
+    def effective_religion(self):
+        if self.religion and self.religion != 'None':
+            return self.religion
+        return self.infer_religion_from_name()
+
     @property
     def is_religion_based(self):
-        return self.religion != 'None'
+        return self.effective_religion != 'None'
 
     def __str__(self):
         type_label = self.get_subject_type_display() if hasattr(self, 'get_subject_type_display') else None
