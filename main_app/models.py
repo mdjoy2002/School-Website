@@ -1,10 +1,14 @@
 from django.db import models
 
+from core.compression import CompressedUploadMixin
+
+
 # ১. নোটিশ বোর্ড
-class Notice(models.Model):
+class Notice(CompressedUploadMixin, models.Model):
     title = models.CharField(max_length=200, verbose_name="নোটিশের শিরোনাম")
     description = models.TextField(verbose_name="বিস্তারিত", blank=True, null=True)
     file = models.FileField(upload_to='notices/', verbose_name="পিডিএফ ফাইল (PDF)")
+    PDF_FIELDS = ['file']
     
     show_on_ticker = models.BooleanField(default=False, verbose_name="নিউজ টিকারে (সর্বশেষ) দেখাবে?")
     show_on_dashboard = models.BooleanField(default=False, verbose_name="হোমপেজ নোটিশ বোর্ডে দেখাবে?")
@@ -30,9 +34,10 @@ class TickerNews(models.Model):
         verbose_name_plural = "টিকার নিউজ"
 
 # ৩. স্লাইডার
-class Slider(models.Model):
+class Slider(CompressedUploadMixin, models.Model):
     title = models.CharField(max_length=200, verbose_name="স্লাইডার শিরোনাম")
     image = models.ImageField(upload_to='sliders/', verbose_name="স্লাইডার ইমেজ")
+    IMAGE_FIELDS = ['image']
     is_active = models.BooleanField(default=True, verbose_name="অ্যাক্টিভ আছে?")
     created_at = models.DateTimeField(auto_now_add=True)
     
@@ -41,18 +46,20 @@ class Slider(models.Model):
         verbose_name_plural = "৫. হোমপেজ স্লাইডার"
 
 # ৩. ইভেন্ট ভিত্তিক ফটোগ্যালারি
-class GalleryCategory(models.Model):
+class GalleryCategory(CompressedUploadMixin, models.Model):
     name = models.CharField(max_length=100, verbose_name="ইভেন্টের নাম (ফোল্ডার)")
     cover_image = models.ImageField(upload_to='gallery/covers/', verbose_name="কভার ফটো")
+    IMAGE_FIELDS = ['cover_image']
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self): return self.name
     class Meta: 
         verbose_name_plural = "৬. গ্যালারি ইভেন্ট/ফোল্ডার"
 
-class GalleryImage(models.Model):
+class GalleryImage(CompressedUploadMixin, models.Model):
     category = models.ForeignKey(GalleryCategory, related_name='images', on_delete=models.CASCADE, verbose_name="ইভেন্ট নির্বাচন করুন")
     image = models.ImageField(upload_to='gallery/photos/', verbose_name="ছবি")
+    IMAGE_FIELDS = ['image']
     caption = models.CharField(max_length=100, blank=True, verbose_name="ছবির ক্যাপশন (ঐচ্ছিক)")
 
     def __str__(self): return f"Image for {self.category.name}"
@@ -75,12 +82,13 @@ class SchoolInfo(models.Model):
     class Meta: 
         verbose_name_plural = "৭. বিদ্যালয় পরিচিতি ও তথ্য"
 
-class AboutImage(models.Model):
+class AboutImage(CompressedUploadMixin, models.Model):
     school_info = models.ForeignKey(SchoolInfo, related_name='images', on_delete=models.CASCADE)
     image = models.ImageField(upload_to='about_slider/', verbose_name="স্লাইডার ছবি")
+    IMAGE_FIELDS = ['image']
 
 # ৫. মূল শিক্ষক ও কর্মচারী মডেল
-class Teacher(models.Model):
+class Teacher(CompressedUploadMixin, models.Model):
     TYPE_CHOICES = (
         ('HEAD', 'প্রতিষ্ঠান প্রধান'),
         ('TEACHER', 'সহকারী শিক্ষক'),
@@ -103,6 +111,7 @@ class Teacher(models.Model):
     designation = models.CharField(max_length=50, choices=DESIGNATION_CHOICES, blank=True, verbose_name="পদবী")
     subject = models.CharField(max_length=200, blank=True, null=True, verbose_name="বিষয়")
     image = models.ImageField(upload_to='teachers/', verbose_name="ছবি")
+    IMAGE_FIELDS = ['image']
     phone = models.CharField(max_length=15, blank=True, null=True, verbose_name="ফোন নম্বর")
     email = models.EmailField(blank=True, null=True, verbose_name="ইমেইল")
     order = models.PositiveIntegerField(default=0, verbose_name="ক্রমিক নং (সিরিয়াল)")
@@ -113,7 +122,7 @@ class Teacher(models.Model):
         ordering = ['order']
 
 # ৬. পরীক্ষার রুটিন
-class ExamRoutine(models.Model):
+class ExamRoutine(CompressedUploadMixin, models.Model):
     CLASS_CHOICES = (
         ('6', 'ষষ্ঠ শ্রেণী'),
         ('7', 'সপ্তম শ্রেণী'),
@@ -124,6 +133,7 @@ class ExamRoutine(models.Model):
     title = models.CharField(max_length=200, verbose_name="পরীক্ষার শিরোনাম (উদা: বার্ষিক পরীক্ষা ২০২৬)")
     target_class = models.CharField(max_length=2, choices=CLASS_CHOICES, verbose_name="শ্রেণী নির্বাচন করুন")
     pdf_file = models.FileField(upload_to='exam_routines/', verbose_name="রুটিন পিডিএফ (PDF)")
+    PDF_FIELDS = ['pdf_file']
     
     show_on_ticker = models.BooleanField(default=True, verbose_name="নিউজ টিকারে দেখাবে?")
     show_on_notice = models.BooleanField(default=True, verbose_name="নোটিশ বোর্ডে দেখাবে?")
@@ -136,7 +146,7 @@ class ExamRoutine(models.Model):
         ordering = ['-created_at']
 
 # ৭. শিক্ষার্থী কর্নার তথ্য
-class StudentCornerData(models.Model):
+class StudentCornerData(CompressedUploadMixin, models.Model):
     CATEGORY_CHOICES = [
         ('INFO', 'শ্রেণী ও লিঙ্গভিত্তিক শিক্ষার্থী তথ্য'),
         ('SEAT', 'শ্রেণী ভিত্তিক আসন সংখ্যা'),
@@ -149,6 +159,7 @@ class StudentCornerData(models.Model):
     title = models.CharField(max_length=255, verbose_name="ফাইলের শিরোনাম")
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, verbose_name="ক্যাটাগরি নির্বাচন করুন")
     pdf_file = models.FileField(upload_to='student_corner/pdfs/', verbose_name="PDF ফাইল আপলোড করুন")
+    PDF_FIELDS = ['pdf_file']
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="আপলোডের তারিখ")
 
     def __str__(self):
@@ -159,7 +170,7 @@ class StudentCornerData(models.Model):
         ordering = ['-created_at']
 
 # ৮. ভর্তি তথ্য (Admission Info)
-class AdmissionInfo(models.Model):
+class AdmissionInfo(CompressedUploadMixin, models.Model):
     CATEGORY_CHOICES = [
         ('form', 'ভর্তি আবেদন ফরম'),
         ('guide', 'ভর্তি নির্দেশিকা'),
@@ -170,6 +181,7 @@ class AdmissionInfo(models.Model):
     title = models.CharField(max_length=255, verbose_name="ফাইলের শিরোনাম")
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, verbose_name="ক্যাটাগরি")
     pdf_file = models.FileField(upload_to='admission/pdfs/', verbose_name="পিডিএফ ফাইল")
+    PDF_FIELDS = ['pdf_file']
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="আপলোড তারিখ")
 
     def __str__(self):
@@ -180,7 +192,7 @@ class AdmissionInfo(models.Model):
         ordering = ['-created_at']
 
 # --- নতুন সংযোজন: ৯. ফলাফল তথ্য (Result Data) ---
-class ResultData(models.Model):
+class ResultData(CompressedUploadMixin, models.Model):
     CATEGORY_CHOICES = [
         ('public', 'পাবলিক পরীক্ষার ফলাফল'),
         ('internal', 'স্কুল ও কলেজের ফলাফল'),
@@ -189,6 +201,7 @@ class ResultData(models.Model):
     title = models.CharField(max_length=255, verbose_name="ফলাফলের শিরোনাম (উদা: এসএসসি ফলাফল ২০২৫)")
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, verbose_name="ফলাফলের ধরন")
     file = models.FileField(upload_to='results/pdfs/', verbose_name="ফলাফল পিডিএফ (PDF)")
+    PDF_FIELDS = ['file']
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="প্রকাশের তারিখ")
 
     def __str__(self):
