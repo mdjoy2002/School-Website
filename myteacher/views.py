@@ -880,8 +880,9 @@ def get_student_result_summary(student, exam_type, exam_year=None):
         overall_percentage = (total_marks / total_possible_marks * Decimal('100.00'))
         average_gpa = (total_gpa / subject_count).quantize(Decimal('0.00'))
 
-        # If any subject is failed, final result must be F
+        # If any subject is failed, average GPA and final GPA must be 0.00
         if fail_count > 0:
+            average_gpa = Decimal('0.00')
             overall_grade = 'F'
             overall_gpa = Decimal('0.00')
         else:

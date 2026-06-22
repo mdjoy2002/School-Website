@@ -8,6 +8,15 @@
     .table-header-custom { background-color: #2c3e50 !important; color: #ffffff; text-transform: uppercase; letter-spacing: 1px; }
     .student-img { width: 45px; height: 45px; object-fit: cover; border-radius: 50%; border: 2px solid #ddd; }
     .badge-grade { font-size: 0.85rem; letter-spacing: 0.5px; }
+    .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table-responsive table { min-width: 850px; }
+    .mark-entry-container .table thead th, .mark-entry-container .table tbody td { vertical-align: middle; }
+    @media (max-width: 767px) {
+        .mark-entry-container .student-img { width: 36px; height: 36px; }
+        .mark-entry-container .table-responsive table { min-width: 720px; }
+        .mark-entry-container .btn { width: 100%; }
+        .mark-entry-container .card-footer { padding: 1rem; }
+    }
 </style>
 
 <div class="container py-5 mark-entry-container">

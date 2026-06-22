@@ -6,8 +6,8 @@
         <div class="card-body p-4 p-md-5">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                 <div>
-                    <h1 class="display-6 fw-bold text-dark mb-1">ফলাফল কার্ড</h1>
-                    <p class="text-muted mb-0">শ্রেণী, পরীক্ষা ও বছর নির্বাচন করে শিক্ষার্থীর ফলাফল কার্ড দেখুন এবং ডাউনলোড করুন।</p>
+                    <h1 class="display-5 fw-bold text-dark mb-1">ফলাফল কার্ড</h1>
+                    <p class="text-secondary small mb-0">এখানে শিক্ষার্থীর ফলাফল কার্ডটি সুন্দরভাবে দেখুন এবং প্রয়োজনমতো পিডিএফ ডাউনলোড করুন।</p>
                 </div>
                 <div class="d-flex gap-2">
                     <span class="badge bg-light text-dark border px-3 py-2">শ্রেণী: {{ selected_class }}</span>
@@ -47,7 +47,7 @@
                     <div class="list-group overflow-auto student-list" style="max-height: 420px;">
                         {% for student in class_students %}
                         <a href="?class_level={{ selected_class }}&exam_type={{ selected_exam }}&exam_year={{ selected_year }}&student_id={{ student.id }}"
-                           class="list-group-item list-group-item-action border-0 mb-2 rounded-3 d-flex gap-2 align-items-center p-2 {% if result_data and result_data.student.id == student.id %}selected{% else %}bg-light{% endif %}">
+                           class="list-group-item list-group-item-action border-0 mb-2 rounded-3 d-flex gap-2 align-items-center p-3 {% if result_data and result_data.student.id == student.id %}selected{% else %}bg-white{% endif %}">
                             <div style="width:44px; height:44px; flex-shrink:0; border-radius:6px; overflow:hidden; background:#f8fafc; display:flex; align-items:center; justify-content:center;">
                                 {% if student.photo %}
                                     <img src="{{ student.photo.url }}" style="width:100%; height:100%; object-fit:cover;">
@@ -119,13 +119,29 @@
 </div>
 
 <style>
-    .list-group-item { transition: all 0.18s ease-in-out; }
-    .list-group-item:hover { transform: translateX(6px); box-shadow: 0 1px 6px rgba(15,23,42,0.06); }
+    .card.border-0.shadow-sm.rounded-4 {
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        background: #fff;
+    }
+    .card-body p { color: #6b7280; }
+    .display-5 { letter-spacing: -0.04em; }
+    .text-primary { color: #000000 !important; }
+    .list-group-item { transition: all 0.2s ease-in-out; background: #fff; border: 1px solid #e9ecef; }
+    .list-group-item:hover { transform: translateX(3px); box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08); }
     .list-group-item.selected, .list-group-item.selected * { color: #fff !important; }
-    .list-group-item.selected { background: linear-gradient(90deg,#0ea5a4,#0284c7) !important; box-shadow: 0 6px 18px rgba(2,6,23,0.08); }
+    .list-group-item.selected { background: linear-gradient(90deg,#0ea5a4,#0284c7) !important; box-shadow: 0 10px 28px rgba(2, 6, 23, 0.14); }
     .student-list { padding-right: 6px; }
+    .student-list .small.text-muted { color: #6b7280 !important; }
+    .filter-card .card-body { padding: 1.75rem; }
+    .result-print-card { background: #f8fafc; border-radius: 24px; padding: 1.5rem; }
+    .result-print-card .card { border: 1px solid #e9ecef; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04); }
+    .result-print-card .card-body { padding: 1.75rem; }
     .student-list::-webkit-scrollbar { width: 8px; }
-    .student-list::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 6px; }
+    .student-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+    .student-list::-webkit-scrollbar-track { background: #f1f5f9; }
+    .result-print-card h4, .result-print-card h2, .result-print-card h3 { color: #111827; }
+    .result-print-card table th { background: #eef2ff; color: #1d4ed8; }
+    .result-print-card table td { color: #334155; }
     @media print {
         @page { size: A4 portrait; margin: 10mm; }
         html, body { width: 100%; height: auto; margin: 0; padding: 0; background: white !important; }
