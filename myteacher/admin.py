@@ -33,17 +33,6 @@ class SubjectAssignmentAdmin(admin.ModelAdmin):
         return f"Class {obj.subject.class_level}"
     get_class_level.short_description = 'Class'
 
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        """Limit the subject dropdown to subjects flagged as 1st/2nd/4th paper.
-
-        This ensures when assigning subjects to teachers the list shows
-        subjects that are configured as primary/secondary/optional papers.
-        """
-        if db_field.name == 'subject':
-            from .models import Subject
-            kwargs['queryset'] = Subject.objects.filter(subject_type__in=['1', '2', '4']).order_by('class_level', 'subject_name')
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
 
 # TeacherClassAssignment is intentionally not registered in admin
 # because subject assignments already contain class information.

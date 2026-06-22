@@ -56,6 +56,10 @@ class Subject(models.Model):
     def full_mark_value(self):
         return self.full_mark if self.full_mark is not None else self.get_default_full_mark()
     def __str__(self):
+        type_label = self.get_subject_type_display() if hasattr(self, 'get_subject_type_display') else None
+        # Don't show 'NA' label for type '0'
+        if type_label and type_label not in ('NA', ''):
+            return f"{self.subject_name} {type_label} (Class {self.class_level})"
         return f"{self.subject_name} (Class {self.class_level})"
 
     class Meta:
