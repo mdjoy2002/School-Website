@@ -152,8 +152,8 @@ class StudentCornerData(CompressedUploadMixin, models.Model):
         ('SEAT', 'শ্রেণী ভিত্তিক আসন সংখ্যা'),
         ('DRESS', 'স্কুল-কলেজের ড্রেস সম্পর্কিত তথ্য'),
         ('CLASS_ROUTINE', 'ক্লাস রুটিন'),
-        ('EXAM_ROUTINE', 'পরীক্ষার রুটিন'),
         ('SYLLABUS', 'সিলেবাস'),
+        ('EXAM_ROUTINE', 'পরীক্ষার রুটিন'),
         ('HOLIDAY', 'ছুটির তালিকা'),
     ]
     
@@ -176,6 +176,7 @@ class AdmissionInfo(CompressedUploadMixin, models.Model):
         ('form', 'ভর্তি আবেদন ফরম'),
         ('guide', 'ভর্তি নির্দেশিকা'),
         ('result', 'ভর্তি পরীক্ষার ফলাফল'),
+        
         ('fees', 'বেতন ও ফি সমূহ'),
     ]
 

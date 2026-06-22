@@ -78,8 +78,8 @@ def student_corner_detail(request, category_name):
         'seats': 'SEAT',
         'dress': 'DRESS',
         'class-routine': 'CLASS_ROUTINE',
-        'exam-routine': 'EXAM_ROUTINE',
         'syllabus': 'SYLLABUS',
+        'exam-routine': 'EXAM_ROUTINE',
         'holiday': 'HOLIDAY',
     }
     
@@ -89,14 +89,23 @@ def student_corner_detail(request, category_name):
         'seats': 'শ্রেণী ভিত্তিক আসন সংখ্যা',
         'dress': 'স্কুল-কলেজের ড্রেস সম্পর্কিত তথ্য',
         'class-routine': 'ক্লাস রুটিন',
-        'exam-routine': 'পরীক্ষার রুটিন',
         'syllabus': 'সিলেবাস',
+        'exam-routine': 'পরীক্ষার রুটিন',
         'holiday': 'ছুটির তালিকা',
     }
     
     db_category = category_map.get(category_name)
     # আপনার টেমপ্লেটের লুপের সাথে মিল রাখার জন্য data_list বদলে items করা হয়েছে
-    items = StudentCornerData.objects.filter(category=db_category).order_by('-created_at')
+    if db_category == 'EXAM_ROUTINE':
+        student_corner_items = list(StudentCornerData.objects.filter(category=db_category).order_by('-created_at'))
+        exam_routines = list(ExamRoutine.objects.all().order_by('-created_at'))
+        items = sorted(
+            student_corner_items + exam_routines,
+            key=lambda obj: obj.created_at,
+            reverse=True
+        )
+    else:
+        items = StudentCornerData.objects.filter(category=db_category).order_by('-created_at')
     
     context = {
         'items': items,
