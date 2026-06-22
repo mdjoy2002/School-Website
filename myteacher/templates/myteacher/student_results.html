@@ -30,30 +30,6 @@
                     <h5 class="fw-bold mb-4 text-primary"><i class="fas fa-filter me-2"></i>ফিল্টার ও শিক্ষার্থী</h5>
                     <form method="get" id="filterForm">
                         <div class="mb-3">
-                            <label class="form-label fw-semibold text-secondary small">ক্লাস নির্বাচন</label>
-                            <select name="class_level" class="form-select border-0 bg-light py-2" onchange="document.getElementById('filterForm').submit()">
-                                {% for class_level in allowed_classes %}
-                                <option value="{{ class_level }}" {% if selected_class == class_level %}selected{% endif %}>Class {{ class_level }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold text-secondary small">পরীক্ষা নির্বাচন</label>
-                            <select name="exam_type" class="form-select border-0 bg-light py-2" onchange="document.getElementById('filterForm').submit()">
-                                {% for exam in exam_choices %}
-                                <option value="{{ exam }}" {% if selected_exam == exam %}selected{% endif %}>{{ exam }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold text-secondary small">বছর নির্বাচন</label>
-                            <select name="exam_year" class="form-select border-0 bg-light py-2" onchange="document.getElementById('filterForm').submit()">
-                                {% for year in exam_years %}
-                                <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>{{ year }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="mb-3">
                             <div class="input-group">
                                 <input type="text" name="search" class="form-control border-0 bg-light" placeholder="শিক্ষার্থীর নাম বা আইডি..." value="{{ search_query }}">
                                 <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>

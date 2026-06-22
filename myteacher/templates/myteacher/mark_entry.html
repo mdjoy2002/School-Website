@@ -18,7 +18,8 @@
                     <h4 class="mb-0 bangla-text"><i class="fas fa-filter text-primary me-2"></i>শ্রেণি, বিষয় ও পরীক্ষার ধরন নির্বাচন করুন</h4>
                     <p class="text-muted small mb-0">শুধুমাত্র আপনার নির্ধারিত শ্রেণি ও বিষয় এখানে দেখাবে।</p>
                 </div>
-                <div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'myteacher:dashboard' %}" class="btn btn-outline-primary"><i class="fas fa-arrow-left me-2"></i>Back to Dashboard</a>
                     <a href="{% url 'myteacher:mark_entry_history' %}" class="btn btn-outline-secondary"><i class="fas fa-history me-2"></i>Mark Entry History</a>
                 </div>
             </div>
