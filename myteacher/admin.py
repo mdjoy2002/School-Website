@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django import forms
 from .models import Subject, Mark, Teacher, TeacherSubjectAssignment, ExamRoutine
 
 # Subject Admin
@@ -29,31 +28,26 @@ class SubjectAssignmentAdmin(admin.ModelAdmin):
     list_filter = ('teacher', 'subject__class_level', 'created_at')
     search_fields = ('teacher__teacher_name', 'subject__subject_name')
     readonly_fields = ('assisngsubid', 'created_at')
-
-    def get_form(self, request, obj=None, **kwargs):
-        # Create a ModelForm that excludes already-assigned subjects from the subject field
-        class _AssignmentForm(forms.ModelForm):
-            class Meta:
-                model = TeacherSubjectAssignment
-                fields = '__all__'
-
-            def __init__(self, *args, **inner_kwargs):
-                super().__init__(*args, **inner_kwargs)
-                # All subject ids already assigned
-                assigned_ids = list(TeacherSubjectAssignment.objects.values_list('subject_id', flat=True))
-                # If editing an existing assignment, allow its subject to remain selectable
-                if self.instance and getattr(self.instance, 'pk', None):
-                    try:
-                        assigned_ids.remove(self.instance.subject_id)
-                    except ValueError:
-                        pass
-                self.fields['subject'].queryset = Subject.objects.exclude(pk__in=assigned_ids)
-
-        return _AssignmentForm
-
+    
     def get_class_level(self, obj):
         return f"Class {obj.subject.class_level}"
     get_class_level.short_description = 'Class'
+    def get_form(self, request, obj=None, **kwargs):
+        # store obj for use in formfield_for_foreignkey
+        self._obj = obj
+        return super().get_form(request, obj, **kwargs)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        from .models import Subject, TeacherSubjectAssignment
+        if db_field.name == 'subject':
+            # exclude subjects that are already assigned to some teacher
+            assigned_qs = TeacherSubjectAssignment.objects.values_list('subject', flat=True)
+            qs = Subject.objects.exclude(pk__in=assigned_qs)
+            # if editing an existing assignment, include its current subject
+            if getattr(self, '_obj', None) is not None:
+                qs = Subject.objects.filter(pk__in=list(qs.values_list('pk', flat=True)) + [self._obj.subject_id])
+            kwargs['queryset'] = qs
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 # TeacherClassAssignment is intentionally not registered in admin
