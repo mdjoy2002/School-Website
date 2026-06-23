@@ -34,8 +34,11 @@
     /* হেডার সেকশন */
     .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 5px; position: relative; z-index: 1; }
     .header-top { display: flex; align-items: center; justify-content: space-between; gap: 5px; }
-    .main-logo { width: 30px; height: 30px; }
-    .student-photo { width: 40px; height: 50px; border: 1px solid #000; object-fit: cover; }
+    .main-logo, .student-photo { width: 30px; height: 35px; object-fit: cover; }
+    
+    /* প্রিন্ট এর সময় ছবি লুকানোর ক্লাস */
+    .print-hide { display: block; }
+
     .school-name { font-size: 10px; font-weight: 900; margin: 0; text-transform: uppercase; }
     .school-addr { font-size: 7px; margin: 1px 0; font-weight: 600; }
     .exam-tag { font-size: 8px; font-weight: bold; border: 1px solid #000; padding: 1px 5px; margin-top: 3px; display: inline-block; background: #f9f9f9; }
@@ -51,13 +54,16 @@
     .footer { display: flex; justify-content: space-between; align-items: flex-end; z-index: 1; border-top: 1px dashed #ccc; padding-top: 3px; }
     .seat-no { font-size: 8px; font-weight: bold; }
     .sign-box { width: 70px; text-align: center; font-size: 8px; font-weight: bold; display: flex; flex-direction: column; align-items: center; }
-    .sign-box img { width: 50px; height: auto; display: block; }
+    .sign-box .sign-img { width: 50px; height: 25px; object-fit: contain; }
     .sign-line { width: 100%; height: 1px; background: #000; margin-top: 1px; }
 
     @media print { 
         body { background: #fff; } 
         .no-print { display: none !important; } 
         .page { margin: 0 !important; page-break-after: always; box-shadow: none !important; }
+        
+        /* প্রিন্ট করার সময় ছবি লুকানোর নিয়ম */
+        .print-hide { display: none !important; }
     }
 </style>
 
@@ -72,16 +78,16 @@
     {% endif %}
 
     <div class="seat-card">
-        <img src="{{ logo_url }}" class="watermark" alt="Logo" onerror="this.style.display='none'">
+        <img src="{{ logo_url }}" class="watermark print-hide" alt="Logo" onerror="this.style.display='none'">
         
         <div class="header">
             <div class="header-top">
-                <img src="{{ logo_url }}" class="main-logo" alt="Logo" onerror="this.style.display='none'">
+                <img src="{{ logo_url }}" class="main-logo print-hide" alt="Logo" onerror="this.style.display='none'">
                 <div style="flex-grow: 1;">
                     <h2 class="school-name">Khondoker Naser Uddin High School</h2>
                     <p class="school-addr">Boyra, Khulna, Bangladesh</p>
                 </div>
-                <img src="{{ student.photo.url|default:logo_url }}" class="student-photo" alt="Photo" onerror="this.style.display='none'">
+                <img src="{{ student.photo.url|default:logo_url }}" class="student-photo print-hide" alt="Photo" onerror="this.style.display='none'">
             </div>
             <div class="exam-tag">{{ exam_name }} - {{ exam_year }}</div>
         </div>
@@ -100,7 +106,7 @@
         <div class="footer">
             <div class="seat-no">SL: {{ forloop.counter|stringformat:"03d" }}</div>
             <div class="sign-box">
-                <img src="/static/images/sign.png" alt="Sign">
+                <img src="/static/images/sign.png" class="sign-img print-hide" alt="Sign">
                 <div class="sign-line"></div>
                 Head Teacher
             </div>
