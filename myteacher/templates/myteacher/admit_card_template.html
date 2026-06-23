@@ -17,7 +17,7 @@
 
         .page {
             width: 210mm;
-            height: 299mm;
+            height: 297mm;
             padding: 5mm;
             margin: 0 auto;
             background: #fff;
@@ -30,8 +30,8 @@
         .admit-wrapper { width: 100%; display: flex; justify-content: center; }
 
         .admit-card {
-            width: 202mm;
-            height: 146mm; /* সামান্য বাড়ানো হয়েছে */
+            width: 195mm;
+            height: 142mm; 
             border: 3px solid #000;
             padding: 8px 10px;
             box-sizing: border-box;
@@ -53,18 +53,28 @@
         .photo-box { width: 65px; text-align: right; }
         .student-photo { width: 60px; height: 70px; border: 1px solid #000; object-fit: cover; }
 
-        .student-info { display: grid; grid-template-columns: 1fr 1fr; font-size: 11px; margin-bottom: 5px; line-height: 1.2; border-bottom: 1px dashed #666; padding-bottom: 3.5px; position: relative; z-index: 1; }
+        .student-info { display: grid; grid-template-columns: 1fr 1fr; font-size: 10.5px; margin-bottom: 5px; line-height: 1.2; border-bottom: 1px dashed #666; padding-bottom: 3.5px; position: relative; z-index: 1; }
         
-        .timetable-title { text-align: center; font-weight: bold; font-size: 10.5px; text-transform: uppercase; margin-bottom: 2px; background: #eee; border: 1px solid #000; padding: 1px; position: relative; z-index: 1; }
+        .timetable-title { text-align: center; font-weight: bold; font-size: 10px; text-transform: uppercase; margin-bottom: 2px; background: #eee; border: 1px solid #000; padding: 1px; position: relative; z-index: 1; }
 
-        .routine-table { width: 100%; border-collapse: collapse; font-size: 10.5px; position: relative; z-index: 1; }
+        .routine-table { width: 100%; border-collapse: collapse; font-size: 10px; position: relative; z-index: 1; }
         .routine-table th, .routine-table td { border: 1px solid #000; padding: 2px; text-align: center; }
         .routine-table th { background: #acaba9ec; }
 
-        .instructions { font-size: 8.5px; line-height: 1.1; font-weight: bold; margin-top: 4px; border-top: 1px solid #000; padding-top: 3px; position: relative; z-index: 1; }
+        .instructions { font-size: 8px; line-height: 1.1; font-weight: bold; margin-top: 4px; border-top: 1px solid #000; padding-top: 3px; position: relative; z-index: 1; }
         .instructions p { margin: 1px 0; }
 
-        .footer-signs { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 4px; position: relative; z-index: 1; }
+        /* সিগনেচার অংশটিকে পজিশনিং করা হয়েছে যাতে এটি কার্ডের ভেতরেই থাকে */
+        .footer-signs { 
+            position: absolute; 
+            bottom: 10px; 
+            left: 10px; 
+            right: 10px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-end; 
+            z-index: 1; 
+        }
         .sign-box { border-top: 1px solid #000; width: 100px; text-align: center; padding-top: 2px; font-size: 9px; font-weight: bold; }
     </style>
 </head>
@@ -96,17 +106,16 @@
                     </div>
                 </div>
 
-             <div class="student-info">
-    <div><b>Name:</b> {{ s.full_name|upper }}</div>
-    <div><b>Student ID:</b> {{ s.student_id }}</div>
-    <div><b>Father's Name:</b> {{ s.father_name|upper }}</div>
-    <div><b>Mother's Name:</b> {{ s.mother_name|upper }}</div>
-    <div><b>Roll No:</b> {{ s.class_roll }}</div>
-    <div><b>Religion:</b> {{ s.religion|default:"N/A" }}</div>
-    <div><b>Class:</b> {{ s.current_class|default:"N/A" }}</div>
-    <div><b>Group:</b> {{ s.group|default:"General" }}</div>
-
-</div>
+                <div class="student-info">
+                    <div><b>Name:</b> {{ s.full_name|upper }}</div>
+                    <div><b>Student ID:</b> {{ s.student_id }}</div>
+                    <div><b>Father's Name:</b> {{ s.father_name|upper }}</div>
+                    <div><b>Mother's Name:</b> {{ s.mother_name|upper }}</div>
+                    <div><b>Roll No:</b> {{ s.class_roll }}</div>
+                    <div><b>Religion:</b> {{ s.religion|default:"N/A" }}</div>
+                    <div><b>Class:</b> {{ s.current_class|default:"N/A" }}</div>
+                    <div><b>Group:</b> {{ s.group|default:"General" }}</div>
+                </div>
 
                 <div class="timetable-title">Examination Time Table</div>
                 <table class="routine-table">
@@ -136,7 +145,7 @@
                 <div class="footer-signs">
                     <div class="sign-box">Class Teacher</div>
                     <div style="width: 100px; text-align: center; font-size: 9px; font-weight: bold;">
-                        <img src="/static/images/sign.png" alt="Headmaster" style="width: 90px; display: block; margin: 0 auto 1px auto;">
+                        <img src="/static/images/sign.png" alt="Headmaster" style="width: 70px; display: block; margin: 0 auto 1px auto;">
                         <div style="border-top: 1px solid #000;">Headmaster</div>
                     </div>
                 </div>
