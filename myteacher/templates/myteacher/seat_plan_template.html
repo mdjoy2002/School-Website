@@ -1,89 +1,136 @@
-{% extends 'myteacher/base.html' %}
-{% block content %}
-<style>
-    body { margin: 0; padding: 0; background: #f4f4f9; }
-    .page { width: 210mm; min-height: 297mm; padding: 6mm; margin: 10mm auto; background: #fff; display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, minmax(0, 1fr)); gap: 4mm; box-sizing: border-box; }
-    
-    .seat-card { border: 1.5px solid #000; padding: 10px; position: relative; background: #fff; display: flex; flex-direction: column; box-sizing: border-box; border-radius: 5px; height: 100%; }
-    
-    .watermark { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); width: 150px; opacity: 0.08; z-index: 0; pointer-events: none; }
-    
-    /* হেডার আপডেট */
-    .header { text-align: center; border-bottom: 1.2px solid #000; padding-bottom: 8px; position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; }
-    .header-top { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 5px; }
-    
-    .main-logo { width: 35px; height: 35px; object-fit: contain; }
-    .student-photo { width: 45px; height: 55px; border: 1px solid #000; object-fit: cover; }
-    
-    .school-name { font-size: 11px; font-weight: 900; margin: 0; color: #000; text-transform: uppercase; white-space: normal; }
-    .school-addr { font-size: 8px; margin: 2px 0; font-weight: 600; }
-    
-    .exam-tag { font-size: 9px; font-weight: bold; border: 1px solid #000; padding: 2px 8px; margin-top: 5px; border-radius: 2px; display: inline-block; }
-    
-    .content { margin-top: 10px; z-index: 1; flex-grow: 1; }
-    .info-table { width: 100%; border-collapse: collapse; }
-    .info-table td { font-size: 12px; padding: 1px 0; vertical-align: top; color: #000; }
-    .info-table td.label { width: 70px; font-weight: bold; }
-    .info-table td.val { font-weight: 800; text-transform: uppercase; }
-    
-    .footer { display: flex; justify-content: space-between; align-items: flex-end; z-index: 1; margin-top: 5px; }
-    .seat-no { font-size: 9px; font-weight: bold; }
-    .sign-box { width: 80px; text-align: center; font-size: 9px; font-weight: bold; padding-top: 2px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-    .sign-box img { width: 100%; max-width: 80px; height: auto; display: block; margin: 0 auto; }
-    .sign-box .sign-line { width: 100%; max-width: 80px; height: 1.5px; background: #000; }
-    
-    @media print { body { background: #fff; } .no-print { display: none !important; } .page { margin: 0 !important; box-shadow: none !important; page-break-after: always; } }
-</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admit Card - {{ exam_title }}</title>
+    <style>
+        body { margin: 0; padding: 0; background: #f0f0f0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .no-print { padding: 15px; text-align: center; }
+        .print-button { background: #4f46e5; color: white; padding: 10px 25px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin: 0 5px; text-decoration: none; }
 
-<div class="no-print text-center py-4">
-    <button onclick="window.print()" class="btn btn-primary me-3">Print Seat Plan</button>
-    <a href="{% url 'myteacher:student_list' %}" class="btn btn-secondary">Back to List</a>
-</div>
+        @media print {
+            body { background: #fff; }
+            .no-print { display: none !important; }
+            @page { size: A4 portrait; margin: 10mm; }
+            .page { box-shadow: none !important; margin: 0 !important; padding: 0 !important; break-inside: avoid; }
+        }
 
-{% for student in students %}
-    {% if forloop.first or forloop.counter0|divisibleby:8 %}
-        <div class="page">
-    {% endif %}
+        .page {
+            width: 210mm;
+            padding: 5mm;
+            margin: 0 auto 5mm auto;
+            background: #fff;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
 
-    <div class="seat-card">
-        <img src="{{ logo_url }}" class="watermark" alt="Logo" onerror="this.style.display='none'">
+        .admit-card {
+            width: 100%;
+            /* উচ্চতা ফিক্সড না রেখে কন্টেন্ট অনুযায়ী বড় হওয়ার ব্যবস্থা */
+            min-height: 130mm; 
+            border: 2px solid #000;
+            padding: 10px;
+            box-sizing: border-box;
+            position: relative;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            page-break-inside: avoid;
+        }
+
+        .watermark {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 250px; opacity: 0.05; z-index: 0; pointer-events: none;
+        }
+
+        .header { display: flex; align-items: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 5px; position: relative; z-index: 1; }
+        .logo-box { width: 70px; }
+        .school-info { flex-grow: 1; text-align: center; }
+        .school-name { font-size: 16px; font-weight: 800; margin: 0; text-transform: uppercase; }
+        .school-addr { font-size: 10px; margin: 2px 0; }
+        .admit-tag { border: 1px solid #000; display: inline-block; padding: 1px 8px; font-weight: bold; font-size: 9px; margin: 2px 0; background: #f2f2f2; }
+        .photo-box { width: 70px; text-align: right; }
+        .student-photo { width: 65px; height: 75px; border: 1px solid #000; object-fit: cover; }
+
+        .student-info { display: grid; grid-template-columns: 1fr 1fr; font-size: 10px; margin-bottom: 5px; position: relative; z-index: 1; }
+        .timetable-title { text-align: center; font-weight: bold; font-size: 10px; background: #eee; border: 1px solid #000; padding: 2px; margin-bottom: 3px; position: relative; z-index: 1; }
         
-        <div class="header">
-            <div class="header-top">
-                <img src="{{ logo_url }}" class="main-logo" alt="Logo" onerror="this.style.display='none'">
-                <div style="text-align: center;">
-                    <h2 class="school-name">Khandaker Naser Uddin High School</h2>
-                    <p class="school-addr">Boyra, Khulna, Bangladesh</p>
-                </div>
-                <img src="{{ student.photo.url|default:logo_url }}" class="student-photo" alt="Student Photo" onerror="this.style.display='none'">
-            </div>
-            <div class="exam-tag">{{ exam_name }} - {{ exam_year }}</div>
-        </div>
+        .routine-table { width: 100%; border-collapse: collapse; font-size: 9px; position: relative; z-index: 1; margin-bottom: auto; }
+        .routine-table th, .routine-table td { border: 1px solid #000; padding: 2px 4px; text-align: center; }
+        .routine-table th { background: #e0e0e0; }
 
-        <div class="content">
-            <table class="info-table">
-                <tr><td class="label">Student ID</td><td class="val">: {{ student.student_id }}</td></tr>
-                <tr><td class="label">Name</td><td class="val">: {{ student.full_name }}</td></tr>
-                <tr><td class="label">Class</td><td class="val">: {{ student.current_class }}</td></tr>
-                <tr><td class="label">Roll No</td><td class="val">: {{ student.class_roll }}</td></tr>
-                <tr><td class="label">Section</td><td class="val">: {{ student.shift|default:'N/A' }}</td></tr>
-                <tr><td class="label">Session</td><td class="val">: {{ student.session|default:exam_year }}</td></tr>
-                <tr><td class="label">Group</td><td class="val">: {{ student.group|default:'General' }}</td></tr>
-            </table>
-        </div>
-
-        <div class="footer">
-            <div class="seat-no">SL: {{ forloop.counter|stringformat:"03d" }}</div>
-            <div class="sign-box">
-                <img src="/static/images/sign.png" alt="Headmaster Signature">
-                <div class="sign-line"></div>
-                Head Teacher
-            </div>
-        </div>
+        .instructions { font-size: 8px; margin-top: 5px; border-top: 1px solid #000; padding-top: 3px; position: relative; z-index: 1; }
+        .footer-signs { display: flex; justify-content: space-between; margin-top: 5px; position: relative; z-index: 1; }
+        .sign-box { border-top: 1px solid #000; width: 120px; text-align: center; font-size: 9px; font-weight: bold; padding-top: 2px; }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button class="print-button" onclick="window.print()">Print Admit Card</button>
     </div>
 
-    {% if forloop.counter|divisibleby:8 or forloop.last %}
+    {% for s in students %}
+        {% if forloop.counter0|divisibleby:2 %}
+            <div class="page">
+        {% endif %}
+
+        <div class="admit-card">
+            <img src="/static/logo.png" class="watermark" alt="Logo">
+            <div class="header">
+                <div class="logo-box"><img src="/static/logo.png" style="width: 60px;"></div>
+                <div class="school-info">
+                    <h1 class="school-name">KHONDOKER NASER UDDIN HIGH SCHOOL</h1>
+                    <p class="school-addr">Boyra, Khulna, Bangladesh.</p>
+                    <div class="admit-tag">ADMIT CARD</div>
+                    <div style="font-size: 10px; font-weight: bold;">{{ exam_title|upper }}</div>
+                </div>
+                <div class="photo-box"><img src="{{ s.photo.url }}" class="student-photo"></div>
+            </div>
+
+            <div class="student-info">
+                <div><b>Name:</b> {{ s.full_name|upper }}</div>
+                <div><b>Roll No:</b> {{ s.class_roll }}</div>
+                <div><b>Student ID:</b> {{ s.student_id }}</div>
+                <div><b>Class:</b> {{ s.get_current_class_display }}</div>
+                <div><b>Group:</b> {{ s.group|default:"General" }}</div>
+                <div><b>Section:</b> {{ s.shift|default:"N/A" }}</div>
+            </div>
+
+            <div class="timetable-title">EXAMINATION TIME TABLE</div>
+            <table class="routine-table">
+                <thead>
+                    <tr><th>Sl</th><th>Date</th><th>Day</th><th>Code</th><th>Subject</th><th>Time</th></tr>
+                </thead>
+                <tbody>
+                    {% for rt in s.get_routines %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ rt.exam_date|date:"d-m-Y" }}</td>
+                            <td>{{ rt.exam_date|date:"l" }}</td>
+                            <td>{{ rt.subject_code|default:'-' }}</td>
+                            <td>{{ rt.subject_name }}</td>
+                            <td>{{ rt.exam_time }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="instructions">
+                • Students must bring this admit card to the exam hall daily.<br>
+                • Candidates must enter the exam hall at least 30 minutes before the start time.
+            </div>
+
+            <div class="footer-signs">
+                <div class="sign-box">Class Teacher</div>
+                <div class="sign-box">Headmaster</div>
+            </div>
         </div>
-    {% endif %}
-{% endfor %}
-{% endblock %}
+
+        {% if forloop.counter|divisibleby:2 or forloop.last %}
+            </div>
+        {% endif %}
+    {% endfor %}
+</body>
+</html>
