@@ -1,38 +1,64 @@
 {% extends 'myteacher/base.html' %}
 {% block content %}
 <style>
-    body { margin: 0; padding: 0; background: #f4f4f9; }
-    .page { width: 210mm; min-height: 297mm; padding: 6mm; margin: 10mm auto; background: #fff; display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, minmax(0, 1fr)); gap: 4mm; box-sizing: border-box; }
+    /* পেজ সেটিংস */
+    body { margin: 0; padding: 0; background: #f4f4f9; font-family: sans-serif; }
+    .page { 
+        width: 210mm; 
+        height: 297mm; 
+        padding: 5mm; 
+        margin: 5mm auto; 
+        background: #fff; 
+        display: grid; 
+        grid-template-columns: repeat(2, 1fr); 
+        grid-template-rows: repeat(4, 1fr); 
+        gap: 5mm; 
+        box-sizing: border-box; 
+    }
     
-    .seat-card { border: 1.5px solid #000; padding: 10px; position: relative; background: #fff; display: flex; flex-direction: column; box-sizing: border-box; border-radius: 5px; height: 100%; }
+    .seat-card { 
+        border: 1.5px solid #000; 
+        padding: 8px; 
+        position: relative; 
+        background: #fff; 
+        display: flex; 
+        flex-direction: column; 
+        justify-content: space-between;
+        box-sizing: border-box; 
+        border-radius: 4px; 
+        overflow: hidden;
+    }
     
-    .watermark { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); width: 150px; opacity: 0.08; z-index: 0; pointer-events: none; }
+    .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120px; opacity: 0.06; z-index: 0; }
     
-    /* হেডার আপডেট */
-    .header { text-align: center; border-bottom: 1.2px solid #000; padding-bottom: 8px; position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; }
-    .header-top { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 5px; }
+    /* হেডার সেকশন */
+    .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 5px; position: relative; z-index: 1; }
+    .header-top { display: flex; align-items: center; justify-content: space-between; gap: 5px; }
+    .main-logo { width: 30px; height: 30px; }
+    .student-photo { width: 40px; height: 50px; border: 1px solid #000; object-fit: cover; }
+    .school-name { font-size: 10px; font-weight: 900; margin: 0; text-transform: uppercase; }
+    .school-addr { font-size: 7px; margin: 1px 0; font-weight: 600; }
+    .exam-tag { font-size: 8px; font-weight: bold; border: 1px solid #000; padding: 1px 5px; margin-top: 3px; display: inline-block; background: #f9f9f9; }
     
-    .main-logo { width: 35px; height: 35px; object-fit: contain; }
-    .student-photo { width: 45px; height: 55px; border: 1px solid #000; object-fit: cover; }
-    
-    .school-name { font-size: 11px; font-weight: 900; margin: 0; color: #000; text-transform: uppercase; white-space: normal; }
-    .school-addr { font-size: 8px; margin: 2px 0; font-weight: 600; }
-    
-    .exam-tag { font-size: 9px; font-weight: bold; border: 1px solid #000; padding: 2px 8px; margin-top: 5px; border-radius: 2px; display: inline-block; }
-    
-    .content { margin-top: 10px; z-index: 1; flex-grow: 1; }
+    /* ইনফো টেবিল */
+    .content { margin: 5px 0; z-index: 1; }
     .info-table { width: 100%; border-collapse: collapse; }
-    .info-table td { font-size: 12px; padding: 1px 0; vertical-align: top; color: #000; }
-    .info-table td.label { width: 70px; font-weight: bold; }
-    .info-table td.val { font-weight: 800; text-transform: uppercase; }
+    .info-table td { font-size: 9.5px; padding: 1px 0; }
+    .info-table td.label { width: 60px; font-weight: bold; }
+    .info-table td.val { font-weight: 700; }
     
-    .footer { display: flex; justify-content: space-between; align-items: flex-end; z-index: 1; margin-top: 5px; }
-    .seat-no { font-size: 9px; font-weight: bold; }
-    .sign-box { width: 80px; text-align: center; font-size: 9px; font-weight: bold; padding-top: 2px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-    .sign-box img { width: 100%; max-width: 80px; height: auto; display: block; margin: 0 auto; }
-    .sign-box .sign-line { width: 100%; max-width: 80px; height: 1.5px; background: #000; }
-    
-    @media print { body { background: #fff; } .no-print { display: none !important; } .page { margin: 0 !important; box-shadow: none !important; page-break-after: always; } }
+    /* ফুটার সেকশন */
+    .footer { display: flex; justify-content: space-between; align-items: flex-end; z-index: 1; border-top: 1px dashed #ccc; padding-top: 3px; }
+    .seat-no { font-size: 8px; font-weight: bold; }
+    .sign-box { width: 70px; text-align: center; font-size: 8px; font-weight: bold; display: flex; flex-direction: column; align-items: center; }
+    .sign-box img { width: 50px; height: auto; display: block; }
+    .sign-line { width: 100%; height: 1px; background: #000; margin-top: 1px; }
+
+    @media print { 
+        body { background: #fff; } 
+        .no-print { display: none !important; } 
+        .page { margin: 0 !important; page-break-after: always; box-shadow: none !important; }
+    }
 </style>
 
 <div class="no-print text-center py-4">
@@ -51,23 +77,22 @@
         <div class="header">
             <div class="header-top">
                 <img src="{{ logo_url }}" class="main-logo" alt="Logo" onerror="this.style.display='none'">
-                <div style="text-align: center;">
+                <div style="flex-grow: 1;">
                     <h2 class="school-name">Khondoker Naser Uddin High School</h2>
                     <p class="school-addr">Boyra, Khulna, Bangladesh</p>
                 </div>
-                <img src="{{ student.photo.url|default:logo_url }}" class="student-photo" alt="Student Photo" onerror="this.style.display='none'">
+                <img src="{{ student.photo.url|default:logo_url }}" class="student-photo" alt="Photo" onerror="this.style.display='none'">
             </div>
             <div class="exam-tag">{{ exam_name }} - {{ exam_year }}</div>
         </div>
 
         <div class="content">
             <table class="info-table">
-                <tr><td class="label">Student ID</td><td class="val">: {{ student.student_id }}</td></tr>
+                <tr><td class="label">ID</td><td class="val">: {{ student.student_id }}</td></tr>
                 <tr><td class="label">Name</td><td class="val">: {{ student.full_name }}</td></tr>
                 <tr><td class="label">Class</td><td class="val">: {{ student.current_class }}</td></tr>
-                <tr><td class="label">Roll No</td><td class="val">: {{ student.class_roll }}</td></tr>
-                <tr><td class="label">Section</td><td class="val">: {{ student.shift|default:'N/A' }}</td></tr>
-                <tr><td class="label">Session</td><td class="val">: {{ student.session|default:exam_year }}</td></tr>
+                <tr><td class="label">Roll</td><td class="val">: {{ student.class_roll }}</td></tr>
+                <tr><td class="label">Sec/Shift</td><td class="val">: {{ student.shift|default:'N/A' }}</td></tr>
                 <tr><td class="label">Group</td><td class="val">: {{ student.group|default:'General' }}</td></tr>
             </table>
         </div>
@@ -75,7 +100,7 @@
         <div class="footer">
             <div class="seat-no">SL: {{ forloop.counter|stringformat:"03d" }}</div>
             <div class="sign-box">
-                <img src="/static/images/sign.png" alt="Headmaster Signature">
+                <img src="/static/images/sign.png" alt="Sign">
                 <div class="sign-line"></div>
                 Head Teacher
             </div>
