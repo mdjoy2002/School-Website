@@ -97,12 +97,16 @@
                 </div>
 
                 <div class="student-info">
-                    <div><b>Name:</b> {{ s.full_name|upper }}</div>
-                    <div><b>Roll No:</b> {{ s.class_roll }}</div>
                     <div><b>Student ID:</b> {{ s.student_id }}</div>
-                    <div><b>Class:</b> {{ s.get_current_class_display }}</div>
+                    <div><b>Name:</b> {{ s.full_name|upper }}</div>
+                    <div><b>Father's Name:</b> {{ s.father_name|upper }}</div>
+                    <div><b>Mother's Name:</b> {{ s.mother_name|upper }}</div>
+                    <div><b>Religion:</b> {{ s.religion|default:"N/A" }}</div>
+                    <div><b>Roll No:</b> {{ s.class_roll }}</div>
+                    <div><b>Session:</b> {{ s.session|default:"N/A" }}</div>
+                    <div><b>Class:</b> {{ s.current_class|default:"N/A" }}</div>
                     <div><b>Group:</b> {{ s.group|default:"General" }}</div>
-                    <div><b>Section:</b> {{ s.shift|default:"N/A" }}</div>
+                    <div><b>Shift:</b> {{ s.shift|default:"N/A" }}</div>
                 </div>
 
                 <div class="timetable-title">Examination Time Table</div>
