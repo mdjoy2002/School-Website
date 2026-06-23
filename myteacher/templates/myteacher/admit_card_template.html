@@ -16,55 +16,58 @@
         }
 
         .page {
-            width: 190mm;
-            min-height: 277mm;
-            margin: 0 auto 10mm auto;
-            background: #fff;
+            width: 100%;
+            padding: 5mm;
             box-sizing: border-box;
             page-break-after: always;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
         }
 
         .admit-card {
-            width: 100%;
-            height: 135mm; /* দুই কার্ডের জন্য হাইট ঠিক রাখা হয়েছে */
+            width: 195mm;
             border: 2px solid #000;
-            padding: 10px;
+            padding: 12px 14px;
             box-sizing: border-box;
             position: relative;
             background: #fff;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            margin-bottom: 5px;
+            margin-bottom: 10mm; /* দুটি কার্ডের মাঝে গ্যাপ */
         }
 
-        .watermark { position: absolute; top: 52%; left: 50%; transform: translate(-50%, -50%); width: 280px; opacity: 0.06; z-index: 0; pointer-events: none; }
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px;
+            opacity: 0.06;
+            z-index: 0;
+            pointer-events: none;
+        }
+
         .header { display: flex; align-items: center; border-bottom: 2px solid #000; padding-bottom: 4px; margin-bottom: 6px; position: relative; z-index: 1; }
-        .logo-box { width: 60px; }
+        .logo-box { width: 70px; }
         .school-info { flex-grow: 1; text-align: center; }
-        .school-name { font-size: 16px; font-weight: 800; margin: 0; color: #000; text-transform: uppercase; }
-        .school-addr { font-size: 10px; margin: 2px 0; }
-        .admit-tag { border: 1px solid #000; display: inline-block; padding: 1px 10px; font-weight: bold; font-size: 9px; margin-top: 2px; background: #f2f2f2; }
-        .photo-box { width: 70px; text-align: right; }
-        .student-photo { width: 65px; height: 75px; border: 1.5px solid #000; object-fit: cover; }
+        .school-name { font-size: 18px; font-weight: 800; margin: 0; color: #000; text-transform: uppercase; }
+        .school-addr { font-size: 11px; margin: 2px 0; }
+        .admit-tag { border: 1px solid #000; display: inline-block; padding: 1px 10px; font-weight: bold; font-size: 10px; margin-top: 2px; background: #f2f2f2; }
+        .photo-box { width: 75px; text-align: right; }
+        .student-photo { width: 70px; height: 80px; border: 1.5px solid #000; object-fit: cover; }
 
-        .student-info { display: grid; grid-template-columns: 1fr 1fr; font-size: 10px; margin-bottom: 5px; line-height: 1.2; border-bottom: 1px dashed #666; padding-bottom: 4px; position: relative; z-index: 1; }
-        .info-row b { display: inline-block; width: 65px; }
+        .student-info { display: grid; grid-template-columns: 1fr 1fr; font-size: 11px; margin-bottom: 6px; line-height: 1.3; border-bottom: 1px dashed #666; padding-bottom: 4px; position: relative; z-index: 1; }
+        .info-row b { display: inline-block; width: 72px; }
 
-        .timetable-title { text-align: center; font-weight: bold; font-size: 10px; text-transform: uppercase; margin-bottom: 2px; background: #eee; border: 1px solid #000; padding: 2px; position: relative; z-index: 1; }
+        .timetable-title { text-align: center; font-weight: bold; font-size: 11px; text-transform: uppercase; margin-bottom: 2px; background: #eee; border: 1px solid #000; padding: 2px 4px; position: relative; z-index: 1; }
 
-        .routine-table { width: 100%; border-collapse: collapse; font-size: 9px; position: relative; z-index: 1; table-layout: fixed; }
-        .routine-table th, .routine-table td { border: 1px solid #000; padding: 2px; text-align: center; vertical-align: middle; }
+        .routine-table { width: 100%; border-collapse: collapse; font-size: 10px; position: relative; z-index: 1; table-layout: fixed; margin-bottom: 10px; }
+        .routine-table th, .routine-table td { border: 1px solid #000; padding: 3px 4px; text-align: center; vertical-align: middle; word-wrap: break-word; }
         .routine-table th { background: #acaba9ec; font-weight: bold; }
 
-        .instructions { font-size: 8px; line-height: 1.1; font-weight: bold; margin-top: 4px; border-top: 1px solid #000; padding-top: 3px; position: relative; z-index: 1; }
-        .instructions p { margin: 1px 0; }
+        .instructions { font-size: 9px; line-height: 1.2; font-weight: bold; border-top: 1px solid #000; padding-top: 5px; position: relative; z-index: 1; margin-bottom: 10px; }
+        .instructions p { margin: 2px 0; }
 
-        .footer-signs { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-top: 5px; position: relative; z-index: 1; }
-        .sign-box { border-top: 1px solid #000; width: 120px; text-align: center; padding-top: 2px; font-size: 9px; font-weight: bold; }
+        .footer-signs { display: flex; justify-content: space-between; align-items: flex-end; position: relative; z-index: 1; margin-top: auto; }
+        .sign-box { border-top: 1.2px solid #000; width: 130px; text-align: center; padding-top: 2px; font-size: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -74,69 +77,74 @@
     </div>
 
     {% for s in students %}
-        {% if forloop.counter0|divisibleby:2 %}
-            <div class="page">
-        {% endif %}
-
-        <div class="admit-card">
-            <img src="/static/logo.png" class="watermark" alt="Watermark">
-            <div class="header">
-                <div class="logo-box"><img src="/static/logo.png" style="width: 55px;" onerror="this.src='https://via.placeholder.com/65'" alt="Logo"></div>
-                <div class="school-info">
-                    <h1 class="school-name">KHONDOKER NASER UDDIN HIGH SCHOOL</h1>
-                    <p class="school-addr">Boyra, Khulna, Bangladesh.</p>
-                    <div class="admit-tag">ADMIT CARD</div>
-                    <div style="font-size: 10px; font-weight: bold; margin-top: 2px;">{{ exam_title|upper }}</div>
+        <div class="page">
+            <div class="admit-card">
+                <img src="/static/logo.png" class="watermark" alt="Watermark">
+                <div class="header">
+                    <div class="logo-box">
+                        <img src="/static/logo.png" style="width: 65px;" onerror="this.src='https://via.placeholder.com/65'" alt="Logo">
+                    </div>
+                    <div class="school-info">
+                        <h1 class="school-name">KHONDOKER NASER UDDIN HIGH SCHOOL</h1>
+                        <p class="school-addr">Boyra, Khulna, Bangladesh.</p>
+                        <div class="admit-tag">ADMIT CARD</div>
+                        <div style="font-size: 11px; font-weight: bold; margin-top: 2px;">{{ exam_title|upper }}</div>
+                    </div>
+                    <div class="photo-box">
+                        <img src="{{ s.photo.url }}" class="student-photo" alt="{{ s.full_name }}" onerror="this.src='https://ui-avatars.com/api/?name={{ s.full_name|urlencode }}&size=80&background=f1f5f9&color=1e293b&bold=true'">
+                    </div>
                 </div>
-                <div class="photo-box"><img src="{{ s.photo.url }}" class="student-photo" alt="{{ s.full_name }}" onerror="this.src='https://ui-avatars.com/api/?name={{ s.full_name|urlencode }}&size=80&background=f1f5f9&color=1e293b&bold=true'"></div>
-            </div>
 
-            <div class="student-info">
-                <div class="info-row"><b>Name:</b> {{ s.full_name|upper }}</div>
-                <div class="info-row"><b>Roll No:</b> {{ s.class_roll }}</div>
-                <div class="info-row"><b>Student ID:</b> {{ s.student_id }}</div>
-                <div class="info-row"><b>Class:</b> {{ s.get_current_class_display }}</div>
-                <div class="info-row"><b>Group:</b> {{ s.group|default:"General" }}</div>
-                <div class="info-row"><b>Section:</b> {{ s.shift|default:"N/A" }}</div>
-            </div>
+                <div class="student-info">
+                    <div class="info-row"><b>Name:</b> {{ s.full_name|upper }}</div>
+                    <div class="info-row"><b>Roll No:</b> {{ s.class_roll }}</div>
+                    <div class="info-row"><b>Student ID:</b> {{ s.student_id }}</div>
+                    <div class="info-row"><b>Class:</b> {{ s.get_current_class_display }}</div>
+                    <div class="info-row"><b>Group:</b> {{ s.group|default:"General" }}</div>
+                    <div class="info-row"><b>Section:</b> {{ s.shift|default:"N/A" }}</div>
+                </div>
 
-            <div class="timetable-title">Examination Time Table</div>
-            <table class="routine-table">
-                <thead>
-                    <tr><th width="20">Sl</th><th width="60">Date</th><th width="50">Day</th><th width="60">Code</th><th>Subject</th><th width="70">Time</th></tr>
-                </thead>
-                <tbody>
-                    {% for rt in s.get_routines %}
+                <div class="timetable-title">Examination Time Table</div>
+                <table class="routine-table">
+                    <thead>
                         <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td>{{ rt.exam_date|date:"d-m-Y" }}</td>
-                            <td>{{ rt.exam_date|date:"D" }}</td>
-                            <td>{{ rt.subject_code|default:'-' }}</td>
-                            <td><b>{{ rt.subject_name }}</b></td>
-                            <td>{{ rt.exam_time }}</td>
+                            <th width="20">Sl</th>
+                            <th width="70">Date</th>
+                            <th width="55">Day</th>
+                            <th width="75">Code</th>
+                            <th>Subject</th>
+                            <th width="90">Time</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for rt in s.get_routines %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ rt.exam_date|date:"d-m-Y" }}</td>
+                                <td>{{ rt.exam_date|date:"l" }}</td>
+                                <td>{{ rt.subject_code|default:'-' }}</td>
+                                <td><b>{{ rt.subject_name }}</b></td>
+                                <td>{{ rt.exam_time }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
 
-            <div class="instructions">
-                <p>• Students must bring this admit card to the exam hall daily.</p>
-                <p>• Candidates must enter the exam hall at least 30 minutes before the start time.</p>
-                <p>• Mobile phones or any electronic devices are strictly prohibited.</p>
-            </div>
+                <div class="instructions">
+                    <p>• Students must bring this admit card to the exam hall daily.</p>
+                    <p>• Candidates must enter the exam hall at least 30 minutes before the start time.</p>
+                    <p>• Mobile phones or any electronic devices are strictly prohibited.</p>
+                </div>
 
-            <div class="footer-signs">
-                <div class="sign-box">Class Teacher</div>
-                <div style="width: 120px; text-align: center; font-size: 9px; font-weight: bold;">
-                    <img src="/static/images/sign.png" alt="Sign" style="width: 60px; display: block; margin: 0 auto 2px auto;">
-                    <div style="border-top: 1px solid #000; padding-top: 2px;">Headmaster</div>
+                <div class="footer-signs">
+                    <div class="sign-box">Class Teacher</div>
+                    <div style="width: 130px; text-align: center; font-size: 10px; font-weight: bold;">
+                        <img src="/static/images/sign.png" alt="Headmaster Signature" style="width: 80px; height: auto; display: block; margin: 0 auto 2px auto;">
+                        <div style="border-top: 1.2px solid #000; padding-top: 2px;">Headmaster</div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        {% if forloop.counter|divisibleby:2 or forloop.last %}
-            </div>
-        {% endif %}
     {% endfor %}
 </body>
 </html>
