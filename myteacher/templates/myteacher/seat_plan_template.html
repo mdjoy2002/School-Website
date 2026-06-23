@@ -1,38 +1,52 @@
 {% extends 'myteacher/base.html' %}
 {% block content %}
 <style>
-    body { margin: 0; padding: 0; background: #f4f4f9; }
-    .page { width: 210mm; min-height: 297mm; padding: 6mm; margin: 10mm auto; background: #fff; display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, minmax(0, 1fr)); gap: 4mm; box-sizing: border-box; }
+    body { margin: 0; padding: 0; background: #f4f4f9; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    .page { width: 210mm; height: 297mm; padding: 6mm; margin: 10mm auto; background: #fff; display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, minmax(0, 1fr)); gap: 4mm; box-sizing: border-box; }
     
-    .seat-card { border: 1.5px solid #000; padding: 10px; position: relative; background: #fff; display: flex; flex-direction: column; box-sizing: border-box; border-radius: 5px; height: 100%; }
+    .seat-card { border: 1.5px solid #000; padding: 10px; position: relative; background: #fff; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; border-radius: 5px; height: 100%; }
     
     .watermark { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); width: 150px; opacity: 0.08; z-index: 0; pointer-events: none; }
     
-    /* হেডার আপডেট */
-    .header { text-align: center; border-bottom: 1.2px solid #000; padding-bottom: 8px; position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; }
-    .header-top { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 5px; }
+    .header { text-align: center; border-bottom: 1.2px solid #000; padding-bottom: 4px; position: relative; z-index: 1; }
+    .header-top { position: relative; display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 2px; }
     
-    .main-logo { width: 35px; height: 35px; object-fit: contain; }
+    .main-logo {
+        position: absolute;
+        left: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 45px;
+        height: auto;
+        object-fit: contain;
+    }
     .student-photo { width: 45px; height: 55px; border: 1px solid #000; object-fit: cover; }
     
-    .school-name { font-size: 11px; font-weight: 900; margin: 0; color: #000; text-transform: uppercase; white-space: normal; }
-    .school-addr { font-size: 8px; margin: 2px 0; font-weight: 600; }
+    .school-name { font-size: 10.5px; font-weight: 900; margin: 0; color: #000; text-transform: uppercase; }
+    .school-addr { font-size: 8px; margin: 1px 0; font-weight: 600; }
     
-    .exam-tag { font-size: 9px; font-weight: bold; border: 1px solid #000; padding: 2px 8px; margin-top: 5px; border-radius: 2px; display: inline-block; }
+    .exam-tag { font-size: 10px; font-weight: bold; background: #f0f0f0; border: 1px solid #000; display: inline-block; padding: 0px 8px; margin-top: 2px; border-radius: 2px; }
     
-    .content { margin-top: 10px; z-index: 1; flex-grow: 1; }
+    .content { margin-top: 8px; z-index: 1; flex-grow: 1; }
     .info-table { width: 100%; border-collapse: collapse; }
-    .info-table td { font-size: 12px; padding: 1px 0; vertical-align: top; color: #000; }
-    .info-table td.label { width: 70px; font-weight: bold; }
+    .info-table td { font-size: 13.5px; padding: 2px 0; vertical-align: top; color: #000; line-height: 1.2; }
+    .info-table td.label { width: 75px; font-weight: bold; }
     .info-table td.val { font-weight: 800; text-transform: uppercase; }
     
     .footer { display: flex; justify-content: space-between; align-items: flex-end; z-index: 1; margin-top: 5px; }
-    .seat-no { font-size: 9px; font-weight: bold; }
-    .sign-box { width: 80px; text-align: center; font-size: 9px; font-weight: bold; padding-top: 2px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-    .sign-box img { width: 100%; max-width: 80px; height: auto; display: block; margin: 0 auto; }
-    .sign-box .sign-line { width: 100%; max-width: 80px; height: 1.5px; background: #000; }
+    .seat-no { font-size: 9px; font-weight: bold; color: #333; }
+    .sign-box { border-top: 1.2px solid #000; width: 105px; text-align: center; font-size: 9px; font-weight: bold; padding-top: 2px; }
     
-    @media print { body { background: #fff; } .no-print { display: none !important; } .page { margin: 0 !important; box-shadow: none !important; page-break-after: always; } }
+    .no-print { text-align: center; padding: 20px; }
+    .no-print button,
+    .no-print a { background: #1e293b; color: white; padding: 12px 25px; border: none; border-radius: 6px; cursor: pointer; margin: 0 6px 10px; font-weight: bold; text-decoration: none; display: inline-block; }
+    .no-print a { background: #64748b; }
+    
+    @media print {
+        body { background: #fff; }
+        .no-print { display: none !important; }
+        .page { margin: 0 !important; box-shadow: none !important; page-break-after: always; height: 297mm; width: 210mm; }
+    }
 </style>
 
 <div class="no-print text-center py-4">
@@ -66,7 +80,7 @@
                 <tr><td class="label">Name</td><td class="val">: {{ student.full_name }}</td></tr>
                 <tr><td class="label">Class</td><td class="val">: {{ student.current_class }}</td></tr>
                 <tr><td class="label">Roll No</td><td class="val">: {{ student.class_roll }}</td></tr>
-                <tr><td class="label">Section</td><td class="val">: {{ student.shift|default:'N/A' }}</td></tr>
+                <tr><td class="label">Shift</td><td class="val">: {{ student.shift|default:'N/A' }}</td></tr>
                 <tr><td class="label">Session</td><td class="val">: {{ student.session|default:exam_year }}</td></tr>
                 <tr><td class="label">Group</td><td class="val">: {{ student.group|default:'General' }}</td></tr>
             </table>
