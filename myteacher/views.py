@@ -473,6 +473,7 @@ def student_corner_view(request):
         if not assigned_classes and own_class_teacher_classes:
             assigned_classes = own_class_teacher_classes
     
+    class_options = ['all'] + assigned_classes if is_head_teacher else assigned_classes
     selected_class = request.GET.get('class_level')
     search_query = request.GET.get('search', '').strip()
 
@@ -480,26 +481,37 @@ def student_corner_view(request):
     class_students = None
     
     if assigned_classes:
-        if selected_class and selected_class in assigned_classes:
-            current_class = selected_class
+        if selected_class == 'all' and is_head_teacher:
+            class_students = Student.objects.all().order_by('current_class', 'class_roll')
+            if search_query:
+                class_students = class_students.filter(
+                    Q(full_name__icontains=search_query) |
+                    Q(student_id__icontains=search_query) |
+                    Q(father_name__icontains=search_query) |
+                    Q(mother_name__icontains=search_query)
+                )
+            students = class_students
         else:
-            current_class = assigned_classes[0]
-        
-        class_students = Student.objects.filter(current_class=current_class).order_by('class_roll')
-        if search_query:
-            class_students = class_students.filter(
-                Q(full_name__icontains=search_query) |
-                Q(student_id__icontains=search_query) |
-                Q(father_name__icontains=search_query) |
-                Q(mother_name__icontains=search_query)
-            )
-        
-        students = class_students
-        selected_class = current_class
+            if selected_class and selected_class in assigned_classes:
+                current_class = selected_class
+            else:
+                current_class = assigned_classes[0]
+            
+            class_students = Student.objects.filter(current_class=current_class).order_by('class_roll')
+            if search_query:
+                class_students = class_students.filter(
+                    Q(full_name__icontains=search_query) |
+                    Q(student_id__icontains=search_query) |
+                    Q(father_name__icontains=search_query) |
+                    Q(mother_name__icontains=search_query)
+                )
+            students = class_students
+            selected_class = current_class
 
     return render(request, 'myteacher/student_corner.html', {
         'teacher': teacher,
         'assigned_classes': assigned_classes,
+        'class_options': class_options,
         'selected_class': selected_class,
         'class_students': class_students,
         'students': students,

@@ -10,10 +10,15 @@
                 <p class="text-slate-300 mt-1">Manage assigned classes and student details.</p>
             </div>
             <div class="flex flex-wrap gap-3">
-                
+                {% if selected_class != 'all' %}
                 <a href="{% url 'myteacher:id_cards' %}?class_level={{ selected_class }}" class="inline-flex items-center rounded-xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-400 transition">
                     <i class="fas fa-id-card-alt me-2"></i>ID Cards
                 </a>
+                {% else %}
+                <button type="button" disabled class="inline-flex items-center rounded-xl bg-slate-400 px-5 py-3 text-sm font-semibold text-white cursor-not-allowed" title="ID Cards unavailable for All Classes">
+                    <i class="fas fa-id-card-alt me-2"></i>ID Cards
+                </button>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -23,14 +28,20 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
             <div class="w-full md:w-64">
                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Select Class</label>
-                {% if assigned_classes|length > 1 %}
+                {% if class_options|length > 1 %}
                 <select id="classSelector" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none" onchange="window.location.href='?class_level=' + this.value">
-                    {% for class_level in assigned_classes %}
-                    <option value="{{ class_level }}" {% if selected_class == class_level %}selected{% endif %}>Class {{ class_level }}</option>
+                    {% for class_level in class_options %}
+                        {% if class_level == 'all' %}
+                            <option value="all" {% if selected_class == 'all' %}selected{% endif %}>All Classes</option>
+                        {% else %}
+                            <option value="{{ class_level }}" {% if selected_class == class_level %}selected{% endif %}>Class {{ class_level }}</option>
+                        {% endif %}
                     {% endfor %}
                 </select>
                 {% else %}
-                <div class="text-lg font-bold text-indigo-700">Class {{ selected_class }}</div>
+                <div class="text-lg font-bold text-indigo-700">
+                    {% if selected_class == 'all' %}All Classes{% else %}Class {{ selected_class }}{% endif %}
+                </div>
                 {% endif %}
             </div>
 
