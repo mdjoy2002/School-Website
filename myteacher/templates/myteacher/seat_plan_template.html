@@ -1,77 +1,88 @@
-{% extends 'myteacher/base.html' %}
 {% block content %}
 <style>
     body { margin: 0; padding: 0; background: #f4f4f9; font-family: 'Segoe UI', Tahoma, sans-serif; }
-    html, body { height: 100%; }
-    .page { width: 210mm; height: 297mm; padding: 6mm; margin: 10mm auto; background: #fff; display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, minmax(0, 1fr)); gap: 4mm; box-sizing: border-box; page-break-after: always; page-break-inside: avoid; }
     
-    .seat-card { border: 1.5px solid #000; padding: 10px; position: relative; background: #fff; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; border-radius: 5px; height: 100%; page-break-inside: avoid; break-inside: avoid; }
+    .page { 
+        width: 210mm; 
+        height: 297mm; 
+        padding: 6mm; 
+        margin: 10mm auto; 
+        background: #fff; 
+        display: grid; 
+        grid-template-columns: repeat(2, 1fr); 
+        grid-template-rows: repeat(4, 1fr); 
+        gap: 4mm; 
+        box-sizing: border-box; 
+    }
     
-    .watermark { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); width: 150px; opacity: 0.08; z-index: 0; pointer-events: none; }
+    .seat-card { 
+        border: 1.5px solid #000; 
+        padding: 10px; 
+        position: relative; 
+        background: #fff; 
+        display: flex; 
+        flex-direction: column; 
+        justify-content: space-between; 
+        box-sizing: border-box; 
+        border-radius: 5px;
+    }
+    
+    .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120px; opacity: 0.05; z-index: 0; }
     
     .header { text-align: center; border-bottom: 1.2px solid #000; padding-bottom: 4px; position: relative; z-index: 1; }
-    .header-top { position: relative; display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 2px; }
+    .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
     
-    .main-logo {
-        position: absolute;
-        left: 5px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 45px;
-        height: auto;
-        object-fit: contain;
-    }
+    .main-logo { width: 40px; height: auto; }
     .student-photo { width: 45px; height: 55px; border: 1px solid #000; object-fit: cover; }
     
-    .school-name { font-size: 10.5px; font-weight: 900; margin: 0; color: #000; text-transform: uppercase; }
-    .school-addr { font-size: 8px; margin: 1px 0; font-weight: 600; }
+    .school-name { font-size: 10px; font-weight: 900; margin: 0; text-transform: uppercase; }
+    .school-addr { font-size: 7px; margin: 1px 0; font-weight: 600; }
+    .exam-tag { font-size: 9px; font-weight: bold; background: #eee; border: 1px solid #000; padding: 1px 8px; margin-top: 3px; display: inline-block; }
     
-    .exam-tag { font-size: 10px; font-weight: bold; background: #f0f0f0; border: 1px solid #000; display: inline-block; padding: 0px 8px; margin-top: 2px; border-radius: 2px; }
-    
-    .content { margin-top: 8px; z-index: 1; flex-grow: 1; }
+    .content { margin-top: 5px; z-index: 1; }
     .info-table { width: 100%; border-collapse: collapse; }
-    .info-table td { font-size: 13.5px; padding: 2px 0; vertical-align: top; color: #000; line-height: 1.2; }
-    .info-table td.label { width: 75px; font-weight: bold; }
-    .info-table td.val { font-weight: 800; text-transform: uppercase; }
+    .info-table td { font-size: 11px; padding: 1px 0; vertical-align: top; font-weight: 600; }
+    .info-table td.label { width: 70px; font-weight: bold; }
+    .info-table td.val { text-transform: uppercase; }
     
     .footer { display: flex; justify-content: space-between; align-items: flex-end; z-index: 1; margin-top: 5px; }
-    .seat-no { font-size: 9px; font-weight: bold; color: #333; }
-    .sign-box { border-top: 1.2px solid #000; width: 105px; text-align: center; font-size: 9px; font-weight: bold; padding-top: 2px; }
+    .seat-no { font-size: 9px; font-weight: bold; align-self: flex-end; }
     
+    /* সিগনেচার বক্স স্টাইল আপডেট */
+    .sign-container { display: flex; flex-direction: column; align-items: center; }
+    .sign-img { width: 80px; height: auto; margin-bottom: 2px; }
+    .sign-box { width: 80px; text-align: center; font-size: 8px; font-weight: bold; border-top: 1px solid #000; }
+
     .no-print { text-align: center; padding: 20px; }
-    .no-print button,
-    .no-print a { background: #1e293b; color: white; padding: 12px 25px; border: none; border-radius: 6px; cursor: pointer; margin: 0 6px 10px; font-weight: bold; text-decoration: none; display: inline-block; }
-    .no-print a { background: #64748b; }
     
     @media print {
-        body { background: #fff; margin: 0; padding: 0; }
-        .no-print { display: none !important; }
-        .page { margin: 0 !important; box-shadow: none !important; page-break-after: always; height: 297mm; width: 210mm; }
-        .seat-card { page-break-inside: avoid; break-inside: avoid; }
+        @page { size: A4; margin: 0; }
+        body { background: #fff; }
+        .no-print { display: none; }
+        .page { margin: 0; page-break-after: always; }
     }
 </style>
 
-<div class="no-print text-center py-4">
-    <button onclick="window.print()" class="btn btn-primary me-3">Print Seat Plan</button>
-    <a href="{% url 'myteacher:student_list' %}" class="btn btn-secondary">Back to List</a>
+<div class="no-print">
+    <button onclick="window.print()">Print Seat Plan</button>
+    <a href="{% url 'myteacher:student_list' %}">Back to List</a>
 </div>
 
 {% for student in students %}
-    {% if forloop.first or forloop.counter0|divisibleby:8 %}
+    {% if forloop.counter0|divisibleby:8 %}
         <div class="page">
     {% endif %}
 
     <div class="seat-card">
-        <img src="{{ logo_url }}" class="watermark" alt="Logo" onerror="this.style.display='none'">
-        
+        <img src="{{ logo_url }}" class="watermark">
         <div class="header">
             <div class="header-top">
-                <img src="{{ logo_url }}" class="main-logo" alt="Logo" onerror="this.style.display='none'">
-                <div style="text-align: center;">
-                    <h2 class="school-name">Khondoker Naser Uddin High School</h2>
+                <img src="{{ logo_url }}" class="main-logo">
+                <div>
+                    <h2 class="school-name">Khandaker Naser Uddin High School</h2>
                     <p class="school-addr">Boyra, Khulna, Bangladesh</p>
                 </div>
-                <img src="{{ student.photo.url|default:logo_url }}" class="student-photo" alt="Student Photo" onerror="this.style.display='none'">
+                <img src="{{ student.photo.url|default:logo_url }}" class="student-photo">
             </div>
             <div class="exam-tag">{{ exam_name }} - {{ exam_year }}</div>
         </div>
@@ -82,7 +93,7 @@
                 <tr><td class="label">Name</td><td class="val">: {{ student.full_name }}</td></tr>
                 <tr><td class="label">Class</td><td class="val">: {{ student.current_class }}</td></tr>
                 <tr><td class="label">Roll No</td><td class="val">: {{ student.class_roll }}</td></tr>
-                <tr><td class="label">Shift</td><td class="val">: {{ student.shift|default:'N/A' }}</td></tr>
+                <tr><td class="label">Section</td><td class="val">: {{ student.section|default:'N/A' }}</td></tr>
                 <tr><td class="label">Session</td><td class="val">: {{ student.session|default:exam_year }}</td></tr>
                 <tr><td class="label">Group</td><td class="val">: {{ student.group|default:'General' }}</td></tr>
             </table>
@@ -90,10 +101,10 @@
 
         <div class="footer">
             <div class="seat-no">SL: {{ forloop.counter|stringformat:"03d" }}</div>
-            <div class="sign-box">
-                <img src="/static/images/sign.png" alt="Headmaster Signature">
-                <div class="sign-line"></div>
-                Head Teacher
+            
+            <div class="sign-container">
+                <img src="/static/images/sign.png" alt="Signature" class="sign-img">
+                <div class="sign-box">Headmaster</div>
             </div>
         </div>
     </div>
