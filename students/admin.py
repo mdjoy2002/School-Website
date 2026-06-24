@@ -13,7 +13,7 @@ CLASS_PROMOTION_MAP = {
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ('full_name', 'student_id', 'current_class', 'class_roll', 'religion', 'mobile_num')
+    list_display = ('full_name', 'student_id', 'date_of_birth', 'current_class', 'class_roll', 'religion', 'mobile_num')
     search_fields = ('full_name', 'student_id')
     actions = ['promote_selected_students']
 

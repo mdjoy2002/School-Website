@@ -37,6 +37,7 @@ class Student(models.Model):
     
     # 7 digit student ID (Manual Input)
     student_id = models.CharField(max_length=7, unique=True, verbose_name="Student ID (7 Digits)")
+    date_of_birth = models.DateField(null=True, blank=True, verbose_name="Date of Birth")
     
     current_class = models.CharField(max_length=2, choices=CLASS_CHOICES, verbose_name="Class")
     class_roll = models.PositiveIntegerField(verbose_name="Class Roll") # 01-50 চেক করার জন্য আমরা লজিক অ্যাডমিন প্যানেলে দিতে পারি
