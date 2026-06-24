@@ -22,6 +22,12 @@ class Student(models.Model):
         ('Commerce', 'Commerce'),
     ]
 
+    GENDER_CHOICES = [
+        ('Male', 'Male'),
+        ('Female', 'Female'),
+        ('Other', 'Other'),
+    ]
+
     RELIGION_CHOICES = [
         ('Islam', 'Islam'),
         ('Hindu', 'Hindu'),
@@ -37,6 +43,7 @@ class Student(models.Model):
     
     # 7 digit student ID (Manual Input)
     student_id = models.CharField(max_length=7, unique=True, verbose_name="Student ID (7 Digits)")
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='Male', verbose_name="Gender")
     date_of_birth = models.DateField(null=True, blank=True, verbose_name="Date of Birth")
     
     current_class = models.CharField(max_length=2, choices=CLASS_CHOICES, verbose_name="Class")
