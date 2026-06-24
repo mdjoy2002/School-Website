@@ -49,7 +49,7 @@
     .seat-no { font-size: 10px; font-weight: bold; align-self: flex-end; }
     
     .sign-container { display: flex; flex-direction: column; align-items: center; }
-    .sign-img { width: 70px; height: auto; margin-bottom: 0px; }
+    .sign-img { width: 100px; height: auto; margin-bottom: 0px; }
     .sign-box { width: 70px; text-align: center; font-size: 9px; font-weight: bold; border-top: 1px solid #000; }
 
     .no-print { text-align: center; padding: 20px; }
@@ -92,7 +92,6 @@
                 <tr><td class="label">Name</td><td class="val">: {{ student.full_name }}</td></tr>
                 <tr><td class="label">Class</td><td class="val">: {{ student.current_class }}</td></tr>
                 <tr><td class="label">Roll No</td><td class="val">: {{ student.class_roll }}</td></tr>
-                <tr><td class="label">Section</td><td class="val">: {{ student.section|default:'N/A' }}</td></tr>
                 <tr><td class="label">Session</td><td class="val">: {{ student.session|default:exam_year }}</td></tr>
                 <tr><td class="label">Group</td><td class="val">: {{ student.group|default:'General' }}</td></tr>
             </table>
