@@ -5,58 +5,58 @@
     .page { 
         width: 210mm; 
         height: 297mm; 
-        padding: 6mm; 
-        margin: 10mm auto; 
+        padding: 5mm; /* প্যাডিং সামান্য কমানো হয়েছে */
+        margin: 5mm auto; 
         background: #fff; 
         display: grid; 
         grid-template-columns: repeat(2, 1fr); 
         grid-template-rows: repeat(4, 1fr); 
-        gap: 4mm; 
+        gap: 2mm; /* গ্যাপ কমানো হয়েছে */
         box-sizing: border-box; 
     }
     
     .seat-card { 
-        border: 1.5px solid #000; 
-        padding: 10px; 
+        border: 1px solid #000; 
+        padding: 5px; /* প্যাডিং কমানো হয়েছে */
         position: relative; 
         background: #fff; 
         display: flex; 
         flex-direction: column; 
         justify-content: space-between; 
         box-sizing: border-box; 
-        border-radius: 5px;
+        border-radius: 3px;
+        overflow: hidden;
     }
     
-    .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120px; opacity: 0.05; z-index: 0; }
+    .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; opacity: 0.05; z-index: 0; }
     
-    .header { text-align: center; border-bottom: 1.2px solid #000; padding-bottom: 4px; position: relative; z-index: 1; }
-    .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+    .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 2px; position: relative; z-index: 1; }
+    .header-top { display: flex; align-items: center; justify-content: space-between; }
     
-    .main-logo { width: 40px; height: auto; }
-    .student-photo { width: 45px; height: 55px; border: 1px solid #000; object-fit: cover; }
+    .main-logo { width: 35px; height: auto; }
+    .student-photo { width: 40px; height: 50px; border: 1px solid #000; object-fit: cover; }
     
-    .school-name { font-size: 10px; font-weight: 900; margin: 0; text-transform: uppercase; }
-    .school-addr { font-size: 7px; margin: 1px 0; font-weight: 600; }
-    .exam-tag { font-size: 9px; font-weight: bold; background: #eee; border: 1px solid #000; padding: 1px 8px; margin-top: 3px; display: inline-block; }
+    .school-name { font-size: 11px; font-weight: 900; margin: 0; text-transform: uppercase; }
+    .school-addr { font-size: 8px; margin: 0; font-weight: 600; }
+    .exam-tag { font-size: 10px; font-weight: bold; background: #eee; border: 1px solid #000; padding: 1px 5px; margin-top: 2px; display: inline-block; }
     
-    .content { margin-top: 5px; z-index: 1; }
-    .info-table { width: 100%; border-collapse: collapse; }
-    .info-table td { font-size: 11px; padding: 1px 0; vertical-align: top; font-weight: 600; }
-    .info-table td.label { width: 70px; font-weight: bold; }
+    .content { margin: 2px 0; z-index: 1; }
+    .info-table { width: 100%; border-collapse: collapse; line-height: 1.2; } /* লাইন হাইট কমানো হয়েছে */
+    .info-table td { font-size: 11.5px; padding: 0.5px 0; vertical-align: top; font-weight: 600; }
+    .info-table td.label { width: 65px; font-weight: bold; }
     .info-table td.val { text-transform: uppercase; }
     
-    .footer { display: flex; justify-content: space-between; align-items: flex-end; z-index: 1; margin-top: 5px; }
-    .seat-no { font-size: 9px; font-weight: bold; align-self: flex-end; }
+    .footer { display: flex; justify-content: space-between; align-items: flex-end; z-index: 1; margin-top: 2px; }
+    .seat-no { font-size: 10px; font-weight: bold; }
     
-    /* সিগনেচার বক্স স্টাইল আপডেট */
     .sign-container { display: flex; flex-direction: column; align-items: center; }
-    .sign-img { width: 80px; height: auto; margin-bottom: 2px; }
-    .sign-box { width: 80px; text-align: center; font-size: 8px; font-weight: bold; border-top: 1px solid #000; }
+    .sign-img { width: 65px; height: auto; margin-bottom: 1px; } /* সিগনেচার সাইজ সামান্য ছোট করা হয়েছে */
+    .sign-box { width: 70px; text-align: center; font-size: 9px; font-weight: bold; border-top: 1px solid #000; }
 
     .no-print { text-align: center; padding: 20px; }
     
     @media print {
-        @page { size: A4; margin: 0; }
+        @page { size: A4; margin: 5mm; }
         body { background: #fff; }
         .no-print { display: none; }
         .page { margin: 0; page-break-after: always; }
