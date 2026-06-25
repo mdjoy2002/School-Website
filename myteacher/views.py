@@ -943,15 +943,45 @@ def render_to_pdf(template_src, context_dict):
 @login_required
 def student_results_view(request):
     teacher = request.user.teacher
-    exam_choices = [choice[0] for choice in Mark.EXAM_CHOICES]
-    all_classes = list(Student.objects.order_by('current_class').values_list('current_class', flat=True).distinct())
+    result_classes = list(
+        Mark.objects.order_by('student__current_class')
+            .values_list('student__current_class', flat=True)
+            .distinct()
+    )
 
-    selected_class = request.GET.get('class_level') or (all_classes[0] if all_classes else None)
+    selected_class = request.GET.get('class_level') or (result_classes[0] if result_classes else None)
+
+    exam_choices = []
+    if selected_class:
+        exam_choices = list(
+            Mark.objects.filter(student__current_class=selected_class)
+                .order_by('exam_type')
+                .values_list('exam_type', flat=True)
+                .distinct()
+        )
+
     selected_exam = request.GET.get('exam_type') or (exam_choices[0] if exam_choices else None)
-    exam_years = [str(year) for year in Mark.objects.order_by('-exam_year').values_list('exam_year', flat=True).distinct()]
+    if selected_exam and selected_exam not in exam_choices:
+        selected_exam = exam_choices[0] if exam_choices else None
+
+    exam_years = []
+    if selected_class and selected_exam:
+        exam_years = [str(year) for year in Mark.objects.filter(
+            student__current_class=selected_class,
+            exam_type=selected_exam
+        ).order_by('-exam_year').values_list('exam_year', flat=True).distinct()]
+    elif selected_class:
+        exam_years = [str(year) for year in Mark.objects.filter(
+            student__current_class=selected_class
+        ).order_by('-exam_year').values_list('exam_year', flat=True).distinct()]
+
     if not exam_years:
         exam_years = [str(datetime.date.today().year)]
-    selected_year = request.GET.get('exam_year') or str(datetime.date.today().year)
+
+    selected_year = request.GET.get('exam_year') or exam_years[0]
+    if selected_year not in exam_years:
+        selected_year = exam_years[0]
+
     search_query = request.GET.get('search', '').strip()
     student_pk = request.GET.get('student_id', '').strip()
     is_head_teacher = is_head_or_admin(teacher, request.user)
@@ -960,8 +990,16 @@ def student_results_view(request):
     student_summary = None
     class_summary = []
 
-    if selected_class:
-        class_students = Student.objects.filter(current_class=selected_class).order_by('class_roll')
+    if selected_class and selected_exam and selected_year:
+        result_student_ids = list(
+            Mark.objects.filter(
+                student__current_class=selected_class,
+                exam_type=selected_exam,
+                exam_year=selected_year
+            ).values_list('student_id', flat=True).distinct()
+        )
+
+        class_students = Student.objects.filter(id__in=result_student_ids).order_by('class_roll')
         if search_query:
             class_students = class_students.filter(
                 Q(full_name__icontains=search_query) |
@@ -973,15 +1011,19 @@ def student_results_view(request):
             class_summary.append(summary)
 
         if student_pk and student_pk.isdigit():
-            selected_student = get_object_or_404(Student, id=int(student_pk), current_class=selected_class)
+            selected_student = get_object_or_404(
+                Student,
+                id=int(student_pk),
+                current_class=selected_class,
+                id__in=result_student_ids
+            )
             student_summary = get_student_result_summary(selected_student, selected_exam, selected_year)
 
     can_download = is_head_teacher or (teacher.is_class_teacher and selected_class == teacher.class_teacher_of)
 
     return render(request, 'myteacher/student_results.html', {
         'teacher': teacher,
-        'allowed_classes': all_classes,
-        'class_levels': all_classes,
+        'allowed_classes': result_classes,
         'exam_choices': exam_choices,
         'exam_years': exam_years,
         'selected_class': selected_class,
@@ -993,36 +1035,6 @@ def student_results_view(request):
         'class_summary': class_summary,
         'can_download': can_download,
         'is_head_teacher': is_head_teacher,
-    })
-
-    if selected_class:
-        class_students = Student.objects.filter(current_class=selected_class).order_by('class_roll')
-        if search_query:
-            class_students = class_students.filter(
-                Q(full_name__icontains=search_query) |
-                Q(student_id__icontains=search_query)
-            )
-
-        for student in class_students:
-            summary = get_student_result_summary(student, selected_exam, selected_year)
-            class_summary.append(summary)
-
-        if student_pk and student_pk.isdigit():
-            selected_student = get_object_or_404(Student, id=int(student_pk), current_class=selected_class)
-            student_summary = get_student_result_summary(selected_student, selected_exam, selected_year)
-
-    return render(request, 'myteacher/student_results.html', {
-        'teacher': teacher,
-        'allowed_classes': allowed_classes,
-        'exam_choices': exam_choices,
-        'exam_years': exam_years,
-        'selected_class': selected_class,
-        'selected_exam': selected_exam,
-        'selected_year': selected_year,
-        'search_query': search_query,
-        'class_students': class_students,
-        'result_data': student_summary,
-        'class_summary': class_summary,
     })
 
 

@@ -30,6 +30,21 @@
                     <h5 class="fw-bold mb-4 text-primary"><i class="fas fa-filter me-2"></i>ফিল্টার ও শিক্ষার্থী</h5>
                     <form method="get" id="filterForm">
                         <div class="mb-3">
+                            <select name="class_level" class="form-select border-0 bg-light" onchange="this.form.submit()" {% if not allowed_classes %}disabled{% endif %}>
+                                {% for class_level in allowed_classes %}
+                                <option value="{{ class_level }}" {% if class_level == selected_class %}selected{% endif %}>ক্লাস {{ class_level }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <select name="exam_type" class="form-select border-0 bg-light" onchange="this.form.submit()" {% if not exam_choices %}disabled{% endif %}>
+                                {% for exam in exam_choices %}
+                                <option value="{{ exam }}" {% if exam == selected_exam %}selected{% endif %}>{{ exam }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <input type="hidden" name="exam_year" value="{{ selected_year }}">
+                        <div class="mb-3">
                             <div class="input-group">
                                 <input type="text" name="search" class="form-control border-0 bg-light" placeholder="শিক্ষার্থীর নাম বা আইডি..." value="{{ search_query }}">
                                 <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
