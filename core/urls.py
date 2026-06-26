@@ -25,7 +25,7 @@ sitemaps = {
 def robots_txt(request):
     content = (
         "User-agent: *\n"
-        "Disallow: /admin/\n"  # অ্যাডমিন প্যানেল হাইড করা হয়েছে
+        "Disallow: /knu2026/\n"  # অ্যাডমিন প্যানেল হাইড করা হয়েছে
         "Allow: /\n"           # বাকি সব পেজ ইনডেক্স করার অনুমতি দেওয়া হয়েছে
         "Sitemap: https://knuhighschool.pythonanywhere.com/sitemap.xml"
     )
@@ -36,7 +36,7 @@ def google_verify(request):
     return HttpResponse("google-site-verification: googlec5cbc4a5f7c18e19.html")
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('knu2026/', admin.site.urls),
     path('', views.home, name='home'), # হোম পেজের রুট
     
     # নোটিশ সেকশন
