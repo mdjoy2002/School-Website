@@ -270,7 +270,12 @@ class TeacherSubjectAssignment(models.Model):
 class ExamRoutine(models.Model):
     CLASS_CHOICES = [(str(i), f'Class {i}') for i in range(6, 11)]
     GROUP_CHOICES = [('Science', 'Science'), ('Commerce', 'Commerce'), ('Arts', 'Arts'), ('', 'General')]
-    EXAM_CHOICES = [('Half Yearly', 'Half Yearly'), ('Annual Exam', 'Annual Exam'), ('Test Exam', 'Test Exam')]
+    EXAM_CHOICES = [
+        ('Half Yearly', 'Half Yearly Examination'),
+        ('Annual Exam', 'Annual Examination'),
+        ('Pre Test Exam', 'Pre Test Examination'),
+        ('Test Exam', 'Test Examination'),
+    ]
 
     class_name = models.CharField(max_length=2, choices=CLASS_CHOICES, default='6')
     group_name = models.CharField(max_length=20, choices=GROUP_CHOICES, blank=True, null=True)

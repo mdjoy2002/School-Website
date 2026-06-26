@@ -54,10 +54,11 @@
                     <div class="flex flex-col"><label class="text-xs font-bold mb-2 ml-1">Date</label><input type="date" name="date" value="{{ date }}" class="p-3 rounded-xl border bg-white" required></div>
                     <div class="flex flex-col"><label class="text-xs font-bold mb-2 ml-1">Time</label><input type="text" name="time" value="{{ time }}" class="p-3 rounded-xl border bg-white"></div>
                     <div class="flex flex-col"><label class="text-xs font-bold mb-2 ml-1">Exam Type</label>
-                        <select name="exam_type" class="p-3 rounded-xl border bg-white">
-                            <option value="Half Yearly" {% if exam_type == 'Half Yearly' %}selected{% endif %}>Half Yearly</option>
-                            <option value="Annual Exam" {% if exam_type == 'Annual Exam' %}selected{% endif %}>Annual Exam</option>
-                            <option value="Test Exam" {% if exam_type == 'Test Exam' %}selected{% endif %}>Test Exam</option>
+                        <select name="exam_type" class="p-3 rounded-xl border bg-white" required>
+                            <option value="Half Yearly" {% if exam_type == 'Half Yearly' %}selected{% endif %}>Half Yearly Examination</option>
+                            <option value="Annual Exam" {% if exam_type == 'Annual Exam' %}selected{% endif %}>Annual Examination</option>
+                            <option value="Pre Test Exam" {% if exam_type == 'Pre Test Exam' %}selected{% endif %}>Pre Test Examination</option>
+                            <option value="Test Exam" {% if exam_type == 'Test Exam' %}selected{% endif %}>Test Examination</option>
                         </select>
                     </div>
                 </div>
