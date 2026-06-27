@@ -41,7 +41,7 @@
     
     .content { margin-top: 2px; z-index: 1; }
     .info-table { width: 100%; border-collapse: collapse; }
-    .info-table td { font-size: 13px; padding: 0 0; vertical-align: top; font-weight: 600; }
+    .info-table td { font-size: 12px; padding: 0 0; vertical-align: top; font-weight: 600; }
     .info-table td.label { width: 75px; font-weight: bold; }
     .info-table td.val { text-transform: uppercase; }
     
@@ -49,7 +49,7 @@
     .seat-no { font-size: 10px; font-weight: bold; align-self: flex-end; }
     
     .sign-container { display: flex; flex-direction: column; align-items: center; }
-    .sign-img { width: 100px; height: auto; margin-bottom: 0px; }
+    .sign-img { width: 70px; height: auto; margin-bottom: 0px; }
     .sign-box { width: 70px; text-align: center; font-size: 9px; font-weight: bold; border-top: 1px solid #000; }
 
     .no-print { text-align: center; padding: 20px; }
@@ -78,8 +78,8 @@
             <div class="header-top">
                 <img src="{{ logo_url }}" class="main-logo">
                 <div>
-                    <h2 class="school-name">Khondoker Naser Uddin High School</h2>
-                    <p class="school-addr">Hazi Foyez Uddin Cross Road, Boyra, GPO-9000, Khulna</p>
+                    <h2 class="school-name">Khandaker Naser Uddin High School</h2>
+                    <p class="school-addr">Boyra, Khulna, Bangladesh</p>
                 </div>
                 <img src="{{ student.photo.url|default:logo_url }}" class="student-photo">
             </div>
@@ -92,6 +92,7 @@
                 <tr><td class="label">Name</td><td class="val">: {{ student.full_name }}</td></tr>
                 <tr><td class="label">Class</td><td class="val">: {{ student.current_class }}</td></tr>
                 <tr><td class="label">Roll No</td><td class="val">: {{ student.class_roll }}</td></tr>
+                <tr><td class="label">Section</td><td class="val">: {{ student.section|default:'N/A' }}</td></tr>
                 <tr><td class="label">Session</td><td class="val">: {{ student.session|default:exam_year }}</td></tr>
                 <tr><td class="label">Group</td><td class="val">: {{ student.group|default:'General' }}</td></tr>
             </table>
@@ -102,7 +103,7 @@
             
             <div class="sign-container">
                 <img src="/static/images/sign.png" alt="Signature" class="sign-img">
-                <div class="sign-box">Signature</div>
+                <div class="sign-box">Headmaster</div>
             </div>
         </div>
     </div>
