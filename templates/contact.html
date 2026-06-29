@@ -19,7 +19,6 @@
             --accent-red: #cc0000;
         }
 
-        /* ফন্ট সেটিংস: বাংলার জন্য Nikosh এবং ইংরেজির জন্য Times New Roman */
         body { 
             font-family: 'Times New Roman', 'Nikosh', 'Hind Siliguri', serif; 
             background-color: #f4f7f6;
@@ -27,7 +26,6 @@
             overflow-x: visible;
         }
 
-        /* Navbar & Dropdown Styling */
         .navbar { 
             background-color: var(--primary-color) !important; 
             border-bottom: 3px solid var(--secondary-color); 
@@ -56,7 +54,6 @@
             .page-header { padding: 80px 0; }
         }
 
-        /* Contact Cards */
         .contact-card {
             background: #fff;
             border-radius: 15px;
@@ -84,7 +81,6 @@
             font-size: 24px;
         }
 
-        /* Form Styling */
         .contact-form {
             background: #fff;
             padding: 30px;
@@ -101,7 +97,6 @@
         }
         .form-control:focus { border-color: var(--primary-color); box-shadow: none; }
 
-        /* Map */
         .map-container { 
             border-radius: 20px; 
             overflow: hidden; 
@@ -114,11 +109,6 @@
 
         footer { background: #002d5a; color: #fff; padding: 40px 15px 30px; }
         .footer-logo-img { width: 60px; height: 60px; margin-bottom: 15px; border: 2px solid var(--secondary-color); padding: 2px; }
-        @media (min-width: 768px) {
-            footer { padding: 60px 0 30px; }
-            .footer-logo-img { width: 70px; height: 70px; }
-        }
-        
     </style>
 </head>
 <body>
@@ -138,7 +128,6 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}"><i class="fas fa-home"></i> হোম</a></li>
-                    
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="studentCornerDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-graduate"></i> শিক্ষার্থী কর্নার
@@ -153,7 +142,6 @@
                             <li><a class="dropdown-item" href="{% url 'corner_detail' 'holiday' %}"><i class="fas fa-umbrella-beach"></i> ছুটির তালিকা</a></li>
                         </ul>
                     </li>
-
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="admissionDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-plus"></i> ভর্তি তথ্য
@@ -165,9 +153,7 @@
                             <li><a class="dropdown-item" href="{% url 'admission_detail' 'fees' %}"><i class="fas fa-tags"></i> বেতন ও ফি সমূহ</a></li>
                         </ul>
                     </li>
-
                     <li class="nav-item"><a class="nav-link" href="{% url 'all_notices' %}"><i class="fas fa-file-alt"></i> নোটিশ</a></li>
-                    
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="resultDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-poll"></i> ফলাফল
@@ -177,7 +163,6 @@
                             <li><a class="dropdown-item" href="{% url 'result_category' 'internal' %}"><i class="fas fa-file-alt"></i> স্কুল ও কলেজের ফলাফল</a></li>
                         </ul>
                     </li>
-
                     <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users-cog"></i> শিক্ষক ও কর্মচারীবৃন্দ</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'gallery' %}"><i class="fas fa-images"></i> গ্যালারি</a></li>
                 </ul>
@@ -204,31 +189,26 @@
 
         <div class="row g-4 mb-5">
             <div class="col-sm-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
-                <a href="https://maps.app.goo.gl/ZpXfN4rN3ZJ7fG1X8" target="_blank" class="contact-card">
+                <a href="#" class="contact-card">
                     <div class="icon-box"><i class="fas fa-map-marker-alt"></i></div>
                     <h5 class="fw-bold">ঠিকানা</h5>
                     <p class="text-muted small">বয়রা, খুলনা, বাংলাদেশ</p>
-                    <small class="text-primary fw-bold">ম্যাপ দেখতে ক্লিক করুন <i class="fas fa-external-link-alt ms-1"></i></small>
                 </a>
             </div>
-            
             <div class="col-sm-6 col-lg-4" data-aos="fade-up" data-aos-delay="300">
                 <a href="tel:+8801309117407" class="contact-card">
                     <div class="icon-box"><i class="fas fa-phone-alt"></i></div>
                     <h5 class="fw-bold">ফোন করুন</h5>
-                    <p class="text-muted small">১৩০৯১১৭৪০৭</p>
-                    <span class="small text-primary fw-bold">সরাসরি কল করতে ক্লিক করুন</span>
+                    <p class="text-muted small">০১৩০৯১১৭৪০৭</p>
                 </a>
             </div>
-
             <div class="col-sm-12 col-lg-4" data-aos="fade-up" data-aos-delay="500">
                 <div class="contact-card">
                     <div class="icon-box"><i class="fas fa-comments"></i></div>
                     <h5 class="fw-bold">অনলাইন যোগাযোগ</h5>
                     <div class="social-links mt-2">
                         <a href="mailto:knuhighschool1994@gmail.com" class="mx-2" style="color: #EA4335;"><i class="fas fa-envelope fa-lg"></i></a>
-                       <a href="https://api.whatsapp.com/send?phone=8801309117407" target="_blank" class="mx-2" style="color: #25D366;">
-    <i class="fab fa-whatsapp fa-lg"></i></a>
+                        <a href="https://api.whatsapp.com/send?phone=8801309117407" target="_blank" class="mx-2" style="color: #25D366;"><i class="fab fa-whatsapp fa-lg"></i></a>
                         <a href="https://www.facebook.com/profile.php?id=61555308809098" target="_blank" class="mx-2" style="color: #1877F2;"><i class="fab fa-facebook fa-lg"></i></a>
                     </div>
                 </div>
@@ -247,7 +227,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">মোবাইল নম্বর</label>
-                            <input type="text" name="phone" class="form-control" placeholder="০১৭XXXXXXXX" required>
+                            <input type="text" name="phone" class="form-control" placeholder="০১৭১XXXXXXXX" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">বিষয়</label>
@@ -267,7 +247,7 @@
                     {% if school_info.map_url %}
                         {{ school_info.map_url|safe }}
                     {% else %}
-                       <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3677.206033878426!2d89.52547967601132!3d22.831865623416707!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ff9bb4c9a25847%3A0x3ff0071fc27e4cf3!2sK.C.C%20Khondakar%20Naser%20Uddin%20Secondary%20School!5e0!3m2!1sen!2sbd!4v1777377365583!5m2!1sen!2sbd" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3654.496030999557!2d89.54070037521575!3d22.821101923145025!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ff90190a61903d%3A0x8e8334812328406f!2sKhondakar%20Naser%20Uddin%20Secondary%20School!5e0!3m2!1sen!2sbd!4v1715456789012" allowfullscreen="" loading="lazy"></iframe>
                     {% endif %}
                 </div>
             </div>

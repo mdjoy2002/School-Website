@@ -21,7 +21,6 @@
             --white: #ffffff;
         }
 
-        /* ফন্ট সেটিংস: বাংলার জন্য Nikosh এবং ইংরেজির জন্য Times New Roman */
         body { 
             font-family: 'Times New Roman', 'Nikosh', 'Hind Siliguri', serif; 
             background-color: var(--bg-light);
@@ -32,7 +31,6 @@
             overflow-x: visible;
         }
 
-        /* Navbar & Dropdown Styling */
         .navbar { 
             background: linear-gradient(135deg, var(--primary-color) 0%, #003366 100%) !important;
             box-shadow: 0 2px 15px rgba(0,0,0,0.1);
@@ -43,14 +41,12 @@
         .nav-link i { margin-right: 5px; color: var(--secondary-color); }
         .nav-link:hover { color: var(--secondary-color) !important; }
 
-        /* Desktop Dropdown Hover */
         @media (min-width: 992px) {
             .dropdown:hover .dropdown-menu { display: block; margin-top: 0; border-top: 3px solid var(--secondary-color); }
         }
         .dropdown-item { font-weight: 600; color: #333; font-size: 14px; padding: 10px 20px; border-bottom: 1px solid #eee; }
         .dropdown-item:hover { background-color: var(--primary-color); color: #fff; }
         
-        /* Section Headers */
         .section-title {
             margin-top: 50px;
             margin-bottom: 70px;
@@ -76,7 +72,6 @@
             z-index: 0;
         }
 
-        /* Teacher Card Styling */
         .card-wrapper { margin-bottom: 80px; }
         
         .teacher-card {
@@ -87,7 +82,7 @@
             position: relative;
             padding-top: 60px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            margin-top: 50px; /* Space for absolute image */
+            margin-top: 50px;
         }
 
         .teacher-card:hover {
@@ -148,11 +143,9 @@
             color: #555;
             white-space: normal;
             overflow-wrap: anywhere;
-            text-overflow: unset;
         }
         .contact-box i { width: 20px; color: var(--secondary-color); }
 
-        /* Footer & Logo */
         footer {
             background: #001d3d;
             color: rgba(255,255,255,0.8);
@@ -162,7 +155,6 @@
         }
         .footer-logo-img { width: 60px; height: 60px; margin-bottom: 15px; border: 2px solid var(--secondary-color); padding: 2px; }
 
-        /* Responsive Adjustments */
         @media (max-width: 768px) {
             .section-title { margin-bottom: 40px; font-size: 1.5rem; }
             .teacher-card { padding-top: 50px; }
@@ -179,7 +171,7 @@
                 <img src="{% static 'images/logo.png' %}" alt="Logo" class="me-2 rounded-circle border border-warning" style="width: 45px; height: 45px; object-fit: cover;"> 
                 <div class="lh-1">
                     <span class="fw-bold d-block" style="font-size: 18px;">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</span>
-                    <small style="font-size: 11px; color: var(--secondary-color);">বয়রা, খুলনা</small>
+                    <small style="font-size: 11px; color: var(--secondary-color);">বয়রা, খুলনা</small>
                 </div>
             </a>
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -188,7 +180,6 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> হোম</a></li>
-
                      <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="studentCornerDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-graduate"></i> শিক্ষার্থী কর্নার
@@ -203,7 +194,6 @@
                             <li><a class="dropdown-item" href="{% url 'corner_detail' 'holiday' %}"><i class="fas fa-umbrella-beach"></i> ছুটির তালিকা</a></li>
                         </ul>
                     </li>
-
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="admissionDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-plus"></i> ভর্তি তথ্য
@@ -215,9 +205,7 @@
                             <li><a class="dropdown-item" href="{% url 'admission_detail' 'fees' %}"><i class="fas fa-tags"></i> বেতন ও ফি সমূহ</a></li>
                         </ul>
                     </li>
-
                     <li class="nav-item"><a class="nav-link" href="{% url 'all_notices' %}"><i class="fas fa-file-alt"></i> নোটিশ</a></li>
-                    
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="resultDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-poll"></i> ফলাফল
@@ -227,8 +215,6 @@
                             <li><a class="dropdown-item" href="{% url 'result_category' 'internal' %}"><i class="fas fa-file-alt"></i> স্কুলের ফলাফল</a></li>
                         </ul>
                     </li>
-
-                    
                     <li class="nav-item"><a class="nav-link" href="{% url 'gallery' %}"><i class="fas fa-images"></i> গ্যালারি</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}"><i class="fas fa-envelope-open-text"></i> যোগাযোগ</a></li>
                 </ul>
@@ -311,12 +297,6 @@
                 {% endif %}
             {% endfor %}
         </div>
-
-        {% if not teachers %}
-        <div class="text-center my-5 py-5 bg-white rounded-4 shadow-sm">
-            <p class="lead text-muted">বর্তমানে কোনো তথ্য সংরক্ষিত নেই।</p>
-        </div>
-        {% endif %}
     </div>
 
     <footer>
