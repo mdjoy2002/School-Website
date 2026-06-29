@@ -1,3 +1,4 @@
+import os
 from io import BytesIO
 
 from django.core.files.base import ContentFile
@@ -16,16 +17,13 @@ def compress_image_field(file_field, quality=85):
         return
 
     try:
+        # ফাইলটি ওপেন করুন কিন্তু ক্লোজ করবেন না, কারণ Django এটি পরে সেভ করবে
         file_field.open('rb')
         file_field.seek(0)
         image = Image.open(file_field)
+        image.load()
     except (UnidentifiedImageError, OSError):
         return
-    finally:
-        try:
-            file_field.close()
-        except Exception:
-            pass
 
     original_size = getattr(file_field, 'size', None)
     image_format = image.format or 'JPEG'
@@ -49,7 +47,12 @@ def compress_image_field(file_field, quality=85):
 
     output.seek(0)
     content = ContentFile(output.read())
-    file_field.save(file_field.name, content, save=False)
+
+    if hasattr(file_field, 'save') and callable(getattr(file_field, 'save')):
+        filename = os.path.basename(file_field.name) or getattr(file_field, 'name', None)
+        file_field.save(filename, content, save=False)
+    elif hasattr(file_field, 'file') and hasattr(file_field.file, 'write'):
+        file_field.file = content
 
 
 def compress_pdf_field(file_field):
@@ -62,11 +65,6 @@ def compress_pdf_field(file_field):
         reader = PyPDF2.PdfReader(file_field)
     except Exception:
         return
-    finally:
-        try:
-            file_field.close()
-        except Exception:
-            pass
 
     writer = PyPDF2.PdfWriter()
     if hasattr(writer, 'compress_content_streams'):
@@ -94,7 +92,12 @@ def compress_pdf_field(file_field):
 
     output.seek(0)
     content = ContentFile(output.read())
-    file_field.save(file_field.name, content, save=False)
+
+    if hasattr(file_field, 'save') and callable(getattr(file_field, 'save')):
+        filename = os.path.basename(file_field.name) or getattr(file_field, 'name', None)
+        file_field.save(filename, content, save=False)
+    elif hasattr(file_field, 'file') and hasattr(file_field.file, 'write'):
+        file_field.file = content
 
 
 class CompressedUploadMixin(models.Model):

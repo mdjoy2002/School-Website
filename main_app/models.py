@@ -1,5 +1,4 @@
 from django.db import models
-
 from core.compression import CompressedUploadMixin
 
 
@@ -52,6 +51,13 @@ class GalleryCategory(CompressedUploadMixin, models.Model):
     IMAGE_FIELDS = ['cover_image']
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # কভার ইমেজ না থাকলে এরর এড়াতে এই প্রপার্টিটি ব্যবহার করুন
+    @property
+    def get_cover_url(self):
+        if self.cover_image and hasattr(self.cover_image, 'url'):
+            return self.cover_image.url
+        return None
+
     def __str__(self): return self.name
     class Meta: 
         verbose_name_plural = "৬. গ্যালারি ইভেন্ট/ফোল্ডার"
@@ -62,7 +68,7 @@ class GalleryImage(CompressedUploadMixin, models.Model):
     IMAGE_FIELDS = ['image']
     caption = models.CharField(max_length=100, blank=True, verbose_name="ছবির ক্যাপশন (ঐচ্ছিক)")
 
-    def __str__(self): return f"Image for {self.category.name}"
+    def __str__(self): return f"Image for {self.category.name if self.category else 'Uncategorized'}"
     class Meta: 
         verbose_name_plural = "গ্যালারি ছবিসমূহ"
 
@@ -176,7 +182,6 @@ class AdmissionInfo(CompressedUploadMixin, models.Model):
         ('form', 'ভর্তি আবেদন ফরম'),
         ('guide', 'ভর্তি নির্দেশিকা'),
         ('result', 'ভর্তি পরীক্ষার ফলাফল'),
-        
         ('fees', 'বেতন ও ফি সমূহ'),
     ]
 
@@ -193,7 +198,7 @@ class AdmissionInfo(CompressedUploadMixin, models.Model):
         verbose_name_plural = "৮. ভর্তি সংক্রান্ত তথ্য (ফরম, ফলাফল ইত্যাদি)"
         ordering = ['-created_at']
 
-# --- নতুন সংযোজন: ৯. ফলাফল তথ্য (Result Data) ---
+# ৯. ফলাফল তথ্য (Result Data)
 class ResultData(CompressedUploadMixin, models.Model):
     CATEGORY_CHOICES = [
         ('public', 'পাবলিক পরীক্ষার ফলাফল'),
@@ -225,9 +230,6 @@ class ContactMessage(models.Model):
     class Meta:
         verbose_name_plural = "৪. প্রাপ্ত অভিযোগ ও বার্তা"
         ordering = ['-created_at']
-      
-
-
 
 # --- প্রক্সি মডেলসমূহ ---
 class Headmaster(Teacher):

@@ -1,0 +1,9 @@
+status 200
+content snippet Traceback (most recent call last):
+  File "e:\SchoolWebsite\tmp_admin_post_debug.py", line 42, in <module>
+    print('content snippet', response.content.decode('utf-8', 'ignore')[:6000])
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\USER\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u09ec' in position 3410: character maps to <undefined>

@@ -1,5 +1,4 @@
 from django.contrib import admin
-
 from .models import (
     Notice, TickerNews, Slider, SchoolInfo, AboutImage, Teacher, 
     Headmaster, GeneralTeacher, Staff, GalleryCategory, GalleryImage,
@@ -70,6 +69,13 @@ class GalleryImageInline(admin.TabularInline):
 class GalleryCategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'created_at')
     inlines = [GalleryImageInline]
+
+    def save_formset(self, request, form, formset, change):
+        # এটি ফাইল ক্লোজ এররটি এড়িয়ে ফাইলগুলোকে সঠিকভাবে সেভ করতে সাহায্য করবে
+        instances = formset.save(commit=False)
+        for obj in instances:
+            obj.save()
+        formset.save_m2m()
 
 admin.site.register(GalleryImage)
 

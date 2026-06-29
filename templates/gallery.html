@@ -31,9 +31,9 @@
             overflow-x: visible;
         }
 
-        .main-wrapper { flex: 1 0 auto; } /* এটি কন্টেন্টকে পুশ করে ফুটারকে নিচে রাখবে */
+        .main-wrapper { flex: 1 0 auto; } 
 
-        /* Navbar & Dropdown Styling (Unchanged) */
+        /* Navbar & Dropdown Styling */
         .navbar { background-color: var(--primary-color) !important; border-bottom: 3px solid var(--secondary-color); padding: 10px 0; }
         .nav-link { font-size: 15px; font-weight: 600; color: #fff !important; margin: 0 5px; transition: 0.3s; cursor: pointer; }
         .nav-link i { margin-right: 5px; color: var(--secondary-color); }
@@ -64,7 +64,7 @@
         .folder-img-wrapper { 
             position: relative; 
             width: 100%;
-            aspect-ratio: 16 / 10; /* ফোল্ডার ইমেজের জন্য স্ট্যান্ডার্ড সাইজ */
+            aspect-ratio: 16 / 10; 
             overflow: hidden; 
         }
         .folder-img-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
@@ -83,7 +83,7 @@
             border-radius: 10px; 
             overflow: hidden; 
             width: 100%;
-            aspect-ratio: 1 / 1; /* সব ছবি একই সাইজের (Square) দেখাবে, তাই কাঁপবে না */
+            aspect-ratio: 1 / 1; 
             background: #ddd; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
@@ -96,7 +96,6 @@
         }
         .back-btn:hover { background: var(--secondary-color); color: #000; }
 
-        /* Footer Fix */
         footer { flex-shrink: 0; background: #001d3d; color: white; padding: 40px 0 30px; margin-top: 60px; }
         .footer-logo-img { width: 70px; height: 70px; border: 2px solid var(--secondary-color); padding: 2px; }
     </style>
@@ -164,7 +163,11 @@
                     <div class="col-6 col-md-4 col-lg-3" data-aos="zoom-in">
                         <div class="card event-folder" onclick="showCategory('cat-{{ category.id }}', '{{ category.name }}')">
                             <div class="folder-img-wrapper">
-                                <img src="{{ category.cover_image.url }}" alt="{{ category.name }}">
+                                {% if category.cover_image %}
+                                    <img src="{{ category.cover_image.url }}" alt="{{ category.name }}">
+                                {% else %}
+                                    <img src="{% static 'images/default-img.png' %}" alt="No Image">
+                                {% endif %}
                                 <div class="photo-count"><i class="fas fa-images"></i> {{ category.images.count }}</div>
                             </div>
                             <div class="folder-name">

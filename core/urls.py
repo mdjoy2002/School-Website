@@ -11,6 +11,8 @@ from django.conf import settings # settings ইমপোর্ট করা হ�
 from django.conf.urls.static import static # static ইমপোর্ট করা হয়েছে
 from django.http import HttpResponse # robots.txt এবং google verification এর জন্য ইমপোর্ট করা হয়েছে
 from django.contrib.auth import views as auth_views  # Auth views import korlam
+from django.views.static import serve
+from django.urls import re_path
 
 # সাইটম্যাপের জন্য প্রয়োজনীয় ইমপোর্ট
 from django.contrib.sitemaps.views import sitemap
@@ -73,10 +75,8 @@ urlpatterns = [
 ]
 
 # ডেভেলপমেন্ট এবং প্রোডাকশনে মিডিয়া ও স্ট্যাটিক ফাইল দেখার জন্য। 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-else:
-    # প্রোডাকশনেও যাতে স্ট্যাটিক ফাইল কাজ করে তার জন্য
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+]
