@@ -1088,9 +1088,12 @@ def generate_admit_card(request):
                 return HttpResponseForbidden("You are not authorized to generate admit card for this student!")
         
         students = students.order_by('current_class', 'class_roll')
+        exam_title = f"{exam_name} - {exam_year}"
+        for student in students:
+            student.save_admit_card(exam_type=exam_name, exam_year=exam_year, exam_title=exam_title)
         context = {
             'students': students,
-            'exam_title': f"{exam_name} - {exam_year}",
+            'exam_title': exam_title,
             'exam_year': exam_year,
             'selected_ids': student_ids,
         }
