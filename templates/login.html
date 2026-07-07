@@ -14,7 +14,8 @@
             min-height: 100vh; 
             display: flex; 
             align-items: center; 
-            padding: 20px; /* মোবাইল স্ক্রিনে বর্ডারের জন্য গ্যাপ */
+            padding: 20px;
+            font-family: 'Times New Roman', Times, serif; /* পুরো পেজে Times New Roman */
         }
         
         .login-card { 
@@ -23,13 +24,39 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.15); 
             overflow: hidden; 
             width: 100%;
-            max-width: 400px; /* ডেস্কটপে বেশি চওড়া হবে না */
+            max-width: 400px; 
             margin: auto;
         }
 
-        .login-header { background: #2c3e50; color: white; padding: 2rem; text-align: center; }
+        .login-header { 
+            background: #2c3e50; 
+            color: white; 
+            padding: 2rem 1rem; 
+            text-align: center; 
+        }
+
+        /* লোগো স্টাইল */
+        .school-logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* স্টাইলিশ টাইটেল */
+        .portal-title {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-top: 10px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
         
-        /* ইনপুট ফিল্ড স্টাইলিং */
         input[type="text"], input[type="password"] {
             display: block;
             width: 100%;
@@ -68,8 +95,11 @@
         <div class="col-12 col-sm-10 col-md-8 col-lg-5">
             <div class="card login-card">
                 <div class="login-header">
-                    <i class="fas fa-chalkboard-teacher fa-3x mb-2"></i>
-                    <h4>Teacher Portal</h4>
+                    <img src="{% static 'images/logo.png' %}" alt="School Logo" class="school-logo">
+                    
+                    <h4 class="mb-0">Khondoker Naser Uddin High School</h4>
+                    
+                    <div class="portal-title">Teacher Login Portal</div>
                 </div>
                 <div class="card-body p-4">
                     
