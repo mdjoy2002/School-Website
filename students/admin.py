@@ -12,7 +12,7 @@ from django.utils.html import escape
 from django.utils.translation import gettext, gettext_lazy as _
 from urllib.parse import unquote
 
-from .models import Student, StudentAdmitCard, StudentAdmitCardSetting, StudentPromotionHistory, StudentTicker
+from .models import Student, StudentAdmitCard, StudentAdmitCardSetting, StudentPromotionHistory, StudentTicker, StudentResultPublication
 
 User = get_user_model()
 
@@ -140,3 +140,11 @@ class StudentTickerAdmin(admin.ModelAdmin):
 @admin.register(StudentAdmitCardSetting)
 class StudentAdmitCardSettingAdmin(admin.ModelAdmin):
     list_display = ('class_level', 'exam_type', 'exam_year', 'is_enabled', 'display_name')
+
+
+@admin.register(StudentResultPublication)
+class StudentResultPublicationAdmin(admin.ModelAdmin):
+    list_display = ('class_level', 'exam_type', 'exam_year', 'is_published', 'updated_at')
+    list_filter = ('class_level', 'exam_type', 'exam_year', 'is_published')
+    search_fields = ('exam_type',)
+    ordering = ('-exam_year', 'class_level', 'exam_type')

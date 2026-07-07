@@ -16,6 +16,7 @@
                 <span class="text-sm text-slate-500">School Management</span>
             </div>
             <div class="flex flex-wrap items-center gap-2">
+                <span id="headerClock" class="px-4 py-2 rounded-full bg-slate-100 text-slate-700 text-sm font-semibold">Loading time...</span>
                 <a href="{% url 'myteacher:dashboard' %}" class="px-4 py-2 rounded-full bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition">Dashboard</a>
                 <a href="{% url 'myteacher:view_routine' %}" class="px-4 py-2 rounded-full bg-slate-100 text-slate-800 text-sm font-semibold hover:bg-slate-200 transition">View Routine</a>
                 <a href="{% url 'myteacher:manage_routine' %}" class="px-4 py-2 rounded-full bg-slate-100 text-slate-800 text-sm font-semibold hover:bg-slate-200 transition">Manage Routine</a>
@@ -30,5 +31,18 @@
         {% endblock %}
     </main>
 
+    <script>
+        function updateHeaderClock() {
+            const clock = document.getElementById('headerClock');
+            if (!clock) return;
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            clock.textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        updateHeaderClock();
+        setInterval(updateHeaderClock, 1000);
+    </script>
 </body>
 </html>

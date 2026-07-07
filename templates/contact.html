@@ -106,6 +106,8 @@
             border: 5px solid #fff;
         }
         .map-container iframe { width: 100%; height: 100%; border: 0; min-height: 350px; }
+        .map-preview { height: 160px; border-radius: 12px; overflow: hidden; margin-bottom: 12px; }
+        .map-preview iframe { width: 100%; height: 100%; border: 0; pointer-events: none; }
 
         footer { background: #002d5a; color: #fff; padding: 40px 15px 30px; }
         .footer-logo-img { width: 60px; height: 60px; margin-bottom: 15px; border: 2px solid var(--secondary-color); padding: 2px; }
@@ -170,6 +172,8 @@
         </div>
     </nav>
 
+    {% include 'includes/news_ticker.html' %}
+
     <div class="page-header" data-aos="fade-in">
         <div class="container">
             <h1 class="display-5 fw-bold" data-aos="zoom-in" data-aos-delay="200">আমাদের সাথে যোগাযোগ করুন</h1>
@@ -189,11 +193,14 @@
 
         <div class="row g-4 mb-5">
             <div class="col-sm-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
-                <a href="#" class="contact-card">
+                <div class="contact-card">
+                    <div class="map-preview">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3654.496030999557!2d89.54070037521575!3d22.821101923145025!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ff90190a61903d%3A0x8e8334812328406f!2sKhondakar%20Naser%20Uddin%20Secondary%20School!5e0!3m2!1sen!2sbd!4v1715456789012" aria-hidden="true" loading="lazy"></iframe>
+                    </div>
                     <div class="icon-box"><i class="fas fa-map-marker-alt"></i></div>
                     <h5 class="fw-bold">ঠিকানা</h5>
                     <p class="text-muted small">বয়রা, খুলনা, বাংলাদেশ</p>
-                </a>
+                </div>
             </div>
             <div class="col-sm-6 col-lg-4" data-aos="fade-up" data-aos-delay="300">
                 <a href="tel:+8801309117407" class="contact-card">
@@ -260,7 +267,16 @@
             <h5 class="fw-bold mb-2" style="color: var(--secondary-color);">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</h5>
             <p class="opacity-75 mb-4 small">বয়রা, খুলনা | স্থাপিত: ১৯৯৪</p>
             <hr class="bg-light opacity-25">
-            <p class="small mb-0 opacity-75">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | ডিজাইন ও ডেভেলপমেন্ট: **Md. Imtiaz Sarder Joy**</p>
+
+            <div class="footer-emergency-area text-center mb-4">
+                <div class="footer-emergency-title mb-3">জরুরী হটলাইন নাম্বার</div>
+                <img src="{% static 'images/emergency.png' %}" alt="Emergency" class="footer-emergency-img">
+            </div>
+
+            <div class="footer-copy text-center">
+                <p class="small opacity-75 mb-1">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</p>
+                <p class="mb-0">Designed & Developed by <a href="https://www.facebook.com/mdimtiaz.joy.50" target="_blank" class="text-warning fw-bold text-decoration-none">Md Imtiaz Sarder Joy</a></p>
+            </div>
         </div>
     </footer>
 

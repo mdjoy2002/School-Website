@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.db import models
 from django.shortcuts import redirect, render
 
-from .models import Student, StudentPromotionHistory, StudentTicker
+from .models import Student, StudentPromotionHistory, StudentTicker, StudentResultPublication
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseForbidden
 from myteacher.views import get_student_result_summary, is_head_or_admin
@@ -211,8 +211,16 @@ def student_profile(request, student_id):
         selected_year = str(selected_year)
 
     result_summary = None
+    result_published = None
     if selected_exam and selected_year:
-        result_summary = get_student_result_summary(student, selected_exam, selected_year)
+        publication = StudentResultPublication.objects.filter(
+            class_level=student.current_class,
+            exam_type=selected_exam,
+            exam_year=selected_year
+        ).first()
+        result_published = publication.is_published if publication else False
+        if result_published:
+            result_summary = get_student_result_summary(student, selected_exam, selected_year)
 
     return render(request, 'student_profile.html', {
         'student': student,
@@ -226,4 +234,5 @@ def student_profile(request, student_id):
         'selected_exam': selected_exam,
         'selected_year': selected_year,
         'exam_options': exam_options,
+        'result_published': result_published,
     })

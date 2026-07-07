@@ -84,9 +84,16 @@ class AboutImageInline(admin.TabularInline):
     model = AboutImage
     extra = 1
 
+FIXED_MAP_IFRAME = '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14707.750311225953!2d89.51854200040722!3d22.84179884250969!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ff9bb4c9a25847%3A0x3ff0071fc27e4cf3!2sK.C.C%20Khondakar%20Naser%20Uddin%20Secondary%20School!5e0!3m2!1sen!2sbd!4v1783453950534!5m2!1sen!2sbd" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>'
+
 @admin.register(SchoolInfo)
 class SchoolInfoAdmin(admin.ModelAdmin):
     inlines = [AboutImageInline]
+    readonly_fields = ('map_url',)
+
+    def save_model(self, request, obj, form, change):
+        obj.map_url = FIXED_MAP_IFRAME
+        super().save_model(request, obj, form, change)
 
 # ১. প্রতিষ্ঠান প্রধান সেকশন
 @admin.register(Headmaster)

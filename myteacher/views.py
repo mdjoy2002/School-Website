@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Student, TeacherSubjectAssignment, Mark, Subject, ExamRoutine, TeacherClassAssignment, Teacher
+from students.models import StudentResultPublication
 from django.http import HttpResponse, HttpResponseForbidden
 from django.template.loader import get_template
 from django.urls import reverse
@@ -986,6 +987,52 @@ def student_results_view(request):
     student_pk = request.GET.get('student_id', '').strip()
     is_head_teacher = is_head_or_admin(teacher, request.user)
 
+    if request.method == 'POST':
+        if not is_head_teacher:
+            return HttpResponseForbidden("Only headmaster or assistant headmaster can publish results.")
+        selected_class = request.POST.get('class_level') or selected_class
+        selected_exam = request.POST.get('exam_type') or selected_exam
+        selected_year = request.POST.get('exam_year') or selected_year
+        if 'toggle_publish' in request.POST and selected_class and selected_exam and selected_year:
+            publication, created = StudentResultPublication.objects.get_or_create(
+                class_level=selected_class,
+                exam_type=selected_exam,
+                exam_year=selected_year,
+                defaults={'is_published': True}
+            )
+            if not created:
+                publication.is_published = not publication.is_published
+                publication.save(update_fields=['is_published', 'updated_at'])
+            status = 'published' if publication.is_published else 'unpublished'
+            # Remove previous result-toggle messages from the storage so they don't accumulate
+            from django.contrib.messages import get_messages
+            storage = get_messages(request)
+            kept = []
+            for m in storage:
+                try:
+                    text = str(m.message)
+                except Exception:
+                    text = ''
+                if 'Result cards have been' in text:
+                    continue
+                kept.append(m)
+            # Re-add the non-toggle messages back into the storage
+            for m in kept:
+                messages.add_message(request, m.level, m.message, extra_tags=getattr(m, 'tags', ''))
+
+            messages.success(request, f'Result cards have been {status} for Class {selected_class}, {selected_exam} {selected_year}.')
+            return redirect(f"{reverse('myteacher:student_results')}?class_level={selected_class}&exam_type={selected_exam}&exam_year={selected_year}")
+
+    publication = None
+    result_published = False
+    if selected_class and selected_exam and selected_year:
+        publication = StudentResultPublication.objects.filter(
+            class_level=selected_class,
+            exam_type=selected_exam,
+            exam_year=selected_year
+        ).first()
+        result_published = publication.is_published if publication else False
+
     class_students = Student.objects.none()
     student_summary = None
     class_summary = []
@@ -1035,8 +1082,9 @@ def student_results_view(request):
         'class_summary': class_summary,
         'can_download': can_download,
         'is_head_teacher': is_head_teacher,
+        'result_published': result_published,
+        'publication': publication,
     })
-
 
 @login_required
 def student_results_pdf_view(request, student_id):

@@ -120,8 +120,19 @@ class Student(models.Model):
         return self.user
 
     def save(self, *args, **kwargs):
+        old_student_id = None
+        if self.pk:
+            old_student_id = Student.objects.filter(pk=self.pk).values_list('student_id', flat=True).first()
+
         new_record = self.pk is None
         super().save(*args, **kwargs)
+
+        if self.user and old_student_id and old_student_id != self.student_id:
+            user_model = get_user_model()
+            if not user_model.objects.filter(username=self.student_id).exclude(pk=self.user.pk).exists():
+                self.user.username = self.student_id
+                self.user.save(update_fields=['username'])
+
         if self.user is None and self.login_enabled and self.student_id:
             self.ensure_login_credentials()
 
@@ -234,6 +245,28 @@ class StudentAdmitCardSetting(models.Model):
     class Meta:
         verbose_name = 'Student Admit Card Setting'
         verbose_name_plural = 'Student Admit Card Settings'
+        unique_together = ('class_level', 'exam_type', 'exam_year')
+        ordering = ['-exam_year', 'exam_type', 'class_level']
+
+
+class StudentResultPublication(models.Model):
+    class_level = models.CharField(max_length=2, choices=Student.CLASS_CHOICES, verbose_name='Class')
+    exam_type = models.CharField(max_length=50, verbose_name='Exam Type')
+    exam_year = models.IntegerField(verbose_name='Exam Year')
+    is_published = models.BooleanField(default=False, verbose_name='Published')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated On')
+
+    @property
+    def display_name(self):
+        status = 'Published' if self.is_published else 'Unpublished'
+        return f'Class {self.class_level} • {self.exam_type} • {self.exam_year} ({status})'
+
+    def __str__(self):
+        return self.display_name
+
+    class Meta:
+        verbose_name = 'Student Result Publication'
+        verbose_name_plural = 'Student Result Publications'
         unique_together = ('class_level', 'exam_type', 'exam_year')
         ordering = ['-exam_year', 'exam_type', 'class_level']
 

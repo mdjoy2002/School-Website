@@ -52,6 +52,33 @@
                         </div>
                     </form>
 
+                    {% if is_head_teacher and selected_class and selected_exam and selected_year %}
+                    <div class="publish-panel rounded-4 p-3 mb-4 border border-2">
+                        <form method="post" class="d-flex flex-column flex-sm-row align-items-sm-center gap-3 mb-0">
+                            {% csrf_token %}
+                            <input type="hidden" name="class_level" value="{{ selected_class }}">
+                            <input type="hidden" name="exam_type" value="{{ selected_exam }}">
+                            <input type="hidden" name="exam_year" value="{{ selected_year }}">
+                            <button type="submit" name="toggle_publish" class="btn btn-lg publish-btn {% if result_published %}btn-success{% else %}btn-outline-primary{% endif %}">
+                                {% if result_published %}Unpublish Results{% else %}Publish Results{% endif %}
+                            </button>
+                            <div class="publish-note text-muted small mb-0">
+                                {% if result_published %}
+                                    This result is currently published. Students can view it on their profile.
+                                {% else %}
+                                    This result is currently hidden. Publish it to make the result card available to students.
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                    {% if not is_head_teacher and selected_class and selected_exam and selected_year and not result_published %}
+                    <div class="alert alert-warning rounded-4 py-3">
+                        এই শ্রেণীর নির্বাচিত পরীক্ষা এখনও প্রকাশিত হয়নি। শিক্ষার্থীরা এটি দেখতে পারবে না।
+                    </div>
+                    {% endif %}
+
                     <hr class="my-4">
 
                     <div class="d-flex align-items-center justify-content-between mb-3">
@@ -151,6 +178,11 @@
     .result-print-card { background: #f8fafc; border-radius: 24px; padding: 1.5rem; }
     .result-print-card .card { border: 1px solid #e9ecef; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04); }
     .result-print-card .card-body { padding: 1.75rem; }
+    .publish-panel { background: #eef7ff; border-color: #cfe2ff; }
+    .publish-btn { min-width: 220px; padding: 0.85rem 1.4rem; font-weight: 700; letter-spacing: 0.02em; }
+    .publish-btn.btn-outline-primary { color: #0d6efd; border-color: #0d6efd; }
+    .publish-btn.btn-outline-primary:hover { background: #0d6efd; color: #fff; }
+    .publish-note { max-width: 480px; }
     .student-list::-webkit-scrollbar { width: 8px; }
     .student-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
     .student-list::-webkit-scrollbar-track { background: #f1f5f9; }

@@ -70,6 +70,49 @@
             transform: scale(1.05) rotate(5deg);
         }
 
+        .header-clock {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 150px;
+            padding: 14px 18px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #f8fbff 0%, #e8efff 100%);
+            color: #0f3d91;
+            font-weight: 700;
+            box-shadow: 0 18px 45px rgba(15, 61, 145, 0.16);
+            border: 1px solid rgba(15, 61, 145, 0.14);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            text-align: center;
+        }
+        .header-clock:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 24px 60px rgba(15, 61, 145, 0.18);
+        }
+        .header-clock .clock-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(15, 61, 145, 0.1);
+            color: #0f3d91;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+        .header-clock .clock-time {
+            font-size: 1.05rem;
+            letter-spacing: 0.03em;
+            line-height: 1.2;
+        }
+        .header-clock .clock-label {
+            font-size: 0.75rem;
+            color: #1b3c72;
+            margin-top: 4px;
+        }
+
         .school-name-bn {
             color: #004a99;
             font-size: 36px;
@@ -126,20 +169,6 @@
             background: rgba(255,255,255,0.1);
             color: #ffc107 !important; 
         }
-
-        /* --- News Ticker --- */
-        .news-ticker { 
-            background: #cc0000; 
-            color: #fff; 
-            padding: 10px 0; 
-            font-size: 16px; 
-            position: relative; 
-            z-index: 1001; 
-        }
-        .ticker-wrap { display: flex; overflow: hidden; white-space: nowrap; }
-        .ticker-title { background: #cc0000; padding: 0 20px; font-weight: bold; position: relative; z-index: 2; }
-        .ticker-content { display: inline-block; animation: marquee 25s linear infinite; }
-        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
         /* Dropdown Styling */
         .dropdown-menu {
@@ -224,6 +253,39 @@ footer {
     width: 100%;
 }
         .social-links a:hover { background: #ffc107; color: #002d5a; transform: rotate(360deg); }
+        .footer-emergency-img {
+            width: 100%;
+            max-width: 420px;
+            height: auto;
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.22);
+            box-shadow: 0 24px 50px rgba(0, 0, 0, 0.18);
+            transition: transform 0.3s ease;
+        }
+        .footer-emergency-img:hover {
+            transform: translateY(-4px);
+        }
+        .footer-emergency-area {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .footer-emergency-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #ffc107;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .footer-copy p {
+            margin: 0;
+        }
+        @media (max-width: 768px) {
+            .footer-emergency-img {
+                max-width: 100%;
+            }
+        }
         ::-webkit-scrollbar { width: 10px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #004a99; border-radius: 5px; }
@@ -244,6 +306,12 @@ footer {
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-4 text-center text-md-end mt-3 mt-md-0">
+                    <div class="d-inline-flex align-items-center justify-content-center justify-content-md-end gap-3 flex-wrap">
+                    <div class="header-clock" id="headerClock">
+                        <span class="clock-icon"><i class="fas fa-clock"></i></span>
+                        <span class="clock-time">Loading...</span>
+                        <span class="clock-label">তারিখ দেখুন</span>
+                    </div>
                     <div class="dropdown d-inline-block">
                         <button class="btn login-btn btn-primary dropdown-toggle px-4 py-2 fw-bold rounded-pill shadow-sm" type="button" data-bs-toggle="dropdown">
                             <i class="fas fa-lock me-2"></i> লগইন পোর্টাল
@@ -255,6 +323,7 @@ footer {
                             <li><a class="dropdown-item" href="#"><i class="fas fa-user-shield"></i> এডমিন প্যানেল</a></li>
                         </ul>
                     </div>
+                </div>
                 </div>
             </div>
         </div>
@@ -316,32 +385,7 @@ footer {
         </div>
     </nav>
 
-   <div class="news-ticker shadow-sm">
-    <div class="container d-flex">
-        <div class="ticker-title"><i class="fas fa-bullhorn"></i> সর্বশেষ: </div>
-        <div class="ticker-wrap flex-grow-1">
-            <div class="ticker-content">
-                <!-- ডাটাবেজ থেকে আসা কাস্টম টিকার নিউজ -->
-                {% for ticker in database_tickers %}
-                    • {{ ticker.title }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                {% endfor %}
-
-                <!-- আগের রুটিন ও নোটিশ লুপগুলো নিচে থাকবে -->
-                {% for routine in ticker_routines %}
-                    • {{ routine.title }} (শ্রেণী: {{ routine.get_target_class_display }}) এর রুটিন প্রকাশিত হয়েছে &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                {% endfor %}
-
-                {% for notice in ticker_notices %} 
-                    • {{ notice.title }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-                {% empty %} 
-                    {% if not database_tickers %}
-                        আমাদের বিদ্যালয়ে আপনাকে স্বাগতম। ২০২৬ শিক্ষাবর্ষের ৬ষ্ঠ থেকে ১০ম শ্রেণির সিলেবাস ডাউনলোড করুন শিক্ষার্থী কর্ণার থেকে।
-                    {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-</div>
+    {% include 'includes/news_ticker.html' %}
 
     <div class="container-fluid px-lg-5 my-4" data-aos="zoom-in">
         <div id="homepageSlider" class="carousel slide auto-gallery-slider shadow-lg rounded-4" data-bs-ride="carousel">
@@ -540,14 +584,13 @@ footer {
     <p><i class="fas fa-envelope me-2 text-warning"></i> knuhighschool1994@gmail.com</p>
 </div>
             <hr class="my-5 opacity-25">
-            <div class="text-center">
+            <div class="footer-emergency-area text-center mb-4">
+                <div class="footer-emergency-title mb-3">জরুরী হটলাইন নাম্বার</div>
+                <img src="{% static 'images/emergency.png' %}" alt="Emergency" class="footer-emergency-img">
+            </div>
+            <div class="footer-copy text-center">
                 <p class="small opacity-75 mb-1">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</p>
-            <p class="mb-0">
-    Designed & Developed by 
-    <a href="https://www.facebook.com/mdimtiaz.joy.50" target="_blank" class="text-warning fw-bold text-decoration-none">
-        Md Imtiaz Sarder Joy
-    </a>
-</p>
+                <p class="mb-0">Designed & Developed by <a href="https://www.facebook.com/mdimtiaz.joy.50" target="_blank" class="text-warning fw-bold text-decoration-none">Md Imtiaz Sarder Joy</a></p>
             </div>
        </div> 
     </footer>
@@ -561,6 +604,29 @@ footer {
             const name = "খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়";
             alert("স্বাগতম: " + name); 
         });
+
+        function updateHeaderClock() {
+            const clock = document.getElementById('headerClock');
+            if (!clock) return;
+            const timeElement = clock.querySelector('.clock-time');
+            const labelElement = clock.querySelector('.clock-label');
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = now.toLocaleString('bn-BD', { month: 'short' });
+            const year = now.getFullYear();
+            if (timeElement) {
+                timeElement.textContent = `${hours}:${minutes}:${seconds}`;
+            }
+            if (labelElement) {
+                labelElement.textContent = `${day} ${month} ${year}`;
+            }
+        }
+
+        updateHeaderClock();
+        setInterval(updateHeaderClock, 1000);
     </script>
 </body>
 </html>
