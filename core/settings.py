@@ -13,12 +13,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-%^ogsv0b)0os@d)mlpi3&@#z@y-m$jnd2u4vr*2u$wxn)^=lgf')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG forced ON for local debugging (remember to turn off for production)
+# DEBUG enabled for local debugging (remember to turn off for production)
 DEBUG = True
-# Configure allowed hosts via environment; default to localhost
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
-# Comma-separated IPs that are allowed to see technical debug pages even when DEBUG is False
-INTERNAL_DEBUG_IPS = os.environ.get('INTERNAL_DEBUG_IPS', '127.0.0.1').split(',')
+# Use permissive hosts for local development
+ALLOWED_HOSTS = ['*']
 
 # --- LOGIN SETTINGS ---
 LOGIN_URL = 'login'
@@ -42,7 +40,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'core.middleware.InternalDebugMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
