@@ -4,8 +4,9 @@ from .models import Subject, Mark, Teacher, TeacherSubjectAssignment, ExamRoutin
 # Subject Admin
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
-    list_display = ('subject_name', 'religion', 'class_level', 'subject_type', 'has_practical', 'full_mark')
+    list_display = ('subject_name', 'subject_code', 'religion', 'class_level', 'subject_type', 'has_practical', 'full_mark')
     list_filter = ('religion', 'class_level', 'has_practical', 'subject_type')
+    search_fields = ('subject_name', 'subject_code')
 
 # Mark Admin
 @admin.register(Mark)

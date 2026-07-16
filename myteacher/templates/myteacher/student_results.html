@@ -86,24 +86,46 @@
                         <span class="badge bg-primary-subtle text-primary rounded-pill">{{ class_students.count }}</span>
                     </div>
 
+                    {% if is_head_teacher %}
+                    <div class="d-flex align-items-center justify-content-between mb-3 px-1 gap-2">
+                        <label class="form-check small text-muted mb-0 d-flex align-items-center gap-2">
+                            <input type="checkbox" class="form-check-input student-select-all" onchange="toggleAllResultSelection(this.checked)">
+                            <span>সব নির্বাচন করুন</span>
+                        </label>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-light text-dark border">প্রিন্ট: <span class="selected-print-count">0</span></span>
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" onclick="printSelectedResultCards()" title="নির্বাচিত ফলাফল কার্ড প্রিন্ট করুন">
+                                <i class="fas fa-print"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <div class="list-group overflow-auto student-list" style="max-height: 420px;">
                         {% for student in class_students %}
-                        <a href="?class_level={{ selected_class }}&exam_type={{ selected_exam }}&exam_year={{ selected_year }}&student_id={{ student.id }}"
-                           class="list-group-item list-group-item-action border-0 mb-2 rounded-3 d-flex gap-2 align-items-center p-3 {% if result_data and result_data.student.id == student.id %}selected{% else %}bg-white{% endif %}">
-                            <div style="width:44px; height:44px; flex-shrink:0; border-radius:6px; overflow:hidden; background:#f8fafc; display:flex; align-items:center; justify-content:center;">
-                                {% if student.photo %}
-                                    <img src="{{ student.photo.url }}" style="width:100%; height:100%; object-fit:cover;">
-                                {% else %}
-                                    <div style="font-size:12px; color:#6b7280; padding:4px; text-align:center;">No
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="fw-bold small mb-0">{{ student.full_name }}</div>
-                                <div class="small text-muted">Roll: {{ student.class_roll }} • ID: {{ student.student_id }}</div>
-                            </div>
-                            <div class="text-end small text-muted" style="min-width:60px;">{{ student.get_current_class_display }}</div>
-                        </a>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            {% if is_head_teacher %}
+                            <label class="form-check m-0">
+                                <input type="checkbox" class="form-check-input student-print-checkbox" value="{{ student.id }}" data-student-id="{{ student.id }}" onchange="updatePrintSelectionState()">
+                            </label>
+                            {% endif %}
+                            <a href="?class_level={{ selected_class }}&exam_type={{ selected_exam }}&exam_year={{ selected_year }}&student_id={{ student.id }}"
+                               class="list-group-item list-group-item-action border-0 rounded-3 d-flex gap-2 align-items-center p-3 flex-grow-1 {% if result_data and result_data.student.id == student.id %}selected{% else %}bg-white{% endif %}">
+                                <div style="width:44px; height:44px; flex-shrink:0; border-radius:6px; overflow:hidden; background:#f8fafc; display:flex; align-items:center; justify-content:center;">
+                                    {% if student.photo %}
+                                        <img src="{{ student.photo.url }}" style="width:100%; height:100%; object-fit:cover;">
+                                    {% else %}
+                                        <div style="font-size:12px; color:#6b7280; padding:4px; text-align:center;">No
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold small mb-0">{{ student.full_name }}</div>
+                                    <div class="small text-muted">Roll: {{ student.class_roll }} • ID: {{ student.student_id }}</div>
+                                </div>
+                                <div class="text-end small text-muted" style="min-width:60px;">{{ student.get_current_class_display }}</div>
+                            </a>
+                        </div>
                         {% empty %}
                         <div class="text-center text-muted p-3">কোনো শিক্ষার্থী পাওয়া যায়নি।</div>
                         {% endfor %}
@@ -140,14 +162,23 @@
                         </button>
                         <span class="text-muted small">Download restricted to assigned class teachers and headmaster.</span>
                         {% endif %}
-                        <button class="btn btn-outline-secondary px-3" onclick="window.print()">
+                        <button id="printResultButton" class="btn btn-outline-secondary px-3" onclick="printSelectedResultCards()">
                             <i class="fas fa-print me-1"></i> Print
                         </button>
                     </div>
                 </div>
-                <div class="result-print-card">
+                <div class="result-print-card main-preview-card">
                     {% include 'myteacher/result_card_display.html' %}
                 </div>
+                {% if class_summary %}
+                <div class="d-none">
+                    {% for summary in class_summary %}
+                    <div class="print-card-item" data-student-id="{{ summary.student.id }}">
+                        {% include 'myteacher/result_card_display.html' with result_data=summary %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
                 {% else %}
                 <div class="text-center py-5">
                     <i class="fas fa-file-signature fa-4x text-light mb-3"></i>
@@ -174,8 +205,12 @@
     .list-group-item.selected { background: linear-gradient(90deg,#0ea5a4,#0284c7) !important; box-shadow: 0 10px 28px rgba(2, 6, 23, 0.14); }
     .student-list { padding-right: 6px; }
     .student-list .small.text-muted { color: #6b7280 !important; }
+    .student-print-checkbox, .student-select-all { width: 16px; height: 16px; cursor: pointer; }
+    .print-card-item { display: none !important; }
+    .print-collection { display: block !important; width: 100% !important; margin: 0 auto !important; background: white !important; padding: 0 !important; }
+    .print-collection .print-card-item { display: block !important; margin-bottom: 1.5rem; }
     .filter-card .card-body { padding: 1.75rem; }
-    .result-print-card { background: #f8fafc; border-radius: 24px; padding: 1.5rem; }
+    .result-print-card { background: #f8fafc; border-radius: 24px; padding: 1.5rem; margin: 0 auto !important; }
     .result-print-card .card { border: 1px solid #e9ecef; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04); }
     .result-print-card .card-body { padding: 1.75rem; }
     .publish-panel { background: #eef7ff; border-color: #cfe2ff; }
@@ -192,14 +227,28 @@
     @media print {
         @page { size: A4 portrait; margin: 10mm; }
         html, body { width: 100%; height: auto; margin: 0; padding: 0; background: white !important; }
-        body * { visibility: hidden !important; }
-        .result-print-card, .result-print-card * { visibility: visible !important; }
+        body.printing-active > :not(#print-collection) { display: none !important; }
+        body.printing-active {
+            background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        body.printing-active #print-collection {
+            display: block !important;
+            visibility: visible !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 auto !important;
+            background: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
         .result-print-card {
             position: static !important;
             display: block !important;
             width: 100% !important;
             max-width: 190mm !important;
-            margin: 0 auto !important;
+            margin: 0 auto 16px auto !important;
             padding: 0 !important;
             overflow: visible !important;
             background: white !important;
@@ -207,17 +256,96 @@
             font-size: 12px !important;
             line-height: 1.35 !important;
             page-break-inside: avoid !important;
+            break-inside: avoid !important;
             page-break-after: avoid !important;
         }
         .result-print-card .card { box-shadow: none !important; border: none !important; }
         .result-print-card .card, .result-print-card .card-body { width: 100% !important; max-width: 190mm !important; padding: 0 !important; }
         .result-print-card .btn, .result-print-card form, .result-print-card .input-group, .result-print-card .card-header, .result-print-card .list-group { display: none !important; }
-        .result-print-card table { font-size: 11px !important; }
+        .result-print-card table { font-size: 13px !important; line-height: 1.25 !important; }
+        .result-print-card th { font-size: 14px !important; font-weight: 700 !important; color: #ffffff !important; font-family: 'Times New Roman', Times, serif !important; }
+        .result-print-card thead th { font-size: 15px !important; }
+        .result-print-card td { font-size: 13px !important; padding: 4px !important; }
         .result-print-card h2 { font-size: 24px !important; }
         .result-print-card h3 { font-size: 17px !important; }
         .result-print-card p { font-size: 12px !important; }
         .result-print-card th, .result-print-card td { border-color: #000 !important; }
-        body { background: white !important; }
+        .main-preview-card { display: none !important; }
+        .print-card-item { display: block !important; page-break-inside: avoid !important; break-inside: avoid !important; }
+        .print-card-item .card { margin-bottom: 16px; page-break-inside: avoid !important; break-inside: avoid !important; }
     }
 </style>
+<script>
+function updatePrintSelectionState() {
+    const checkboxes = Array.from(document.querySelectorAll('.student-print-checkbox'));
+    const selectAll = document.querySelector('.student-select-all');
+    const countBadge = document.querySelector('.selected-print-count');
+    const selectedCount = checkboxes.filter((checkbox) => checkbox.checked).length;
+
+    if (countBadge) {
+        countBadge.textContent = selectedCount;
+    }
+
+    if (selectAll) {
+        selectAll.checked = checkboxes.length > 0 && checkboxes.every((checkbox) => checkbox.checked);
+    }
+}
+
+function toggleAllResultSelection(checked) {
+    document.querySelectorAll('.student-print-checkbox').forEach((checkbox) => {
+        checkbox.checked = checked;
+    });
+    updatePrintSelectionState();
+}
+
+function printSelectedResultCards() {
+    const selectedIds = Array.from(new Set(
+        Array.from(document.querySelectorAll('.student-print-checkbox:checked')).map((checkbox) => checkbox.value)
+    ));
+
+    const existingCollection = document.getElementById('print-collection');
+    if (existingCollection) {
+        existingCollection.remove();
+    }
+
+    const wrapper = document.createElement('div');
+    wrapper.id = 'print-collection';
+    wrapper.className = 'result-print-card print-collection';
+
+    if (selectedIds.length > 0) {
+        selectedIds.forEach((studentId) => {
+            const source = document.querySelector('.print-card-item[data-student-id="' + studentId + '"]');
+            if (source) {
+                const clone = source.cloneNode(true);
+                clone.setAttribute('data-print-id', studentId);
+                wrapper.appendChild(clone);
+            }
+        });
+    } else {
+        const previewCard = document.querySelector('.main-preview-card');
+        if (previewCard) {
+            const clone = previewCard.cloneNode(true);
+            clone.classList.remove('main-preview-card');
+            wrapper.appendChild(clone);
+        }
+    }
+
+    if (wrapper.children.length > 0) {
+        document.body.classList.add('printing-active');
+        document.body.appendChild(wrapper);
+        setTimeout(() => {
+            window.print();
+            setTimeout(() => {
+                wrapper.remove();
+                document.body.classList.remove('printing-active');
+            }, 400);
+        }, 250);
+        return;
+    }
+
+    window.print();
+}
+
+document.addEventListener('DOMContentLoaded', updatePrintSelectionState);
+</script>
 {% endblock %}

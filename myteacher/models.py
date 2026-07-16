@@ -31,6 +31,7 @@ class Subject(models.Model):
     ]
 
     subject_name = models.CharField(max_length=100, verbose_name="Subject Name")
+    subject_code = models.CharField(max_length=20, blank=True, default="", verbose_name="Subject Code")
     subject_type = models.CharField(max_length=1, choices=TYPE_CHOICES, verbose_name="Type")
     religion = models.CharField(max_length=10, choices=RELIGION_CHOICES, default='None', verbose_name="Religion")
     class_level = models.CharField(max_length=2, choices=CLASS_CHOICES, verbose_name="Class")
