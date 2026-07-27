@@ -7,14 +7,14 @@
     <title>Student Profile</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #f4f7ff; color: #1e293b; }
+        body { background: #f4f7ff; color: #1e293b; overflow-x: hidden; }
         .portal-header { background: #0d6efd; color: white; padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
         .portal-header img { height: 52px; }
         .portal-header .title-text { font-size: 1.25rem; font-weight: 700; margin-bottom: 0; }
         .portal-header small { color: #dceafe; }
         .profile-card { border: none; border-radius: 1rem; }
         .profile-card .card-body { padding: 1.75rem; }
-        .stat-card { border: none; border-radius: 1rem; }
+        .stat-card { border: none; border-radius: 1rem; height: 100%; }
         .stat-card .card-body { padding: 1.25rem; }
         .list-group-item a { color: #0d6efd; }
         .list-group-item a:hover { text-decoration: none; color: #0b5ed7; }
@@ -22,6 +22,19 @@
         .print-block { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.96); color: #000; z-index: 9999; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
         .no-print { user-select: none; }
         .card-header { border-radius: 1rem 1rem 0 0; }
+        .result-print-card {
+            overflow-x: auto;
+            width: 100%;
+            background: #f8fafc;
+            border-radius: 24px;
+            padding: 1.5rem;
+            margin: 0 auto !important;
+        }
+        .result-print-card .card {
+            min-width: 950px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+        }
         .nav-actions .btn { min-width: 140px; }
         .toggle-header { cursor: pointer; }
         .toggle-header .toggle-icon { transition: transform 0.2s ease; }
@@ -51,22 +64,17 @@
         .footer-label { color: #94a3b8; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.08em; }
         .footer-hotline { color: #38bdf8; font-size: 1.05rem; }
         .footer-note { color: #94a3b8; font-size: 0.9rem; }
+        
+        /* Responsive adjustments for seamless fitting */
+        img, .table, .card { max-width: 100%; }
+        .container-fluid { overflow-x: hidden; width: 100%; }
+        
         @media (max-width: 991px) {
             .portal-header { justify-content: center; text-align: center; }
             .portal-header img { margin-bottom: 0.5rem; }
             .portal-header .title-text { font-size: 1.1rem; }
             .student-portal-footer { text-align: center; }
             .student-portal-footer .footer-contact-row { justify-content: center; }
-        }
-            .portal-header img { margin-bottom: 0.5rem; }
-            .portal-header .title-text { font-size: 1.1rem; }
-            .student-portal-footer { text-align: center; }
-            .student-portal-footer .footer-contact { justify-content: center; }
-        }
-            .portal-header img { margin-bottom: 0.5rem; }
-            .portal-header .title-text { font-size: 1.1rem; }
-            .student-portal-footer { text-align: center; }
-            .student-portal-footer .footer-contact { justify-content: center; width: 100%; }
         }
         @media print {
             body { visibility: hidden !important; }
@@ -88,9 +96,9 @@
         <small>খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</small>
     </div>
 </div>
-<div class="container-fluid py-5">
+<div class="container-fluid py-4 px-3 px-md-4">
     <div class="row mb-3 align-items-center">
-        <div class="col-md-6 mb-3 mb-md-0">
+        <div class="col-md-6 mb-2 mb-md-0">
             <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm">Back to Home</a>
         </div>
         <div class="col-md-6 text-md-end">
@@ -110,33 +118,33 @@
             <div class="row g-4 align-items-center">
                 <div class="col-xl-2 col-lg-3 col-md-4 text-center">
                     {% if student.photo %}
-                        <img src="{{ student.photo.url }}" class="img-fluid rounded-circle border border-white shadow-sm" alt="{{ student.full_name }}" style="max-width: 150px;">
+                        <img src="{{ student.photo.url }}" class="img-fluid rounded-circle border border-white shadow-sm" alt="{{ student.full_name }}" style="max-width: 150px; height: 150px; object-fit: cover;">
                     {% else %}
-                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 150px; height: 150px;">
+                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 150px; height: 150px;">
                             <span class="text-muted">No Photo</span>
                         </div>
                     {% endif %}
                 </div>
                 <div class="col-xl-7 col-lg-6 col-md-8">
-                    <h2 class="mb-1">{{ student.full_name }}</h2>
-                    <p class="text-muted mb-2">Student ID: <span class="fw-semibold">{{ student.student_id }}</span></p>
+                    <h2 class="mb-1 text-break">{{ student.full_name }}</h2>
+                    <p class="text-muted mb-3">Student ID: <span class="fw-semibold">{{ student.student_id }}</span></p>
                     <div class="row g-2">
                         <div class="col-sm-4">
                             <div class="bg-muted-soft rounded-3 p-3">
-                                <small class="text-uppercase text-secondary">Class</small>
-                                <div class="fw-bold fs-5">{{ student.current_class }}</div>
+                                <small class="text-uppercase text-secondary d-block">Class</small>
+                                <div class="fw-bold fs-5 text-truncate">{{ student.current_class }}</div>
                             </div>
                         </div>
                         <div class="col-sm-4">
                             <div class="bg-muted-soft rounded-3 p-3">
-                                <small class="text-uppercase text-secondary">Roll</small>
-                                <div class="fw-bold fs-5">{{ student.class_roll }}</div>
+                                <small class="text-uppercase text-secondary d-block">Roll</small>
+                                <div class="fw-bold fs-5 text-truncate">{{ student.class_roll }}</div>
                             </div>
                         </div>
                         <div class="col-sm-4">
                             <div class="bg-muted-soft rounded-3 p-3">
-                                <small class="text-uppercase text-secondary">Shift</small>
-                                <div class="fw-bold fs-5">{{ student.shift }}</div>
+                                <small class="text-uppercase text-secondary d-block">Shift</small>
+                                <div class="fw-bold fs-5 text-truncate">{{ student.shift }}</div>
                             </div>
                         </div>
                     </div>
@@ -151,13 +159,13 @@
 
     <div class="row g-4">
         <div class="col-xl-8">
-            <div class="row g-4">
+            <div class="row g-4 mb-4">
                 <div class="col-md-6">
                     <div class="card stat-card shadow-sm">
                         <div class="card-body">
                             <h6 class="text-secondary text-uppercase mb-3">Parents</h6>
-                            <p class="mb-2"><strong>Father:</strong> {{ student.father_name }}</p>
-                            <p class="mb-0"><strong>Mother:</strong> {{ student.mother_name }}</p>
+                            <p class="mb-2 text-break"><strong>Father:</strong> {{ student.father_name }}</p>
+                            <p class="mb-0 text-break"><strong>Mother:</strong> {{ student.mother_name }}</p>
                         </div>
                     </div>
                 </div>
@@ -165,9 +173,9 @@
                     <div class="card stat-card shadow-sm">
                         <div class="card-body">
                             <h6 class="text-secondary text-uppercase mb-3">Personal Info</h6>
-                            <p class="mb-2"><strong>Gender:</strong> {{ student.gender }}</p>
-                            <p class="mb-2"><strong>DOB:</strong> {{ student.date_of_birth }}</p>
-                            <p class="mb-0"><strong>Religion:</strong> {{ student.religion }}</p>
+                            <p class="mb-2 text-break"><strong>Gender:</strong> {{ student.gender }}</p>
+                            <p class="mb-2 text-break"><strong>DOB:</strong> {{ student.date_of_birth }}</p>
+                            <p class="mb-0 text-break"><strong>Religion:</strong> {{ student.religion }}</p>
                         </div>
                     </div>
                 </div>
@@ -184,14 +192,14 @@
                     <div class="row g-3 mb-3">
                         <div class="col-sm-6">
                             <div class="bg-muted-soft rounded-3 p-3 h-100">
-                                <small class="text-uppercase text-secondary">Group</small>
-                                <div class="fw-semibold fs-5">{{ student.group|default:'General' }}</div>
+                                <small class="text-uppercase text-secondary d-block">Group</small>
+                                <div class="fw-semibold fs-5 text-truncate">{{ student.group|default:'General' }}</div>
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="bg-muted-soft rounded-3 p-3 h-100">
-                                <small class="text-uppercase text-secondary">Class Level</small>
-                                <div class="fw-semibold fs-5">{{ student.current_class }}</div>
+                                <small class="text-uppercase text-secondary d-block">Class Level</small>
+                                <div class="fw-semibold fs-5 text-truncate">{{ student.current_class }}</div>
                             </div>
                         </div>
                     </div>
@@ -211,7 +219,7 @@
                         <div class="row g-3">
                             <div class="col-12">
                                 <p class="text-muted mb-1">Mobile Number</p>
-                                <p class="fs-5 mb-0">{{ student.mobile_num }}</p>
+                                <p class="fs-5 mb-0 text-break">{{ student.mobile_num }}</p>
                             </div>
                         </div>
                     {% endif %}
@@ -222,8 +230,8 @@
                 <div class="card border-danger border-1 shadow-sm mb-4">
                     <div class="card-body px-4 py-3">
                         <h5 class="text-danger mb-3">Sensitive / Login Info</h5>
-                        <p class="mb-2"><strong>Username:</strong> {% if student.user %}{{ student.user.username }}{% else %}<span class="text-danger">Not generated</span>{% endif %}</p>
-                        <p class="mb-0"><strong>Auto Generated Password:</strong> {% if student.generated_password %}{{ student.generated_password }}{% else %}<span class="text-danger">Not available</span>{% endif %}</p>
+                        <p class="mb-2 text-break"><strong>Username:</strong> {% if student.user %}{{ student.user.username }}{% else %}<span class="text-danger">Not generated</span>{% endif %}</p>
+                        <p class="mb-0 text-break"><strong>Auto Generated Password:</strong> {% if student.generated_password %}{{ student.generated_password }}{% else %}<span class="text-danger">Not available</span>{% endif %}</p>
                     </div>
                 </div>
             {% endif %}
@@ -252,7 +260,7 @@
                         </div>
                     {% elif selected_exam and selected_year and result_published == False %}
                         <div class="alert alert-warning mb-0 py-3">
-                            <strong>Result not published yet.</strong> এই পরীক্ষার ফলাফল এখনও প্রকাশিত হয়নি।
+                            <strong>Result not published yet.</strong> এই পরীক্ষার ফলাফল এখনও প্রকাশিত হয়নি।
                         </div>
                     {% else %}
                         <p class="text-muted mb-0">No result card available for this student.</p>
@@ -272,7 +280,7 @@
                         <ul class="list-group list-group-flush">
                             {% for admit in admit_cards %}
                                 <li class="list-group-item px-0 py-2 border-0">
-                                    <button type="button" class="btn btn-link text-start p-0 admit-toggle" data-target="admitPanel{{ admit.pk }}">
+                                    <button type="button" class="btn btn-link text-start p-0 admit-toggle text-break" data-target="admitPanel{{ admit.pk }}">
                                         <span class="fw-semibold">{{ admit.display_name }}</span>
                                     </button>
                                 </li>
@@ -281,7 +289,9 @@
                         <div class="admit-panels mt-3">
                             {% for admit in admit_cards %}
                                 <div id="admitPanel{{ admit.pk }}" class="admit-panel collapse-content hide-content">
-                                    {% include 'myteacher/admit_card_preview.html' %}
+                                    <div class="admit-preview table-responsive">
+                                        {% include 'myteacher/admit_card_preview.html' %}
+                                    </div>
                                 </div>
                             {% endfor %}
                         </div>
@@ -291,7 +301,7 @@
                 </div>
             </div>
 
-            <div class="card shadow-sm border-0">
+            <div class="card shadow-sm border-0 mb-4">
                 <div class="card-body">
                     <h5 class="mb-3">Quick Actions</h5>
                     <p class="text-muted">Navigate easily between students and return to the main site.</p>
@@ -309,7 +319,7 @@
         </div>
     </div>
 
-    <footer class="student-portal-footer mt-5 py-4 rounded-4 shadow-sm">
+    <footer class="student-portal-footer mt-4 py-4 px-3 rounded-4 shadow-sm">
         <div class="row g-3 align-items-center justify-content-between">
             <div class="col-12 col-md-6">
                 <h5 class="footer-title mb-2">Student Portal Support</h5>
@@ -317,7 +327,7 @@
                 <p class="footer-text mb-0">Office hours: Sunday to Thursday, 9:00 AM – 4:00 PM.</p>
             </div>
             <div class="col-12 col-md-6">
-                <div class="footer-contact-row d-flex flex-column flex-sm-row flex-wrap justify-content-md-end gap-2">
+                <div class="footer-contact-row d-flex flex-column flex-sm-row flex-wrap justify-content-md-end gap-3">
                     <div class="footer-contact">
                         <span class="footer-label">Headmaster:</span>
                         <strong class="footer-hotline">01714 939122</strong>
@@ -395,3 +405,5 @@
         });
     });
 </script>
+</body>
+</html>

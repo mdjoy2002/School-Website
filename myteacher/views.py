@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Student, TeacherSubjectAssignment, Mark, Subject, ExamRoutine, TeacherClassAssignment, Teacher
-from students.models import StudentResultPublication
+from students.models import StudentAdmitCard, StudentResultPublication
 from django.http import HttpResponse, HttpResponseForbidden
 from django.template.loader import get_template
 from django.urls import reverse
@@ -232,9 +232,12 @@ def mark_entry_history_view(request):
     selected_class = request.GET.get('class_level')
     selected_subject = request.GET.get('subject_id')
     selected_exam = request.GET.get('exam_type')
+    selected_year = request.GET.get('exam_year')
 
     marks = Mark.objects.none()
     selected_subject_obj = None
+
+    exam_years = sorted(set(Mark.objects.values_list('exam_year', flat=True)), reverse=True)
 
     if selected_class:
         if selected_class not in assigned_classes:
@@ -249,7 +252,15 @@ def mark_entry_history_view(request):
         if selected_exam:
             marks = marks.filter(exam_type=selected_exam)
 
+        if selected_year:
+            marks = marks.filter(exam_year=selected_year)
+
         marks = marks.select_related('student', 'subject').order_by('student__class_roll')
+
+        for mark in marks:
+            full_mark = mark.subject.full_mark_value or 100
+            percentage = (mark.total_mark / full_mark * Decimal('100.00')) if full_mark else Decimal('0.00')
+            mark.grade, mark.gpa = calculate_grade_and_gpa(percentage)
 
     return render(request, 'myteacher/mark_entry_history.html', {
         'assignments': assignments,
@@ -257,7 +268,9 @@ def mark_entry_history_view(request):
         'selected_class': selected_class,
         'selected_subject': selected_subject,
         'selected_exam': selected_exam,
+        'selected_year': selected_year,
         'selected_subject_obj': selected_subject_obj,
+        'exam_years': exam_years,
         'marks': marks,
     })
 
@@ -556,6 +569,32 @@ def id_cards_view(request):
         'current_year': current_year,
         'is_head_teacher': is_head_teacher,
     })
+
+
+@login_required
+def clear_student_records_view(request):
+    teacher = request.user.teacher
+    if not is_head_or_admin(teacher, request.user):
+        return HttpResponseForbidden("আপনি এই অপারেশনটি করার অনুমোদিত নন।")
+
+    cleared_count = 0
+    if request.method == 'POST':
+        student_ids = request.POST.getlist('student_ids[]')
+        if student_ids:
+            students = Student.objects.filter(id__in=student_ids)
+            for student in students:
+                if hasattr(student, 'saved_admit_cards'):
+                    student.saved_admit_cards.all().delete()
+                cleared_count += 1
+
+        if cleared_count:
+            messages.success(request, f'{cleared_count} জন ছাত্র/ছাত্রীর অ্যাডমিট কার্ড মুছে ফেলা হয়েছে।')
+        else:
+            messages.warning(request, 'কোনো ছাত্র/ছাত্রী নির্বাচন করা হয়নি বা মুছার মতো তথ্য পাওয়া যায়নি।')
+
+        return redirect(request.META.get('HTTP_REFERER', reverse('myteacher:student_corner')))
+
+    return HttpResponseForbidden("Invalid request method.")
 
 
 @login_required

@@ -1,21 +1,31 @@
 {% extends 'myteacher/base.html' %}
 {% block content %}
 <div class="container py-5">
-    <div class="card shadow-sm rounded-4 border-0">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h3 class="mb-1">Mark Entry History</h3>
-                    <p class="text-muted mb-0">View submitted marks and edit existing entries.</p>
-                </div>
-                <div>
-                    <a href="{% url 'myteacher:mark_entry' %}" class="btn btn-primary">New Mark Entry</a>
-                </div>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h2 class="mb-1">Mark Entry History</h2>
+            <p class="text-muted mb-2">Organized marks by class, subject, exam and year. Select filters to find the exact entries quickly.</p>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge bg-primary">Total Entries: {{ marks|length }}</span>
+                <span class="badge bg-secondary">Class: {{ selected_class|default:'All' }}</span>
+                <span class="badge bg-secondary">Subject: {% if selected_subject_obj %}{{ selected_subject_obj.subject_name }}{% else %}All{% endif %}</span>
+                <span class="badge bg-secondary">Exam: {{ selected_exam|default:'All' }}</span>
+                <span class="badge bg-secondary">Year: {{ selected_year|default:'All' }}</span>
             </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'myteacher:mark_entry' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Mark Entry
+            </a>
+            <a href="{% url 'myteacher:mark_entry' %}" class="btn btn-lg btn-primary">New Mark Entry</a>
+        </div>
+    </div>
 
-            <form method="GET" class="row g-3 mb-4">
+    <div class="card shadow-sm rounded-4 border-0 mb-4">
+        <div class="card-body p-4">
+            <form method="GET" class="row g-3">
                 <div class="col-md-3">
-                    <label class="form-label">Class</label>
+                    <label class="form-label fw-bold">Class</label>
                     <select name="class_level" class="form-select" onchange="this.form.submit()">
                         <option value="">-- Select Class --</option>
                         {% for class_level in assigned_classes %}
@@ -24,18 +34,20 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Subject</label>
+                    <label class="form-label fw-bold">Subject</label>
                     <select name="subject_id" class="form-select" onchange="this.form.submit()">
                         <option value="">-- All Subjects --</option>
                         {% for a in assignments %}
                             {% if not selected_class or a.subject.class_level == selected_class %}
-                                <option value="{{ a.subject.id }}" {% if selected_subject == a.subject.id|stringformat:"s" %}selected{% endif %}>{{ a.subject.subject_name }}</option>
+                                <option value="{{ a.subject.id }}" {% if selected_subject == a.subject.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ a.subject.subject_name }} {% if a.subject.is_religion_based %}({{ a.subject.get_religion_display }}){% endif %}
+                                </option>
                             {% endif %}
                         {% endfor %}
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Exam Type</label>
+                    <label class="form-label fw-bold">Exam Type</label>
                     <select name="exam_type" class="form-select" onchange="this.form.submit()">
                         <option value="">-- All Exams --</option>
                         <option value="Half Yearly" {% if selected_exam == 'Half Yearly' %}selected{% endif %}>Half Yearly</option>
@@ -44,41 +56,61 @@
                         <option value="Test" {% if selected_exam == 'Test' %}selected{% endif %}>Test</option>
                     </select>
                 </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Year</label>
+                    <select name="exam_year" class="form-select" onchange="this.form.submit()">
+                        <option value="">-- All Years --</option>
+                        {% for year in exam_years %}
+                            <option value="{{ year }}" {% if selected_year == year|stringformat:"s" %}selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </form>
+        </div>
+    </div>
 
+    <div class="card shadow-sm rounded-4 border-0">
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-dark">
+                <table class="table table-hover table-bordered align-middle mb-0">
+                    <thead class="table-primary text-dark">
                         <tr>
-                            <th>Roll</th>
+                            <th class="text-center" style="width: 60px;">Roll</th>
                             <th>Student</th>
+                            <th>Class</th>
                             <th>Subject</th>
                             <th>Exam</th>
-                            <th>Class</th>
-                            <th>Total</th>
-                            <th>Grade</th>
-                            <th></th>
+                            <th>Year</th>
+                            <th class="text-end">Total</th>
+                            <th class="text-center">Grade</th>
+                            <th class="text-center">GPA</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if marks %}
                             {% for mark in marks %}
                                 <tr>
-                                    <td>{{ mark.student.class_roll }}</td>
+                                    <td class="text-center">{{ mark.student.class_roll }}</td>
                                     <td>{{ mark.student.full_name }}</td>
+                                    <td>Class {{ mark.student.current_class }}</td>
                                     <td>{{ mark.subject.subject_name }}</td>
                                     <td>{{ mark.exam_type }}</td>
-                                    <td>{{ mark.student.current_class }}</td>
-                                    <td>{{ mark.total_mark }}</td>
-                                    <td>{{ mark.total_mark|floatformat:0 }}</td>
-                                    <td>
-                                        <a href="{% url 'myteacher:mark_entry' %}?class_level={{ mark.student.current_class }}&subject_id={{ mark.subject.id }}&exam_type={{ mark.exam_type }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                    <td>{{ mark.exam_year }}</td>
+                                    <td class="text-end fw-bold">{{ mark.total_mark|floatformat:2 }}</td>
+                                    <td class="text-center"><span class="badge bg-success">{{ mark.grade }}</span></td>
+                                    <td class="text-center"><span class="badge bg-info text-dark">{{ mark.gpa }}</span></td>
+                                    <td class="text-end">
+                                        <a href="{% url 'myteacher:mark_entry' %}?class_level={{ mark.student.current_class }}&subject_id={{ mark.subject.id }}&exam_type={{ mark.exam_type }}&exam_year={{ mark.exam_year }}" class="btn btn-sm btn-outline-primary">Edit</a>
                                     </td>
                                 </tr>
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="8" class="text-center text-muted py-5">No marks found. Select a class above to view marks.</td>
+                                <td colspan="10" class="text-center py-5 text-muted">
+                                    <div class="mb-2"><i class="fas fa-inbox fa-2x"></i></div>
+                                    No marks found yet. Choose a class and filters above to display previous entries.
+                                </td>
                             </tr>
                         {% endif %}
                     </tbody>

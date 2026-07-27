@@ -22,5 +22,6 @@ urlpatterns = [
     path('delete-routine/<int:id>/', views.delete_routine, name='delete_routine'),
     path('copy-routine/<int:from_id>/<str:target_class>/', views.copy_routine, name='copy_routine'),
     path('generate-admit/', views.generate_admit_card, name='generate_admit_card'),
+    path('clear-student-records/', views.clear_student_records_view, name='clear_student_records'),
     path('students/', views.student_list_view, name='student_list'),
 ]

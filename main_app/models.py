@@ -249,3 +249,39 @@ class Staff(Teacher):
         proxy = True
         verbose_name = "কর্মচারী"
         verbose_name_plural = "৩. কর্মচারীবৃন্দ"
+
+
+class VisitorProfile(models.Model):
+    visitor_uuid = models.CharField(max_length=64, unique=True, db_index=True, verbose_name='ভিজিটর ইউইডি')
+    ip_address = models.CharField(max_length=45, verbose_name='আইপি ঠিকানা')
+    first_visit = models.DateTimeField(auto_now_add=True, verbose_name='প্রথম ভিজিট')
+    last_visit = models.DateTimeField(auto_now=True, verbose_name='সর্বশেষ ভিজিট')
+
+    def __str__(self):
+        return self.visitor_uuid
+
+    class Meta:
+        verbose_name_plural = 'ভিজিটর প্রোফাইল'
+
+
+class DailyVisitor(models.Model):
+    date = models.DateField(verbose_name='তারিখ')
+    ip_address = models.CharField(max_length=45, verbose_name='আইপি ঠিকানা')
+    session_key = models.CharField(max_length=40, verbose_name='সেশন কী')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='সৃষ্টি সময়')
+    visitor_profile = models.ForeignKey(
+        VisitorProfile,
+        on_delete=models.CASCADE,
+        related_name='daily_visits',
+    )
+
+    def __str__(self):
+        return f"{self.date} - {self.ip_address}"
+
+    class Meta:
+        verbose_name_plural = 'দৈনিক ভিজিটর'
+        indexes = [
+            models.Index(fields=['date'], name='main_app_daily_date_idx'),
+            models.Index(fields=['ip_address', 'session_key'], name='main_app_daily_vis_idx'),
+        ]
+        unique_together = (('date', 'ip_address', 'session_key'),)

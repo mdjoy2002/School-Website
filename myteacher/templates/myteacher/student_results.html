@@ -2,42 +2,59 @@
 
 {% block content %}
 <div class="container-fluid py-4 px-3 px-md-5">
-    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
-        <div class="card-body p-4 p-md-5">
+    <!-- Top Hero Header Card -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white overflow-hidden border-start border-4 border-primary">
+        <div class="card-body p-4 p-md-4">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-                <div>
-                    <h1 class="display-5 fw-bold text-dark mb-1">ফলাফল কার্ড</h1>
-                    <p class="text-secondary small mb-0">এখানে শিক্ষার্থীর ফলাফল কার্ডটি সুন্দরভাবে দেখুন এবং প্রয়োজনমতো পিডিএফ ডাউনলোড করুন।</p>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-4 text-primary">
+                        <i class="fas fa-award fa-2x"></i>
+                    </div>
+                    <div>
+                        <h1 class="h3 fw-bold text-dark mb-1">ফলাফল কার্ড ম্যানেজমেন্ট</h1>
+                        <p class="text-muted small mb-0">শিক্ষার্থীর ফলাফল কার্ড সুন্দরভাবে দেখুন, যাচাই করুন এবং প্রয়োজনমতো প্রিন্ট বা পিডিএফ ডাউনলোড করুন।</p>
+                    </div>
                 </div>
-                <div class="d-flex gap-2">
-                    <span class="badge bg-light text-dark border px-3 py-2">শ্রেণী: {{ selected_class }}</span>
-                    <span class="badge bg-light text-dark border px-3 py-2">পরীক্ষা: {{ selected_exam }}</span>
-                    <span class="badge bg-light text-dark border px-3 py-2">বছর: {{ selected_year }}</span>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 rounded-pill"><i class="fas fa-graduation-cap me-1"></i> শ্রেণী: {{ selected_class }}</span>
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill"><i class="fas fa-book-open me-1"></i> পরীক্ষা: {{ selected_exam }}</span>
+                    <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-3 py-2 rounded-pill"><i class="fas fa-calendar-alt me-1"></i> বছর: {{ selected_year }}</span>
                 </div>
             </div>
         </div>
     </div>
 
     {% if not allowed_classes %}
-    <div class="alert alert-warning border-0 rounded-4 shadow-sm">
-        <i class="fas fa-exclamation-triangle me-2"></i> আপনাকে কোন ক্লাস অ্যাসাইন করা নেই। অ্যাডমিনের সাথে যোগাযোগ করুন।
+    <div class="alert alert-warning border-0 rounded-4 shadow-sm p-4 d-flex align-items-center gap-3">
+        <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+        <div>
+            <h6 class="fw-bold mb-1">কোনো ক্লাস অ্যাসাইন করা নেই</h6>
+            <p class="mb-0 small text-muted">আপনাকে কোন ক্লাস অ্যাসাইন করা নেই। অনুগ্রহ করে অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
+        </div>
     </div>
     {% else %}
     <div class="row g-4">
+        <!-- Left Column: Filters & Student List -->
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body p-4">
-                    <h5 class="fw-bold mb-4 text-primary"><i class="fas fa-filter me-2"></i>ফিল্টার ও শিক্ষার্থী</h5>
-                    <form method="get" id="filterForm">
+                    <h5 class="fw-bold mb-3 text-dark d-flex align-items-center gap-2">
+                        <span class="badge bg-primary rounded-circle p-2"><i class="fas fa-filter text-white fa-xs"></i></span>
+                        ফিল্টার ও শিক্ষার্থী নির্বাচন
+                    </h5>
+                    
+                    <form method="get" id="filterForm" class="mb-3">
                         <div class="mb-3">
-                            <select name="class_level" class="form-select border-0 bg-light" onchange="this.form.submit()" {% if not allowed_classes %}disabled{% endif %}>
+                            <label class="form-label small fw-semibold text-muted">শ্রেণী নির্বাচন</label>
+                            <select name="class_level" class="form-select border bg-light rounded-3 py-2" onchange="this.form.submit()" {% if not allowed_classes %}disabled{% endif %}>
                                 {% for class_level in allowed_classes %}
                                 <option value="{{ class_level }}" {% if class_level == selected_class %}selected{% endif %}>ক্লাস {{ class_level }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                         <div class="mb-3">
-                            <select name="exam_type" class="form-select border-0 bg-light" onchange="this.form.submit()" {% if not exam_choices %}disabled{% endif %}>
+                            <label class="form-label small fw-semibold text-muted">পরীক্ষার ধরন</label>
+                            <select name="exam_type" class="form-select border bg-light rounded-3 py-2" onchange="this.form.submit()" {% if not exam_choices %}disabled{% endif %}>
                                 {% for exam in exam_choices %}
                                 <option value="{{ exam }}" {% if exam == selected_exam %}selected{% endif %}>{{ exam }}</option>
                                 {% endfor %}
@@ -45,28 +62,34 @@
                         </div>
                         <input type="hidden" name="exam_year" value="{{ selected_year }}">
                         <div class="mb-3">
+                            <label class="form-label small fw-semibold text-muted">শিক্ষার্থী খুঁজুন</label>
                             <div class="input-group">
-                                <input type="text" name="search" class="form-control border-0 bg-light" placeholder="শিক্ষার্থীর নাম বা আইডি..." value="{{ search_query }}">
-                                <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
+                                <input type="text" name="search" class="form-control border bg-light rounded-start-3 ps-3" placeholder="নাম বা আইডি লিখুন..." value="{{ search_query }}">
+                                <button class="btn btn-primary rounded-end-3 px-3 shadow-hover" type="submit"><i class="fas fa-search"></i></button>
                             </div>
                         </div>
                     </form>
 
+                    <!-- Publish Status Panel -->
                     {% if is_head_teacher and selected_class and selected_exam and selected_year %}
-                    <div class="publish-panel rounded-4 p-3 mb-4 border border-2">
-                        <form method="post" class="d-flex flex-column flex-sm-row align-items-sm-center gap-3 mb-0">
+                    <div class="publish-panel rounded-4 p-3 mb-4 border border-1 shadow-sm">
+                        <form method="post" class="d-flex flex-column gap-2 mb-0">
                             {% csrf_token %}
                             <input type="hidden" name="class_level" value="{{ selected_class }}">
                             <input type="hidden" name="exam_type" value="{{ selected_exam }}">
                             <input type="hidden" name="exam_year" value="{{ selected_year }}">
-                            <button type="submit" name="toggle_publish" class="btn btn-lg publish-btn {% if result_published %}btn-success{% else %}btn-outline-primary{% endif %}">
-                                {% if result_published %}Unpublish Results{% else %}Publish Results{% endif %}
-                            </button>
-                            <div class="publish-note text-muted small mb-0">
+                            
+                            <div class="d-grid">
+                                <button type="submit" name="toggle_publish" class="btn publish-btn shadow-sm rounded-pill py-2 {% if result_published %}btn-gradient-success{% else %}btn-gradient-outline-primary{% endif %}">
+                                    <i class="fas {% if result_published %}fa-check-circle{% else %}fa-globe{% endif %} me-2"></i>
+                                    {% if result_published %}Unpublish Results (প্রকাশিত){% else %}Publish Results (অপ্রকাশিত){% endif %}
+                                </button>
+                            </div>
+                            <div class="publish-note text-muted small text-center mt-1">
                                 {% if result_published %}
-                                    This result is currently published. Students can view it on their profile.
+                                    ফলাফলটি বর্তমানে প্রকাশিত। শিক্ষার্থীরা তাদের প্রোফাইল থেকে এটি দেখতে পারছে।
                                 {% else %}
-                                    This result is currently hidden. Publish it to make the result card available to students.
+                                    ফলাফলটি বর্তমানে গোপন। প্রকাশ করতে উপরের বাটনে ক্লিক করুন।
                                 {% endif %}
                             </div>
                         </form>
@@ -74,102 +97,115 @@
                     {% endif %}
 
                     {% if not is_head_teacher and selected_class and selected_exam and selected_year and not result_published %}
-                    <div class="alert alert-warning rounded-4 py-3">
-                        এই শ্রেণীর নির্বাচিত পরীক্ষা এখনও প্রকাশিত হয়নি। শিক্ষার্থীরা এটি দেখতে পারবে না।
+                    <div class="alert alert-warning rounded-4 py-3 small d-flex align-items-center gap-2 shadow-xs">
+                        <i class="fas fa-info-circle text-warning"></i>
+                        <span>এই শ্রেণীর নির্বাচিত পরীক্ষা এখনও প্রকাশিত হয়নি। শিক্ষার্থীরা এটি দেখতে পারবে না।</span>
                     </div>
                     {% endif %}
 
-                    <hr class="my-4">
+                    <hr class="my-4 text-muted opacity-25">
 
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h6 class="fw-bold mb-0">শিক্ষার্থী তালিকা</h6>
-                        <span class="badge bg-primary-subtle text-primary rounded-pill">{{ class_students.count }}</span>
+                    <!-- Student List Counter & Select All -->
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-users me-2 text-primary"></i>শিক্ষার্থী তালিকা</h6>
+                        <span class="badge bg-primary text-white rounded-pill px-2.5 py-1.5 shadow-xs">{{ class_students.count }} জন</span>
                     </div>
 
                     {% if is_head_teacher %}
-                    <div class="d-flex align-items-center justify-content-between mb-3 px-1 gap-2">
-                        <label class="form-check small text-muted mb-0 d-flex align-items-center gap-2">
-                            <input type="checkbox" class="form-check-input student-select-all" onchange="toggleAllResultSelection(this.checked)">
+                    <div class="d-flex align-items-center justify-content-between mb-3 px-3 py-2.5 rounded-4 gap-2 border shadow-xs" style="background: linear-gradient(135deg, #f8fafc, #edf2f7);">
+                        <label class="form-check small text-dark fw-bold mb-0 d-flex align-items-center gap-2 cursor-pointer">
+                            <input type="checkbox" class="form-check-input student-select-all ms-0" onchange="toggleAllResultSelection(this.checked)">
                             <span>সব নির্বাচন করুন</span>
                         </label>
                         <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-light text-dark border">প্রিন্ট: <span class="selected-print-count">0</span></span>
-                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" onclick="printSelectedResultCards()" title="নির্বাচিত ফলাফল কার্ড প্রিন্ট করুন">
-                                <i class="fas fa-print"></i>
+                            <span class="badge bg-white text-primary border shadow-xs px-2.5 py-1.5 rounded-pill fw-bold">নির্বাচিত: <span class="selected-print-count text-danger fw-bold">0</span></span>
+                            <button type="button" class="btn btn-sm btn-gradient-primary rounded-pill px-3 py-1.5 shadow-sm text-white fw-semibold" onclick="printSelectedResultCards()" title="নির্বাচিত ফলাফল কার্ড প্রিন্ট করুন">
+                                <i class="fas fa-print me-1"></i> প্রিন্ট
                             </button>
                         </div>
                     </div>
                     {% endif %}
 
-                    <div class="list-group overflow-auto student-list" style="max-height: 420px;">
+                    <!-- Student Scrollable List -->
+                    <div class="list-group overflow-auto student-list pe-1" style="max-height: 380px;">
                         {% for student in class_students %}
                         <div class="d-flex align-items-center gap-2 mb-2">
                             {% if is_head_teacher %}
                             <label class="form-check m-0">
-                                <input type="checkbox" class="form-check-input student-print-checkbox" value="{{ student.id }}" data-student-id="{{ student.id }}" onchange="updatePrintSelectionState()">
+                                <input type="checkbox" class="form-check-input student-print-checkbox shadow-none" value="{{ student.id }}" data-student-id="{{ student.id }}" onchange="updatePrintSelectionState()">
                             </label>
                             {% endif %}
                             <a href="?class_level={{ selected_class }}&exam_type={{ selected_exam }}&exam_year={{ selected_year }}&student_id={{ student.id }}"
-                               class="list-group-item list-group-item-action border-0 rounded-3 d-flex gap-2 align-items-center p-3 flex-grow-1 {% if result_data and result_data.student.id == student.id %}selected{% else %}bg-white{% endif %}">
-                                <div style="width:44px; height:44px; flex-shrink:0; border-radius:6px; overflow:hidden; background:#f8fafc; display:flex; align-items:center; justify-content:center;">
+                               class="list-group-item list-group-item-action border rounded-3 d-flex gap-3 align-items-center p-2.5 flex-grow-1 {% if result_data and result_data.student.id == student.id %}selected{% else %}bg-white shadow-xs{% endif %}">
+                                <div style="width:40px; height:40px; flex-shrink:0; border-radius:8px; overflow:hidden; background:#f1f5f9; display:flex; align-items:center; justify-content:center; border: 1px solid #e2e8f0;">
                                     {% if student.photo %}
                                         <img src="{{ student.photo.url }}" style="width:100%; height:100%; object-fit:cover;">
                                     {% else %}
-                                        <div style="font-size:12px; color:#6b7280; padding:4px; text-align:center;">No
-                                        </div>
+                                        <div style="font-size:10px; color:#94a3b8; font-weight:600; text-align:center;">PHOTO</div>
                                     {% endif %}
                                 </div>
-                                <div class="flex-grow-1">
-                                    <div class="fw-bold small mb-0">{{ student.full_name }}</div>
-                                    <div class="small text-muted">Roll: {{ student.class_roll }} • ID: {{ student.student_id }}</div>
+                                <div class="flex-grow-1 overflow-hidden">
+                                    <div class="fw-bold small mb-0 text-truncate">{{ student.full_name }}</div>
+                                    <div class="small text-muted" style="font-size: 11px;">Roll: {{ student.class_roll }} • ID: {{ student.student_id }}</div>
                                 </div>
-                                <div class="text-end small text-muted" style="min-width:60px;">{{ student.get_current_class_display }}</div>
+                                <div class="text-end small text-muted text-nowrap" style="font-size: 11px;">{{ student.get_current_class_display }}</div>
                             </a>
                         </div>
                         {% empty %}
-                        <div class="text-center text-muted p-3">কোনো শিক্ষার্থী পাওয়া যায়নি।</div>
+                        <div class="text-center text-muted p-4 bg-light rounded-3 small">কোনো শিক্ষার্থী পাওয়া যায়নি।</div>
                         {% endfor %}
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Right Column: Result Card Preview -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-4 p-4 min-vh-50">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
                 {% if result_data %}
-                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3 gap-3">
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 border-bottom pb-3 gap-3">
                     <div class="d-flex align-items-center gap-3">
-                        <div style="width:64px; height:64px; border:1px solid #e6e9ee; overflow:hidden; border-radius:6px;">
+                        <div style="width:56px; height:56px; border:2px solid #cbd5e1; overflow:hidden; border-radius:10px; background:#f8fafc;" class="shadow-sm">
                             {% if result_data.student.photo %}
                                 <img src="{{ result_data.student.photo.url }}" style="width:100%; height:100%; object-fit:cover;">
                             {% else %}
-                                <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#9ca3af;">No</div>
+                                <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:11px;">No Photo</div>
                             {% endif %}
                         </div>
                         <div>
-                            <h4 class="fw-bold text-dark mb-0">{{ result_data.student.full_name }}</h4>
-                            <small class="text-muted">Roll: {{ result_data.student.class_roll }} • {{ selected_exam }} - {{ selected_year }}</small>
+                            <h4 class="fw-bold text-dark mb-0 h5">{{ result_data.student.full_name }}</h4>
+                            <div class="d-flex flex-wrap gap-2 mt-1">
+                                <span class="badge bg-light text-secondary border">Roll: {{ result_data.student.class_roll }}</span>
+                                <span class="badge bg-light text-secondary border">{{ selected_exam }} - {{ selected_year }}</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="d-flex gap-2 align-items-center">
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
                         {% if can_download %}
-                        <a href="{% url 'myteacher:student_result_pdf' result_data.student.id %}?exam_type={{ selected_exam }}&exam_year={{ selected_year }}" class="btn btn-outline-success px-3">
-                            <i class="fas fa-file-pdf me-1"></i> PDF
+                        <a href="{% url 'myteacher:student_result_pdf' result_data.student.id %}?exam_type={{ selected_exam }}&exam_year={{ selected_year }}" class="btn btn-gradient-danger btn-sm px-3.5 py-2 rounded-pill shadow-sm text-white fw-semibold d-flex align-items-center gap-1.5">
+                            <i class="fas fa-file-pdf me-1"></i> PDF ডাউনলোড
                         </a>
                         {% else %}
-                        <button class="btn btn-outline-secondary px-3" disabled>
+                        <button class="btn btn-outline-secondary btn-sm px-3.5 py-2 rounded-pill fw-semibold" disabled title="অনুমতি নেই">
                             <i class="fas fa-file-pdf me-1"></i> PDF
                         </button>
-                        <span class="text-muted small">Download restricted to assigned class teachers and headmaster.</span>
                         {% endif %}
-                        <button id="printResultButton" class="btn btn-outline-secondary px-3" onclick="printSelectedResultCards()">
-                            <i class="fas fa-print me-1"></i> Print
+                        <button id="printResultButton" class="btn btn-gradient-info btn-sm px-3.5 py-2 rounded-pill shadow-sm text-white fw-semibold d-flex align-items-center gap-1.5" onclick="printSelectedResultCards()">
+                            <i class="fas fa-print me-1"></i> প্রিন্ট কার্ড
                         </button>
                     </div>
                 </div>
-                <div class="result-print-card main-preview-card">
+
+                {% if not can_download %}
+                <div class="alert alert-light border small text-muted py-2 mb-3 rounded-3 shadow-xs">
+                    <i class="fas fa-shield-alt text-primary me-1"></i> Download restricted to assigned class teachers and headmaster.
+                </div>
+                {% endif %}
+
+                <div class="result-print-card main-preview-card border-0">
                     {% include 'myteacher/result_card_display.html' %}
                 </div>
+
                 {% if class_summary %}
                 <div class="d-none">
                     {% for summary in class_summary %}
@@ -179,10 +215,14 @@
                     {% endfor %}
                 </div>
                 {% endif %}
+
                 {% else %}
-                <div class="text-center py-5">
-                    <i class="fas fa-file-signature fa-4x text-light mb-3"></i>
-                    <h5 class="text-muted">শিক্ষার্থী নির্বাচন করুন</h5>
+                <div class="text-center py-5 my-auto">
+                    <div class="bg-light text-primary rounded-circle d-inline-flex p-4 mb-3 shadow-xs">
+                        <i class="fas fa-file-signature fa-3x"></i>
+                    </div>
+                    <h5 class="text-dark fw-bold">শিক্ষার্থী নির্বাচন করুন</h5>
+                    <p class="text-muted small mb-0">ফলাফল কার্ড দেখতে বাম দিকের তালিকা থেকে যেকোনো একজন শিক্ষার্থীকে ক্লিক করুন।</p>
                 </div>
                 {% endif %}
             </div>
@@ -198,32 +238,96 @@
     }
     .card-body p { color: #6b7280; }
     .display-5 { letter-spacing: -0.04em; }
-    .text-primary { color: #000000 !important; }
     .list-group-item { transition: all 0.2s ease-in-out; background: #fff; border: 1px solid #e9ecef; }
-    .list-group-item:hover { transform: translateX(3px); box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08); }
+    .list-group-item:hover { transform: translateX(2px); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05); }
     .list-group-item.selected, .list-group-item.selected * { color: #fff !important; }
-    .list-group-item.selected { background: linear-gradient(90deg,#0ea5a4,#0284c7) !important; box-shadow: 0 10px 28px rgba(2, 6, 23, 0.14); }
-    .student-list { padding-right: 6px; }
+    .list-group-item.selected { background: linear-gradient(135deg, #0d6efd, #0b5ed7) !important; border-color: #0d6efd !important; box-shadow: 0 6px 16px rgba(13, 110, 253, 0.25); }
+    .student-list { padding-right: 4px; }
     .student-list .small.text-muted { color: #6b7280 !important; }
-    .student-print-checkbox, .student-select-all { width: 16px; height: 16px; cursor: pointer; }
+    .student-print-checkbox, .student-select-all { width: 17px; height: 17px; cursor: pointer; accent-color: #0d6efd; }
     .print-card-item { display: none !important; }
     .print-collection { display: block !important; width: 100% !important; margin: 0 auto !important; background: white !important; padding: 0 !important; }
     .print-collection .print-card-item { display: block !important; margin-bottom: 1.5rem; }
-    .filter-card .card-body { padding: 1.75rem; }
-    .result-print-card { background: #f8fafc; border-radius: 24px; padding: 1.5rem; margin: 0 auto !important; }
-    .result-print-card .card { border: 1px solid #e9ecef; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04); }
-    .result-print-card .card-body { padding: 1.75rem; }
-    .publish-panel { background: #eef7ff; border-color: #cfe2ff; }
-    .publish-btn { min-width: 220px; padding: 0.85rem 1.4rem; font-weight: 700; letter-spacing: 0.02em; }
-    .publish-btn.btn-outline-primary { color: #0d6efd; border-color: #0d6efd; }
-    .publish-btn.btn-outline-primary:hover { background: #0d6efd; color: #fff; }
-    .publish-note { max-width: 480px; }
-    .student-list::-webkit-scrollbar { width: 8px; }
-    .student-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
-    .student-list::-webkit-scrollbar-track { background: #f1f5f9; }
+    .result-print-card { background: #f8fafc; border-radius: 16px; padding: 1.25rem; margin: 0 auto !important; border: 1px solid #e2e8f0; }
+    .publish-panel { background: #f0f7ff; border-color: #b6d4fe !important; }
+    .publish-btn { font-weight: 600; letter-spacing: 0.01em; transition: all 0.2s; }
+    .student-list::-webkit-scrollbar { width: 6px; }
+    .student-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .student-list::-webkit-scrollbar-track { background: #f8fafc; }
     .result-print-card h4, .result-print-card h2, .result-print-card h3 { color: #111827; }
     .result-print-card table th { background: #eef2ff; color: #1d4ed8; }
     .result-print-card table td { color: #334155; }
+
+    /* Custom Animated & Colorful Gradient Buttons */
+    .btn-gradient-primary {
+        background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+        border: none;
+        transition: all 0.25s ease-in-out;
+    }
+    .btn-gradient-primary:hover {
+        background: linear-gradient(135deg, #0b5ed7, #084298);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3) !important;
+    }
+
+    .btn-gradient-success {
+        background: linear-gradient(135deg, #198754, #157347);
+        border: none;
+        color: #fff;
+        transition: all 0.25s ease-in-out;
+    }
+    .btn-gradient-success:hover {
+        background: linear-gradient(135deg, #157347, #0f5132);
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3) !important;
+    }
+
+    .btn-gradient-outline-primary {
+        background: #ffffff;
+        border: 2px solid #0d6efd;
+        color: #0d6efd;
+        transition: all 0.25s ease-in-out;
+    }
+    .btn-gradient-outline-primary:hover {
+        background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+        color: #ffffff;
+        border-color: transparent;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25) !important;
+    }
+
+    .btn-gradient-danger {
+        background: linear-gradient(135deg, #dc3545, #b02a37);
+        border: none;
+        transition: all 0.25s ease-in-out;
+    }
+    .btn-gradient-danger:hover {
+        background: linear-gradient(135deg, #b02a37, #842029);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3) !important;
+    }
+
+    .btn-gradient-info {
+        background: linear-gradient(135deg, #0dcaf0, #0aa2c0);
+        border: none;
+        color: #fff;
+        transition: all 0.25s ease-in-out;
+    }
+    .btn-gradient-info:hover {
+        background: linear-gradient(135deg, #0aa2c0, #087990);
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(13, 202, 240, 0.3) !important;
+    }
+
+    .shadow-hover {
+        transition: all 0.2s ease-in-out;
+    }
+    .shadow-hover:hover {
+        filter: brightness(1.05);
+    }
+    
     @media print {
         @page { size: A4 portrait; margin: 10mm; }
         html, body { width: 100%; height: auto; margin: 0; padding: 0; background: white !important; }
@@ -241,7 +345,6 @@
             margin: 0 auto !important;
             background: white !important;
             padding: 0 !important;
-            margin: 0 !important;
         }
         .result-print-card {
             position: static !important;
@@ -253,6 +356,7 @@
             overflow: visible !important;
             background: white !important;
             box-shadow: none !important;
+            border: none !important;
             font-size: 12px !important;
             line-height: 1.35 !important;
             page-break-inside: avoid !important;
@@ -275,6 +379,7 @@
         .print-card-item .card { margin-bottom: 16px; page-break-inside: avoid !important; break-inside: avoid !important; }
     }
 </style>
+
 <script>
 function updatePrintSelectionState() {
     const checkboxes = Array.from(document.querySelectorAll('.student-print-checkbox'));

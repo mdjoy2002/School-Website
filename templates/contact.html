@@ -20,7 +20,6 @@
         }
 
         body { 
-            font-family: 'Times New Roman', 'Nikosh', 'Hind Siliguri', serif; 
             background-color: #f4f7f6;
             color: #333;
             overflow-x: visible;
@@ -195,7 +194,7 @@
             <div class="col-sm-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
                 <div class="contact-card">
                     <div class="map-preview">
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3654.496030999557!2d89.54070037521575!3d22.821101923145025!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ff90190a61903d%3A0x8e8334812328406f!2sKhondakar%20Naser%20Uddin%20Secondary%20School!5e0!3m2!1sen!2sbd!4v1715456789012" aria-hidden="true" loading="lazy"></iframe>
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d919.3012746830863!2d89.52756107036188!3d22.83190023212198!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ff9bb4c9a25847%3A0x3ff0071fc27e4cf3!2sK.C.C%20Khondakar%20Naser%20Uddin%20Secondary%20School!5e0!3m2!1sen!2sbd!4v1785187642264!5m2!1sen!2sbd" aria-hidden="true" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
                     </div>
                     <div class="icon-box"><i class="fas fa-map-marker-alt"></i></div>
                     <h5 class="fw-bold">ঠিকানা</h5>
@@ -254,7 +253,7 @@
                     {% if school_info.map_url %}
                         {{ school_info.map_url|safe }}
                     {% else %}
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3654.496030999557!2d89.54070037521575!3d22.821101923145025!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ff90190a61903d%3A0x8e8334812328406f!2sKhondakar%20Naser%20Uddin%20Secondary%20School!5e0!3m2!1sen!2sbd!4v1715456789012" allowfullscreen="" loading="lazy"></iframe>
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d919.3012746830863!2d89.52756107036188!3d22.83190023212198!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ff9bb4c9a25847%3A0x3ff0071fc27e4cf3!2sK.C.C%20Khondakar%20Naser%20Uddin%20Secondary%20School!5e0!3m2!1sen!2sbd!4v1785187642264!5m2!1sen!2sbd" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
                     {% endif %}
                 </div>
             </div>
@@ -273,6 +272,7 @@
                 <img src="{% static 'images/emergency.png' %}" alt="Emergency" class="footer-emergency-img">
             </div>
 
+            {% include 'includes/visitor_footer_stats.html' %}
             <div class="footer-copy text-center">
                 <p class="small opacity-75 mb-1">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</p>
                 <p class="mb-0">Designed & Developed by <a href="https://www.facebook.com/mdimtiaz.joy.50" target="_blank" class="text-warning fw-bold text-decoration-none">Md Imtiaz Sarder Joy</a></p>

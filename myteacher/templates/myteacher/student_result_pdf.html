@@ -6,7 +6,7 @@
     <style>
         @page { size: A4 portrait; margin: 10mm; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Helvetica', Arial, sans-serif; background: #fff; color: #000; font-size: 12px; line-height: 1.35; }
+        body { font-family: 'Times New Roman', 'Nikosh', 'Hind Siliguri', serif; background: #fff; color: #000; font-size: 12px; line-height: 1.35; }
         
         /* প্রতিটি রেজাল্ট কার্ডের জন্য পেজ ব্রেক */
         .pdf-wrapper { 
@@ -26,7 +26,7 @@
             padding: 1.6rem;
         }
 
-        /* শেষ কার্ডের পর যেন বাড়তি পেজ না আসে */
+        /* শেষ কার্ডের পর যেন বাড়তি পেজ না আসে */
         .pdf-wrapper:last-child { page-break-after: auto; }
     </style>
 </head>
@@ -132,7 +132,7 @@
                                 <td rowspan="{{ mark.group_rowspan }}" style="border: 1px solid #000; padding: 3px; text-align: center;">{{ mark.combined_gpa|default:mark.gpa }}</td>
                                 <td rowspan="{{ mark.group_rowspan }}" style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold;">{{ mark.combined_grade|default:mark.grade }}</td>
                             {% else %}
-                                <td></td><td></td><td></td>
+                                <td style="border: 1px solid #000;"></td><td style="border: 1px solid #000;"></td><td style="border: 1px solid #000;"></td>
                             {% endif %}
                         </tr>
                         {% endfor %}
@@ -144,7 +144,7 @@
                         <tr><td style="border: 1px solid #000; padding: 4px; font-size: 11px; font-weight: bold;">Total Obtained:</td><td style="border: 1px solid #000; padding: 4px; font-size: 11px;">{{ result_data.total_marks|floatformat:0 }}</td></tr>
                         <tr><td style="border: 1px solid #000; padding: 4px; font-size: 11px; font-weight: bold;">Average GPA:</td><td style="border: 1px solid #000; padding: 4px; font-size: 11px;">{{ result_data.average_gpa }}</td></tr>
                         <tr><td style="border: 1px solid #000; padding: 4px; font-size: 11px; font-weight: bold;">Optional Benefit:</td><td style="border: 1px solid #000; padding: 4px; font-size: 11px;">{{ result_data.optional_benefit|floatformat:2 }}</td></tr>
-                        <tr><td style="border: 1px solid #000; padding: 4px; font-size: 11px; font-weight: bold;">Final Grade:</td><td style="border: 1px solid #000; padding: 4px; font-size: 11px;"><strong style="{% if result_data.result_status == 'Fail' %}color:#b91c1c; font-weight: 700;{% endif %}">{{ result_data.overall_grade }}</strong></td></tr>
+                        <tr><td style="border: 1px solid #000; padding: 4px; font-size: 11px; font-weight: bold;">Final Grade:</td><td style="border: 1px solid #000; padding: 4px; font-size: 11px;"><strong{% if result_data.overall_grade == 'F' %} style="color:#b91c1c;"{% endif %}>{{ result_data.overall_grade }}</strong></td></tr>
                     </table>
                     <div style="width: 45%; border: 1px solid #000; padding: 6px; font-size: 11px;">
                         <strong>Comments:</strong>

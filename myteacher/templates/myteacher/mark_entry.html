@@ -35,7 +35,7 @@
             <form method="GET" class="row g-4">
                 <div class="col-md-3">
                     <label class="form-label fw-bold bangla-text">শ্রেণি (Class)</label>
-                    <select name="class_level" class="form-select border-primary shadow-sm" onchange="this.form.submit()">
+                    <select id="classSelect" name="class_level" class="form-select border-primary shadow-sm">
                         <option value="">-- Select Class --</option>
                         {% for class_level in assigned_classes %}
                             <option value="{{ class_level }}" {% if selected_class == class_level %}selected{% endif %}>Class {{ class_level }}</option>
@@ -246,6 +246,53 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         updateEnglishObjectiveState();
+
+        const initialMarkValues = {};
+        document.querySelectorAll('.mark-input').forEach(input => {
+            initialMarkValues[input.name] = input.value;
+        });
+
+        const classSelect = document.querySelector('#classSelect');
+        const subjectSelect = document.querySelector(`select[name='subject_id']`);
+        const examSelect = document.querySelector(`select[name='exam_type']`);
+        const yearSelect = document.querySelector(`select[name='exam_year']`);
+
+        if (classSelect) {
+            classSelect.dataset.previousValue = classSelect.value || '';
+            classSelect.addEventListener('change', function () {
+                const newClass = this.value;
+                const oldClass = this.dataset.previousValue;
+                if (newClass === oldClass) {
+                    return;
+                }
+
+                const hasUnsavedMarks = Object.keys(initialMarkValues).some(name => {
+                    const input = document.querySelector(`[name='${name}']`);
+                    return input && input.value !== initialMarkValues[name];
+                });
+
+                if (hasUnsavedMarks) {
+                    const discard = confirm('আপনি ইতোমধ্যে মার্ক এন্ট্রি করেছেন। আপনি কি সেভ না করে অন্য ক্লাস সিলেক্ট করতে চান?');
+                    if (!discard) {
+                        this.value = oldClass;
+                        return;
+                    }
+                }
+
+                if (subjectSelect) {
+                    subjectSelect.value = '';
+                }
+                if (examSelect) {
+                    examSelect.value = '';
+                }
+                if (yearSelect) {
+                    yearSelect.value = '';
+                }
+
+                this.dataset.previousValue = newClass;
+                this.form.submit();
+            });
+        }
     });
 </script>
 {% endblock %}

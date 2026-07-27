@@ -14,7 +14,7 @@
     <style>
         /* ফন্ট সেটিংস: বাংলার জন্য Nikosh এবং ইংরেজির জন্য Times New Roman */
         body { 
-            font-family: 'Times New Roman', 'Nikosh', 'Hind Siliguri', serif; 
+            font-family: var(--global-font);
             background-color: #f4f7f6;
             overflow-x: visible;
         }
@@ -211,6 +211,7 @@
         <div class="container text-center">
             <h5 class="footer-logo mb-2">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</h5>
             <p class="opacity-75 mb-4">বয়রা, খুলনা | স্থাপিত: ১৯৯৪</p>
+            {% include 'includes/visitor_footer_stats.html' %}
             <hr class="bg-light opacity-25">
             <p class="small mb-0 opacity-75">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | ডিজাইন ও ডেভেলপমেন্ট: **Md. Imtiaz Sarder Joy**</p>
         </div>

@@ -33,6 +33,7 @@
     .generate-btn { background: var(--amber-accent); color: white; padding: 11px 18px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer; transition: 0.2s ease; font-size: 13px; }
     .generate-btn.seat-btn { background: var(--seat-green); }
     .generate-btn.result-btn { background: var(--result-blue); }
+    .generate-btn.clear-btn { background: #dc2626; }
     .generate-btn.list-btn { background: var(--list-cyan); }
     .generate-btn:hover { opacity: 0.95; transform: translateY(-1px); }
     .empty-state { text-align: center; padding: 100px 0; color: var(--text-muted); }
@@ -67,18 +68,23 @@
             </select>
 
             {% if can_generate_admit %}
-            <button type="button" data-url="{% url 'myteacher:generate_admit_card' %}" onclick="submitForm(this.dataset.url)" class="generate-btn">
+            <button type="button" data-url="{% url 'myteacher:generate_admit_card' %}" onclick="submitForm(this.dataset.url, '_blank')" class="generate-btn">
                 <i class="fas fa-id-card"></i> ADMIT
             </button>
             {% endif %}
             {% if can_generate_seat %}
-            <button type="button" data-url="{% url 'myteacher:generate_seat_plan' %}" onclick="submitForm(this.dataset.url)" class="generate-btn seat-btn">
+            <button type="button" data-url="{% url 'myteacher:generate_seat_plan' %}" onclick="submitForm(this.dataset.url, '_blank')" class="generate-btn seat-btn">
                 <i class="fas fa-th"></i> SEAT
             </button>
             {% endif %}
             <a href="{% url 'myteacher:student_results' %}" class="generate-btn result-btn">
                 <i class="fas fa-file-invoice"></i> RESULT
             </a>
+            {% if is_head_teacher %}
+            <button type="button" data-url="{% url 'myteacher:clear_student_records' %}" onclick="clearStudentProfiles(this.dataset.url)" class="generate-btn clear-btn">
+                <i class="fas fa-trash-alt"></i> CLEAR PROFILE
+            </button>
+            {% endif %}
             <button type="button" onclick="printStudentList()" class="generate-btn list-btn">
                 <i class="fas fa-print"></i> STUDENT LIST (A4)
             </button>
@@ -143,7 +149,7 @@
 </form>
 
 <script>
-    function submitForm(actionUrl) {
+    function submitForm(actionUrl, target, requireExam = true) {
         const form = document.getElementById('studentForm');
         const checked = document.querySelectorAll('input[name="student_ids[]"]:checked').length;
 
@@ -152,15 +158,37 @@
             return;
         }
 
-        const examName = document.getElementById('exam_name').value;
-        const examYear = document.getElementById('exam_year').value;
-        if (!examName || !examYear) {
-            alert('Please select Examination and Year!');
-            return;
+        if (requireExam) {
+            const examName = document.getElementById('exam_name').value;
+            const examYear = document.getElementById('exam_year').value;
+            if (!examName || !examYear) {
+                alert('Please select Examination and Year!');
+                return;
+            }
+        }
+
+        if (target !== undefined && target !== '') {
+            form.target = target;
+        } else {
+            form.removeAttribute('target');
         }
 
         form.action = actionUrl;
         form.submit();
+    }
+
+    function clearStudentProfiles(actionUrl) {
+        const checked = document.querySelectorAll('input[name="student_ids[]"]:checked').length;
+        if (checked === 0) {
+            alert('Please select at least one student first.');
+            return;
+        }
+
+        if (!confirm('আপনি কি নির্বাচিত ছাত্র/ছাত্রীদের অ্যাডমিট কার্ড এবং প্রকাশিত ফলাফল লুকাতে চান?')) {
+            return;
+        }
+
+        submitForm(actionUrl, '', false);
     }
 
     function printStudentList() {

@@ -22,7 +22,7 @@
 
         /* ফন্ট সেটিংস: বাংলার জন্য Nikosh এবং ইংরেজির জন্য Times New Roman */
         body { 
-            font-family: 'Times New Roman', 'Nikosh', 'Hind Siliguri', serif; 
+            font-family: var(--global-font);
             background-color: var(--bg-light);
             color: var(--text-dark);
             display: flex;
@@ -265,6 +265,7 @@
                 <a href="#" class="btn btn-outline-light btn-sm rounded-circle mx-1"><i class="fab fa-facebook-f"></i></a>
                 <a href="#" class="btn btn-outline-light btn-sm rounded-circle mx-1"><i class="fab fa-whatsapp"></i></a>
             </div>
+            {% include 'includes/visitor_footer_stats.html' %}
             <hr class="bg-light opacity-25">
             <p class="small mb-0 opacity-75">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | ডিজাইন ও ডেভেলপমেন্ট: **Md. Imtiaz Sarder Joy**</p>
         </div>
