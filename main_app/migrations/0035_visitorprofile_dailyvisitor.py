@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-         ('main_app', '0034_merge_20260716_0636'),
+        ('main_app', '0034_merge_20260716_0634'),
     ]
 
     operations = [
@@ -32,11 +32,21 @@ class Migration(migrations.Migration):
                 ('ip_address', models.CharField(max_length=45, verbose_name='আইপি ঠিকানা')),
                 ('session_key', models.CharField(max_length=40, verbose_name='সেশন কী')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='সৃষ্টি সময়')),
-                ('visitor_profile', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='daily_visits', to='main_app.visitorprofile')),
+                (
+                    'visitor_profile',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='daily_visits',
+                        to='main_app.visitorprofile',
+                    ),
+                ),
             ],
             options={
                 'verbose_name_plural': 'দৈনিক ভিজিটর',
-                'indexes': [models.Index(fields=['date'], name='main_app_da_date_a8d2d7_idx'), models.Index(fields=['ip_address', 'session_key'], name='main_app_da_ip_addr_1d3941_idx')],
+                'indexes': [
+                    models.Index(fields=['date'], name='main_app_da_date_a8d2d7_idx'),
+                    models.Index(fields=['ip_address', 'session_key'], name='main_app_da_ip_addr_1d3941_idx'),
+                ],
                 'unique_together': {('date', 'ip_address', 'session_key')},
             },
         ),
