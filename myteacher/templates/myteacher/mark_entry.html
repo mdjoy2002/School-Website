@@ -35,14 +35,17 @@
             <form method="GET" class="row g-4">
                 {% if selected_class and selected_subject and selected_exam and selected_year %}
                 <div class="col-12">
-                    <div class="alert alert-{{ 'success' if publication and publication.is_published else 'warning' }} rounded-4 border-0 mb-0">
-                        <strong>Current status:</strong>
-                        {% if publication and publication.is_published %}
+                    {% if publication and publication.is_published %}
+                        <div class="alert alert-success rounded-4 border-0 mb-0">
+                            <strong>Current status:</strong>
                             <span class="text-success">Published</span> — এই পরীক্ষার ফলাফল কার্ড এখন শিক্ষার্থী ফলাফল পেজে দেখাবে।
-                        {% else %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning rounded-4 border-0 mb-0">
+                            <strong>Current status:</strong>
                             <span class="text-danger">Unpublished</span> — এই পরীক্ষার ফলাফল কার্ড শিক্ষার্থী ফলাফল পেজে আর দেখাবে না।
-                        {% endif %}
-                    </div>
+                        </div>
+                    {% endif %}
                 </div>
                 {% endif %}
                 <div class="col-md-3">
