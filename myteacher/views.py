@@ -207,9 +207,53 @@ def mark_entry_view(request):
                     'exam_year': exam_year,
                 }
             )
-        # রিডাইরেক্টের সময় প্যারামিটারগুলো সাথে পাঠানো হচ্ছে
+
+        if 'final_submit' in request.POST:
+            publication, created = StudentResultPublication.objects.get_or_create(
+                class_level=s_class,
+                exam_type=exam_type,
+                exam_year=exam_year,
+                defaults={'is_published': True}
+            )
+            if not publication.is_published:
+                publication.is_published = True
+                publication.save(update_fields=['is_published', 'updated_at'])
+            messages.success(request, 'Final Submit সম্পন্ন হয়েছে। মার্কগুলো ফলাফল কার্ডে যোগ করা হয়েছে।')
+        elif 'save_draft' in request.POST:
+            publication, created = StudentResultPublication.objects.get_or_create(
+                class_level=s_class,
+                exam_type=exam_type,
+                exam_year=exam_year,
+                defaults={'is_published': False}
+            )
+            if publication.is_published:
+                publication.is_published = False
+                publication.save(update_fields=['is_published', 'updated_at'])
+            messages.info(request, 'Draft হিসেবে সংরক্ষণ করা হয়েছে। পরে আবার ঢুকে সম্পাদনা করতে পারবেন।')
+        elif 'unpublish' in request.POST:
+            publication, created = StudentResultPublication.objects.get_or_create(
+                class_level=s_class,
+                exam_type=exam_type,
+                exam_year=exam_year,
+                defaults={'is_published': False}
+            )
+            if publication.is_published:
+                publication.is_published = False
+                publication.save(update_fields=['is_published', 'updated_at'])
+            messages.warning(request, 'ফলাফল বর্তমানে অপ্রকাশিত অবস্থায় ফিরে গেছে।')
+
         url = reverse('myteacher:mark_entry')
         return redirect(f"{url}?class_level={s_class}&subject_id={subject_id}&exam_type={exam_type}&exam_year={exam_year}")
+
+    publication = None
+    result_published = False
+    if selected_class and selected_subject and selected_exam and selected_year:
+        publication = StudentResultPublication.objects.filter(
+            class_level=selected_class,
+            exam_type=selected_exam,
+            exam_year=selected_year
+        ).first()
+        result_published = publication.is_published if publication else False
 
     return render(request, 'myteacher/mark_entry.html', {
         'assignments': assignments,
@@ -220,7 +264,9 @@ def mark_entry_view(request):
         'selected_year': selected_year,
         'exam_years': exam_years,
         'selected_subject_obj': selected_subject_obj,
-        'students': students
+        'students': students,
+        'result_publication': publication,
+        'result_published': result_published,
     })
 
 @login_required

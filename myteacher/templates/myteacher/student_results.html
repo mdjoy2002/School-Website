@@ -60,7 +60,14 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <input type="hidden" name="exam_year" value="{{ selected_year }}">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-muted">পরীক্ষার বছর</label>
+                            <select name="exam_year" class="form-select border bg-light rounded-3 py-2" onchange="this.form.submit()" {% if not exam_years %}disabled{% endif %}>
+                                {% for year in exam_years %}
+                                <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                         <div class="mb-3">
                             <label class="form-label small fw-semibold text-muted">শিক্ষার্থী খুঁজুন</label>
                             <div class="input-group">
