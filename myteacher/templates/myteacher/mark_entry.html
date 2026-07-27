@@ -33,6 +33,18 @@
                 </div>
             </div>
             <form method="GET" class="row g-4">
+                {% if selected_class and selected_subject and selected_exam and selected_year %}
+                <div class="col-12">
+                    <div class="alert alert-{{ 'success' if publication and publication.is_published else 'warning' }} rounded-4 border-0 mb-0">
+                        <strong>Current status:</strong>
+                        {% if publication and publication.is_published %}
+                            <span class="text-success">Published</span> — এই পরীক্ষার ফলাফল কার্ড এখন শিক্ষার্থী ফলাফল পেজে দেখাবে।
+                        {% else %}
+                            <span class="text-danger">Unpublished</span> — এই পরীক্ষার ফলাফল কার্ড শিক্ষার্থী ফলাফল পেজে আর দেখাবে না।
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
                 <div class="col-md-3">
                     <label class="form-label fw-bold bangla-text">শ্রেণি (Class)</label>
                     <select id="classSelect" name="class_level" class="form-select border-primary shadow-sm">
@@ -188,7 +200,7 @@
                         </div>
                         <div class="d-flex align-items-start gap-2">
                             <span class="fw-bold text-danger" style="min-width: 90px;">Unpublish :</span>
-                            <span>আগে প্রকাশিত হলে এটি আবার অপ্রকাশিত অবস্থায় ফিরে যাবে; ফলে ওই পরীক্ষার মার্ক প্রোফাইলের রেজাল্ট কার্ডে আর দেখা যাবে না।</span>
+                            <span>আগে প্রকাশিত হলে এটি আবার অপ্রকাশিত অবস্থায় ফিরে যাবে।</span>
                         </div>
                     </div>
                 </div>
