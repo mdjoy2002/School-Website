@@ -775,7 +775,31 @@ def get_teacher_viewable_classes(teacher, user):
     return allowed_classes
 
 
-def get_student_result_summary(student, exam_type, exam_year=None):
+def get_student_result_summary(student, exam_type, exam_year=None, publication=None):
+    if publication is None:
+        publication = StudentResultPublication.objects.filter(
+            class_level=student.current_class,
+            exam_type=exam_type,
+            exam_year=int(exam_year) if exam_year is not None else None,
+        ).first()
+
+    if publication is not None and not publication.is_published:
+        return {
+            'student': student,
+            'marks': [],
+            'subject_count': 0,
+            'total_marks': Decimal('0.00'),
+            'total_possible_marks': Decimal('0.00'),
+            'percentage': Decimal('0.00'),
+            'average_mark': Decimal('0.00'),
+            'average_gpa': Decimal('0.00'),
+            'overall_gpa': '0.00',
+            'overall_grade': '-',
+            'optional_benefit': Decimal('0.00'),
+            'result_status': 'Incomplete',
+            'has_marks': False,
+        }
+
     marks = Mark.objects.filter(student=student, exam_type=exam_type).select_related('subject').order_by('subject__subject_name')
     if exam_year is not None:
         try:
@@ -1159,7 +1183,7 @@ def student_results_view(request):
             )
 
         for student in class_students:
-            summary = get_student_result_summary(student, selected_exam, selected_year)
+            summary = get_student_result_summary(student, selected_exam, selected_year, publication=publication)
             class_summary.append(summary)
 
         if student_pk and student_pk.isdigit():
@@ -1169,7 +1193,7 @@ def student_results_view(request):
                 current_class=selected_class,
                 id__in=result_student_ids
             )
-            student_summary = get_student_result_summary(selected_student, selected_exam, selected_year)
+            student_summary = get_student_result_summary(selected_student, selected_exam, selected_year, publication=publication)
 
     can_download = is_head_teacher or (teacher.is_class_teacher and selected_class == teacher.class_teacher_of)
 
@@ -1198,7 +1222,12 @@ def student_results_pdf_view(request, student_id):
     selected_year = request.GET.get('exam_year') or str(datetime.date.today().year)
     student = get_object_or_404(Student, id=student_id)
 
-    student_summary = get_student_result_summary(student, selected_exam, selected_year)
+    publication = StudentResultPublication.objects.filter(
+        class_level=student.current_class,
+        exam_type=selected_exam,
+        exam_year=int(selected_year) if selected_year is not None else None,
+    ).first()
+    student_summary = get_student_result_summary(student, selected_exam, selected_year, publication=publication)
     is_head_teacher = is_head_or_admin(teacher, request.user)
     if not is_head_teacher and not (teacher.is_class_teacher and student.current_class == teacher.class_teacher_of):
         return HttpResponseForbidden("Download permission denied.")
