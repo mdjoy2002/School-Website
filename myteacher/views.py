@@ -1,3 +1,4 @@
+from itertools import groupby
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
@@ -1317,4 +1318,44 @@ def student_list_view(request):
         'is_head_teacher': is_head_teacher,
         'can_generate_admit': can_generate,
         'can_generate_seat': can_generate,
+    })
+
+
+@login_required
+def student_list_report_view(request):
+    teacher = request.user.teacher
+    is_head_teacher = is_head_or_admin(teacher, request.user)
+    if not is_head_teacher and not teacher.is_class_teacher:
+        return HttpResponseForbidden('Only headmaster, assistant headmaster, or class teacher can access this page.')
+
+    if is_head_teacher:
+        selected_class = request.GET.get('class_filter', 'all')
+        class_options = [{'value': 'all', 'label': 'All Classes'}] + [
+            {'value': value, 'label': f'Class {value}'} for value, _ in Student.CLASS_CHOICES
+        ]
+        students = Student.objects.all().order_by('current_class', 'class_roll')
+        if selected_class and selected_class != 'all':
+            students = students.filter(current_class=selected_class)
+    else:
+        selected_class = teacher.class_teacher_of or 'all'
+        class_options = [{'value': selected_class, 'label': f'Class {selected_class}'}] if selected_class else []
+        students = Student.objects.filter(current_class=selected_class).order_by('class_roll') if selected_class else Student.objects.none()
+
+    class_groups = []
+    if selected_class == 'all':
+        for class_level, group in groupby(students, key=lambda s: s.current_class):
+            class_groups.append({'class_level': class_level, 'students': list(group)})
+    else:
+        class_groups.append({'class_level': selected_class, 'students': list(students)})
+
+    selected_label = 'All Classes' if selected_class == 'all' else f'Class {selected_class}'
+
+    return render(request, 'myteacher/student_list_report.html', {
+        'school_name': 'খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়',
+        'logo_url': '/static/images/logo.png',
+        'class_groups': class_groups,
+        'generated_on': datetime.date.today(),
+        'selected_class': selected_class,
+        'selected_label': selected_label,
+        'class_options': class_options,
     })

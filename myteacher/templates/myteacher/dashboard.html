@@ -81,7 +81,11 @@
                     <a href="{% url 'myteacher:student_corner' %}" class="btn btn-outline-secondary py-3 rounded-pill fw-bold shadow-sm">
                         <i class="fas fa-graduation-cap me-2"></i>Student Corner
                     </a>
-                   
+                    {% if is_head_teacher or teacher.is_class_teacher %}
+                    <a href="{% url 'myteacher:student_list_report' %}{% if not is_head_teacher %}?class_filter={{ teacher.class_teacher_of }}{% endif %}" class="btn btn-outline-warning py-3 rounded-pill fw-bold shadow-sm">
+                        <i class="fas fa-list-alt me-2"></i>Student List Report
+                    </a>
+                    {% endif %}
                     <a href="{% url 'myteacher:view_routine' %}" class="btn btn-outline-info py-3 rounded-pill fw-bold shadow-sm">
                         <i class="fas fa-calendar-check me-2"></i>View Routine
                     </a>
