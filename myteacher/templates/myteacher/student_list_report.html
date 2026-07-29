@@ -397,7 +397,7 @@
                         <td>{{ student.group|default:'General' }}</td>
                         <td>{{ student.gender }}</td>
                         <td>{{ student.religion }}</td>
-                        <td style="font-family: monospace; font-size: 10px;">{{ student.mobile_num }}</td>
+                        <td style="font-family: monospace; font-size: 10px; white-space: nowrap; overflow: hidden;">{{ student.mobile_num }}</td>
                     </tr>
                     {% empty %}
                     <tr>
