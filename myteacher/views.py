@@ -800,19 +800,23 @@ def get_student_result_summary(student, exam_type, exam_year=None):
     optional_benefit = Decimal('0.00')
     routine_codes = {}
 
-    def get_subject_code(subject_name, subject_obj=None):
-        if subject_name in routine_codes:
-            return routine_codes[subject_name]
+    def get_subject_code(subject_name, subject_obj=None, subject_type=None):
+        cache_key = (subject_name or '', subject_type or '', getattr(subject_obj, 'pk', None))
+        if cache_key in routine_codes:
+            return routine_codes[cache_key]
+
+        code = ''
         if subject_obj is not None and getattr(subject_obj, 'subject_code', ''):
             code = subject_obj.subject_code
-        else:
+        elif subject_name:
             code = ExamRoutine.objects.filter(
                 class_name=student.current_class,
                 exam_type=exam_type,
                 exam_year=exam_year,
-                subject_name=subject_name
+                subject_name__iexact=subject_name
             ).values_list('subject_code', flat=True).first() or ''
-        routine_codes[subject_name] = code
+
+        routine_codes[cache_key] = code
         return code
 
     # Group Bangla/English papers into one combined subject grade
@@ -837,7 +841,7 @@ def get_student_result_summary(student, exam_type, exam_year=None):
 
             subject_results.append({
                 'subject_name': subject_name,
-                'subject_code': get_subject_code(mark.subject.subject_name, mark.subject),
+                'subject_code': get_subject_code(mark.subject.subject_name, mark.subject, mark.subject.subject_type),
                 'subject_type': mark.subject.get_subject_type_display() if hasattr(mark.subject, 'get_subject_type_display') else mark.subject.subject_type,
                 'objective_mark': mark.objective_mark,
                 'subjective_mark': mark.subjective_mark,
@@ -879,7 +883,7 @@ def get_student_result_summary(student, exam_type, exam_year=None):
 
             subject_results.append({
                 'subject_name': subject_name,
-                'subject_code': get_subject_code(mark.subject.subject_name, mark.subject),
+                'subject_code': get_subject_code(mark.subject.subject_name, mark.subject, mark.subject.subject_type),
                 'subject_type': mark.subject.get_subject_type_display() if hasattr(mark.subject, 'get_subject_type_display') else mark.subject.subject_type,
                 'objective_mark': mark.objective_mark,
                 'subjective_mark': mark.subjective_mark,
@@ -915,7 +919,7 @@ def get_student_result_summary(student, exam_type, exam_year=None):
 
                 row = {
                     'subject_name': subject_name,
-                    'subject_code': get_subject_code(mark.subject.subject_name, mark.subject),
+                    'subject_code': get_subject_code(mark.subject.subject_name, mark.subject, mark.subject.subject_type),
                     'subject_type': mark.subject.get_subject_type_display() if hasattr(mark.subject, 'get_subject_type_display') else mark.subject.subject_type,
                     'objective_mark': mark.objective_mark,
                     'subjective_mark': mark.subjective_mark,
@@ -961,7 +965,7 @@ def get_student_result_summary(student, exam_type, exam_year=None):
 
             subject_results.append({
                 'subject_name': subject_name,
-                'subject_code': get_subject_code(mark.subject.subject_name, mark.subject),
+                'subject_code': get_subject_code(mark.subject.subject_name, mark.subject, mark.subject.subject_type),
                 'subject_type': mark.subject.get_subject_type_display() if hasattr(mark.subject, 'get_subject_type_display') else mark.subject.subject_type,
                 'objective_mark': mark.objective_mark,
                 'subjective_mark': mark.subjective_mark,

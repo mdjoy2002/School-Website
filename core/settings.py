@@ -4,45 +4,44 @@ Django settings for core project.
 
 import os
 from pathlib import Path
-import dj_database_url
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-%^ogsv0b)0os@d)mlpi3&@#z@y-m$jnd2u4vr*2u$wxn)^=lgf')
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+    'django-insecure-%^ogsv0b)0os@d)mlpi3&@#z@y-m$jnd2u4vr*2u$wxn)^=lgf'
+)
 
-# SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG enabled for local debugging (remember to turn off for production)
 DEBUG = True
-# Use permissive hosts for local development
 ALLOWED_HOSTS = ['*']
 
-# --- LOGIN SETTINGS ---
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'myteacher:dashboard' # এখানে সরাসরি ইউআরএল নেম দেওয়া হয়েছে
+LOGIN_REDIRECT_URL = 'myteacher:dashboard'
 
-# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic', 
+    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-    'django.contrib.sites',       
+    'django.contrib.sites',
     'django.contrib.sitemaps',
-    'main_app', 
+
+    'main_app',
     'myteacher',
-    'students'
+    'students',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', 
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'main_app.middleware.VisitorTrackingMiddleware',
+
+    # Temporarily disabled for testing
+    # 'main_app.middleware.VisitorTrackingMiddleware',
+
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -55,7 +54,7 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')], 
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -63,9 +62,12 @@ TEMPLATES = [
                 'django.template.context_processors.csrf',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.media', 
+                'django.template.context_processors.media',
+
                 'main_app.context_processors.ticker_context',
-                'main_app.context_processors.visitor_counts',
+
+                # Temporarily disabled for testing
+                # 'main_app.context_processors.visitor_counts',
             ],
         },
     },
@@ -73,9 +75,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-# ==============================================================================
-# DATABASE CONFIGURATION
-# ==============================================================================
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -83,46 +82,50 @@ DATABASES = {
     }
 }
 
-# Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'
+    },
 ]
 
-# Internationalization
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Asia/Dhaka' 
+TIME_ZONE = 'Asia/Dhaka'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static')
+]
 
-# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# WhiteNoise optimization
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
-# Basic security hardening suitable for production.
-# Note: adjust `SECURE_SSL_REDIRECT` and HSTS if you serve traffic over HTTPS.
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+
+# এগুলো False করা হয়েছে যাতে পাইথনএন্ডহায়ারে লগইন করার সময় সেশন কুকি ব্লক না করে
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+
 SECURE_SSL_REDIRECT = False
 SECURE_HSTS_SECONDS = 0
 SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 SECURE_HSTS_PRELOAD = False
 
-# Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# --- ডাইনামিক SITE_ID কনফিগারেশন ---
 SITE_ID = 1
