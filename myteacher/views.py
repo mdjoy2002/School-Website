@@ -929,13 +929,14 @@ def get_student_result_summary(student, exam_type, exam_year=None):
                     'full_mark': mark.subject.full_mark_value,
                     'group_rowspan': len(grouped),
                     'show_combined': index == 0,
+                    'combined_grade': combined_grade,
+                    'grade': combined_grade,
                 }
 
                 if index == 0:
                     row.update({
                         'combined_total_mark': combined_total_mark,
                         'combined_gpa': combined_gpa,
-                        'combined_grade': combined_grade,
                         'combined_percentage': combined_percentage.quantize(Decimal('0.00')),
                         'gpa': combined_gpa,
                         'grade': combined_grade,
