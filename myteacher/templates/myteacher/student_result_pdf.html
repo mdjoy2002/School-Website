@@ -204,6 +204,7 @@
                         <tr><td style="border: 1px solid #000; padding: 5px; font-size: 13px; font-weight: bold;">Total GPA:</td><td style="border: 1px solid #000; padding: 5px; font-size: 13px;">{{ result_data.overall_gpa }}</td></tr>
                         <tr><td style="border: 1px solid #000; padding: 5px; font-size: 13px; font-weight: bold;">Final Grade:</td><td style="border: 1px solid #000; padding: 5px; font-size: 13px;"><strong{% if result_data.overall_grade == 'F' %} style="color:#b91c1c;"{% endif %}>{{ result_data.overall_grade }}</strong></td></tr>
                         <tr><td style="border: 1px solid #000; padding: 5px; font-size: 13px; font-weight: bold;">Position:</td><td style="border: 1px solid #000; padding: 5px; font-size: 13px;">{{ result_data.position_display|default:'-' }}</td></tr>
+                        <tr><td style="border: 1px solid #000; padding: 5px; font-size: 13px; font-weight: bold;">Highest Total in Class:</td><td style="border: 1px solid #000; padding: 5px; font-size: 13px;">{{ result_data.highest_total_mark_in_class|floatformat:0 }}</td></tr>
                     </table>
                     <div style="flex: 1; border: 1px solid #000; padding: 6px; font-size: 12px;">
                         <strong style="font-size: 15px;">Comments:</strong>
