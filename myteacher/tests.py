@@ -53,7 +53,7 @@ class ResultSummarySubjectCodeTests(TestCase):
 
         self.assertEqual(summary['marks'][0]['subject_code'], 'B101')
 
-    def test_optional_subject_failure_does_not_render_as_failing_row(self):
+    def test_optional_subject_failure_renders_as_failing_row(self):
         student = SimpleNamespace(
             full_name='Optional Student',
             father_name='Father',
@@ -117,7 +117,7 @@ class ResultSummarySubjectCodeTests(TestCase):
             'selected_year': '2026',
         })
 
-        self.assertNotIn('<tr class="failing-row">', html)
+        self.assertIn('<tr class="failing-row">', html)
 
     def test_optional_subject_failure_does_not_change_pass_status_or_bonus(self):
         student = Student.objects.create(

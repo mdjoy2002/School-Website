@@ -197,7 +197,7 @@
             <tbody>
                 {% if result_data.marks %}
                     {% for mark in result_data.marks %}
-                    <tr{% if not mark.optional %}{% if mark.grade == 'F' or mark.combined_grade == 'F' %} class="failing-row"{% endif %}{% endif %}>
+                    <tr{% if mark.grade == 'F' or mark.combined_grade == 'F' %} class="failing-row"{% endif %}>
                         <td style="border: 1px solid #000; padding: 6px; text-align: center; font-size: 15px; vertical-align: middle; height: 44px;">{{ mark.subject_code|default:'-' }}</td>
                         <td style="border: 1px solid #000; padding: 6px; font-weight: bold; white-space: normal; word-break: break-word; font-size: 15px; vertical-align: middle; height: 44px;">{{ mark.subject_name }}</td>
                         <td style="border: 1px solid #000; padding: 6px; text-align: center; font-size: 15px; vertical-align: middle; height: 44px;">{{ mark.full_mark|floatformat:0 }}</td>
