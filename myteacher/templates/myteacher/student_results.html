@@ -349,16 +349,21 @@
             visibility: visible !important;
             width: 100% !important;
             max-width: 100% !important;
-            margin: 0 auto !important;
+            margin: 0 !important;
             background: white !important;
             padding: 0 !important;
+        }
+        #print-collection > div:first-child {
+            page-break-after: always !important;
+            break-after: page !important;
+            margin-bottom: 0 !important;
         }
         .result-print-card {
             position: static !important;
             display: block !important;
             width: 100% !important;
             max-width: 190mm !important;
-            margin: 0 auto 16px auto !important;
+            margin: 0 !important;
             padding: 0 !important;
             overflow: visible !important;
             background: white !important;
@@ -368,7 +373,11 @@
             line-height: 1.35 !important;
             page-break-inside: avoid !important;
             break-inside: avoid !important;
-            page-break-after: avoid !important;
+        }
+        .print-collection .result-print-card {
+            page-break-after: always !important;
+            break-after: page !important;
+            margin-bottom: 0 !important;
         }
         .result-print-card .card { box-shadow: none !important; border: none !important; }
         .result-print-card .card, .result-print-card .card-body { width: 100% !important; max-width: 190mm !important; padding: 0 !important; }
@@ -383,7 +392,7 @@
         .result-print-card th, .result-print-card td { border-color: #000 !important; }
         .main-preview-card { display: none !important; }
         .print-card-item { display: block !important; page-break-inside: avoid !important; break-inside: avoid !important; }
-        .print-card-item .card { margin-bottom: 16px; page-break-inside: avoid !important; break-inside: avoid !important; }
+        .print-card-item .card { margin-bottom: 0; page-break-inside: avoid !important; break-inside: avoid !important; }
     }
 </style>
 
@@ -424,12 +433,30 @@ function printSelectedResultCards() {
     wrapper.id = 'print-collection';
     wrapper.className = 'result-print-card print-collection';
 
+    // Get document metadata
+    const classLevel = document.querySelector('[name="class_level"]')?.value || '{{ selected_class }}';
+    const examType = document.querySelector('[name="exam_type"]')?.value || '{{ selected_exam }}';
+    const examYear = document.querySelector('[name="exam_year"]')?.value || '{{ selected_year }}';
+    const schoolName = 'খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়';
+    
+    // Create and add document header
+    const headerDiv = document.createElement('div');
+    headerDiv.style.cssText = 'text-align: center; padding: 20px 0; border-bottom: 2px solid #000; margin-bottom: 20px; page-break-after: avoid;';
+    headerDiv.innerHTML = `
+        <h2 style="margin: 0 0 10px 0; font-size: 20px; font-weight: bold; font-family: Times New Roman, serif;">${schoolName}</h2>
+        <p style="margin: 5px 0; font-size: 14px; font-weight: 600; font-family: Times New Roman, serif;">ফলাফল কার্ড - শ্রেণী ${classLevel}</p>
+        <p style="margin: 5px 0; font-size: 13px; font-family: Times New Roman, serif;">পরীক্ষা: ${examType} | বছর: ${examYear}</p>
+        <p style="margin: 5px 0; font-size: 12px; color: #666; font-family: Times New Roman, serif;">তৈরির তারিখ: ${new Date().toLocaleDateString('bn-BD')}</p>
+    `;
+    wrapper.appendChild(headerDiv);
+
     if (selectedIds.length > 0) {
         selectedIds.forEach((studentId) => {
             const source = document.querySelector('.print-card-item[data-student-id="' + studentId + '"]');
             if (source) {
                 const clone = source.cloneNode(true);
                 clone.setAttribute('data-print-id', studentId);
+                clone.style.pageBreakAfter = 'always';
                 wrapper.appendChild(clone);
             }
         });
@@ -438,6 +465,7 @@ function printSelectedResultCards() {
         if (previewCard) {
             const clone = previewCard.cloneNode(true);
             clone.classList.remove('main-preview-card');
+            clone.style.pageBreakAfter = 'always';
             wrapper.appendChild(clone);
         }
     }
@@ -446,8 +474,12 @@ function printSelectedResultCards() {
         document.body.classList.add('printing-active');
         document.body.appendChild(wrapper);
         setTimeout(() => {
+            // Set document title for print
+            const originalTitle = document.title;
+            document.title = `${schoolName} - ফলাফল কার্ড - ক্লাস ${classLevel} - ${examType} ${examYear}`;
             window.print();
             setTimeout(() => {
+                document.title = originalTitle;
                 wrapper.remove();
                 document.body.classList.remove('printing-active');
             }, 400);
