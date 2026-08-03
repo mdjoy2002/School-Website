@@ -816,8 +816,10 @@ def get_student_result_summary(student, exam_type, exam_year=None):
     total_possible_marks = Decimal('0.00')
     total_gpa = Decimal('0.00')
     subject_count = 0
+    compulsory_subject_count = 0
     fail_count = 0
     optional_benefit = Decimal('0.00')
+    included_subject_ids = set()
     routine_codes = {}
 
     def get_subject_code(subject_name, subject_obj=None, subject_type=None):
@@ -881,6 +883,10 @@ def get_student_result_summary(student, exam_type, exam_year=None):
                 'optional': True,
                 'benefit': benefit.quantize(Decimal('0.00')),
             })
+            included_subject_ids.add(mark.subject_id)
+            total_marks += obtained
+            total_possible_marks += subject_max
+            subject_count += 1
             continue
 
         is_combined_subject = (
@@ -921,10 +927,12 @@ def get_student_result_summary(student, exam_type, exam_year=None):
                 'group_rowspan': 1,
                 'show_combined': True,
             })
+            included_subject_ids.add(mark.subject_id)
             total_marks += obtained
             total_possible_marks += subject_max
             total_gpa += Decimal(gpa)
             subject_count += 1
+            compulsory_subject_count += 1
             if mark.subject.subject_type != '4' and grade == 'F':
                 fail_count += 1
 
@@ -968,8 +976,10 @@ def get_student_result_summary(student, exam_type, exam_year=None):
                     })
                     total_gpa += Decimal(combined_gpa)
                     subject_count += 1
+                    compulsory_subject_count += 1
                     if mark.subject.subject_type != '4' and combined_grade == 'F':
                         fail_count += 1
+                included_subject_ids.add(mark.subject_id)
                 subject_results.append(row)
                 total_marks += mark.total_mark
                 total_possible_marks += mark.subject.full_mark_value
@@ -1008,10 +1018,12 @@ def get_student_result_summary(student, exam_type, exam_year=None):
                 'combined_grade': grade,
                 'combined_percentage': percentage.quantize(Decimal('0.00')),
             })
+            included_subject_ids.add(mark.subject_id)
             total_marks += obtained
             total_possible_marks += subject_max
             total_gpa += Decimal(gpa)
             subject_count += 1
+            compulsory_subject_count += 1
             if mark.subject.subject_type != '4' and grade == 'F':
                 fail_count += 1
 
@@ -1024,10 +1036,10 @@ def get_student_result_summary(student, exam_type, exam_year=None):
         entry['subject_name'].lower()
     ))
 
-    if subject_count > 0 and total_possible_marks > 0:
+    if compulsory_subject_count > 0 and total_possible_marks > 0:
         average_mark = total_marks / subject_count
         overall_percentage = (total_marks / total_possible_marks * Decimal('100.00'))
-        average_gpa = (total_gpa / subject_count).quantize(Decimal('0.00'))
+        average_gpa = (total_gpa / compulsory_subject_count).quantize(Decimal('0.00'))
 
         # Only compulsory subjects determine pass/fail. Optional subjects only affect GPA bonus.
         if fail_count > 0:
@@ -1051,7 +1063,14 @@ def get_student_result_summary(student, exam_type, exam_year=None):
         result_status = 'Incomplete'
 
     def get_total_marks_for_candidate(candidate_student):
-        candidate_marks = Mark.objects.filter(student=candidate_student, exam_type=exam_type).select_related('subject').order_by('subject__subject_name')
+        if not included_subject_ids:
+            return Decimal('0.00')
+
+        candidate_marks = Mark.objects.filter(
+            student=candidate_student,
+            subject_id__in=included_subject_ids,
+            exam_type=exam_type,
+        ).select_related('subject').order_by('subject__subject_name')
         if exam_year is not None:
             try:
                 candidate_marks = candidate_marks.filter(exam_year=int(exam_year))

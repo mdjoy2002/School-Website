@@ -180,6 +180,69 @@ class ResultSummarySubjectCodeTests(TestCase):
         self.assertEqual(summary['overall_gpa'], Decimal('3.00'))
         self.assertEqual(summary['optional_benefit'], Decimal('0.00'))
 
+    def test_summary_totals_include_displayed_optional_subjects_but_not_for_gpa(self):
+        student = Student.objects.create(
+            photo='',
+            full_name='Optional Summary Student',
+            father_name='Father',
+            mother_name='Mother',
+            student_id='4000001',
+            gender='Male',
+            date_of_birth='2008-01-01',
+            current_class='6',
+            class_roll=4,
+            shift='Day',
+            mobile_num='01700000014',
+            group=None,
+            religion='Islam',
+        )
+        compulsory_subject = Subject.objects.create(
+            subject_name='Bangla 1st',
+            subject_code='B101',
+            subject_type='1',
+            religion='None',
+            class_level='6',
+            has_practical=False,
+            full_mark=Decimal('100.00'),
+        )
+        optional_subject = Subject.objects.create(
+            subject_name='English 4th',
+            subject_code='E401',
+            subject_type='4',
+            religion='None',
+            class_level='6',
+            has_practical=False,
+            full_mark=Decimal('100.00'),
+        )
+
+        Mark.objects.create(
+            student=student,
+            subject=compulsory_subject,
+            exam_type='Half Yearly',
+            exam_year=2026,
+            objective_mark=Decimal('20.00'),
+            subjective_mark=Decimal('40.00'),
+            class_test_mark=Decimal('0.00'),
+            practical_mark=Decimal('0.00'),
+        )
+        Mark.objects.create(
+            student=student,
+            subject=optional_subject,
+            exam_type='Half Yearly',
+            exam_year=2026,
+            objective_mark=Decimal('30.00'),
+            subjective_mark=Decimal('50.00'),
+            class_test_mark=Decimal('0.00'),
+            practical_mark=Decimal('0.00'),
+        )
+
+        summary = get_student_result_summary(student, 'Half Yearly', '2026')
+
+        self.assertEqual(summary['total_possible_marks'], Decimal('200.00'))
+        self.assertEqual(summary['total_marks'], Decimal('140.00'))
+        self.assertEqual(summary['overall_gpa'], Decimal('5.00'))
+        self.assertEqual(summary['overall_grade'], 'A+')
+
     def test_result_summary_includes_highest_mark_in_class(self):
         subject = Subject.objects.create(
             subject_name='Bangla 1st',
