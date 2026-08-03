@@ -9,6 +9,53 @@
         
         <style>
             .failing-row, .failing-row td, .failing-row th { color: #b91c1c !important; font-weight: 600; }
+            .summary-row {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                gap: 0.6rem;
+                margin-top: 0.35rem;
+                align-items: flex-start;
+            }
+            .summary-table {
+                width: 48%;
+                min-width: 180px;
+                border-collapse: collapse;
+                font-size: 13px;
+            }
+            .summary-table td {
+                padding: 4px 5px;
+                font-size: 13px;
+            }
+            .comment-box {
+                flex: 1;
+                border: 1px solid #000;
+                padding: 6px;
+                font-size: 12px;
+                line-height: 1.25;
+            }
+            .comment-box strong {
+                font-size: 13px;
+            }
+            .comment-box p {
+                margin: 0;
+                font-size: 13px;
+            }
+            .signature-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-end;
+                margin-top: 14px;
+            }
+            .footer-note {
+                margin-top: 8px;
+                padding-top: 4px;
+                border-top: 1px dotted #999;
+                text-align: center;
+                font-size: 11px;
+                line-height: 1.3;
+                color: #555;
+            }
             @media print {
                 @page { size: A4 portrait; margin: 6mm; }
                 body { background: #fff !important; }
@@ -51,19 +98,48 @@
                 }
                 .info-table td, .summary-table td {
                     padding: 4px 4px !important;
-                    font-size: 13px !important;
+                    font-size: 14px !important;
                 }
                 .subject-table {
                     font-size: 15px !important;
-                    margin-bottom: 0.4rem !important;
+                    margin-bottom: 0.35rem !important;
+                }
+                .summary-row {
+                    gap: 0.50rem !important;
+                    margin-top: 0.2rem !important;
+                }
+                .summary-table {
+                    font-size: 12px !important;
+                }
+                .summary-table td {
+                    padding: 3px 4px !important;
+                    font-size: 14px !important;
+                }
+                .comment-box {
+                    padding: 5px !important;
+                    font-size: 14px !important;
+                }
+                .comment-box strong {
+                    font-size: 14px !important;
+                }
+                .comment-box p {
+                    font-size: 14px !important;
+                }
+                .signature-row {
+                    margin-top: 8px !important;
+                }
+                .footer-note {
+                    margin-top: 6px !important;
+                    padding-top: 3px !important;
+                    font-size: 10px !important;
                 }
                 .subject-table th, .subject-table td {
                     padding: 4px 2px !important;
-                    font-size: 15px !important;
+                    font-size: 14px !important;
                     height: 24px !important;
                 }
                 .subject-table th {
-                    font-size: 11px !important;
+                    font-size: 12px !important;
                 }
                 .signature-row {
                     margin-top: 16px !important;
@@ -222,51 +298,52 @@
             </tbody>
         </table>
 
-        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; margin-top: 0.5rem; align-items: flex-start;">
-            <table class="summary-table" style="width: 48%; min-width: 180px; border-collapse: collapse; font-size: 14px;">
+        <div class="summary-row">
+            <table class="summary-table">
                 <tr><td style="border: 1px solid #000; padding: 6px; font-size: 14px; font-weight: bold; background: #eef4ff;">Total Mark:</td><td style="border: 1px solid #000; padding: 6px; font-size: 14px; background: #f9fbff;">{{ result_data.total_possible_marks|floatformat:0 }}</td></tr>
                 <tr><td style="border: 1px solid #000; padding: 6px; font-size: 14px; font-weight: bold; background: #eef4ff;">Total Obtained:</td><td style="border: 1px solid #000; padding: 6px; font-size: 14px; background: #f9fbff;">{{ result_data.total_marks|floatformat:0 }}</td></tr>
                 <tr><td style="border: 1px solid #000; padding: 6px; font-size: 14px; font-weight: bold; background: #eef4ff;">Total GPA:</td><td style="border: 1px solid #000; padding: 6px; font-size: 14px; background: #f9fbff;">{{ result_data.overall_gpa }}</td></tr>
                 <tr><td style="border: 1px solid #000; padding: 6px; font-size: 14px; font-weight: bold; background: #eef4ff;">Final Grade:</td><td style="border: 1px solid #000; padding: 6px; font-size: 14px; background: #f9fbff;"><strong{% if result_data.result_status == 'Fail' %} class="text-danger" style="color:#b91c1c;"{% endif %}>{{ result_data.overall_grade }}</strong></td></tr>
                 <tr><td style="border: 1px solid #000; padding: 6px; font-size: 14px; font-weight: bold; background: #eef4ff;">Position:</td><td style="border: 1px solid #000; padding: 6px; font-size: 14px; background: #f9fbff;">{{ result_data.position_display|default:'-' }}</td></tr>
+                <tr><td style="border: 1px solid #000; padding: 6px; font-size: 14px; font-weight: bold; background: #eef4ff;">Highest Total in Class:</td><td style="border: 1px solid #000; padding: 6px; font-size: 14px; background: #f9fbff;">{{ result_data.highest_total_mark_in_class|floatformat:0 }}</td></tr>
             </table>
-            <div style="flex: 1; border: 1px solid #000; padding: 8px; font-size: 13px;">
-                <strong style="font-size: 15px;">Comments:</strong>
-                <div style="margin-top:6px;">
+            <div class="comment-box">
+                <strong>Comments:</strong>
+                <div style="margin-top:4px;">
                     {% if result_data.overall_grade == 'A+' %}
-                        <p style="margin:0; font-size:16px;"><strong>A+ (80-100):</strong> Excellent! Keep up the brilliant work.</p>
+                        <p><strong>A+ (80-100):</strong> Excellent! Keep up the brilliant work.</p>
                     {% elif result_data.overall_grade == 'A' %}
-                        <p style="margin:0; font-size:16px;"><strong>A (70-79):</strong> Very good! You are doing a great job.</p>
+                        <p><strong>A (70-79):</strong> Very good! You are doing a great job.</p>
                     {% elif result_data.overall_grade == 'A-' %}
-                        <p style="margin:0; font-size:16px;"><strong>A- (60-69):</strong> Good progress! Keep striving for more.</p>
+                        <p><strong>A- (60-69):</strong> Good progress! Keep striving for more.</p>
                     {% elif result_data.overall_grade == 'B' %}
-                        <p style="margin:0; font-size:16px;"><strong>B (50-59):</strong> Satisfactory! Try to focus more on your studies.</p>
+                        <p><strong>B (50-59):</strong> Satisfactory! Try to focus more on your studies.</p>
                     {% elif result_data.overall_grade == 'C' %}
-                        <p style="margin:0; font-size:16px;"><strong>C (40-49):</strong> Needs improvement. Work harder to achieve better results.</p>
+                        <p><strong>C (40-49):</strong> Needs improvement. Work harder to achieve better results.</p>
                     {% elif result_data.overall_grade == 'D' %}
-                        <p style="margin:0; font-size:16px;"><strong>D (33-39):</strong> Try harder! You have the potential to do better.</p>
+                        <p><strong>D (33-39):</strong> Try harder! You have the potential to do better.</p>
                     {% elif result_data.overall_grade == 'F' %}
-                        <p style="margin:0; font-size:16px;"><strong>F (0-32):</strong> Failure! Do not lose hope; dedicate more time to your studies.</p>
+                        <p><strong>F (0-32):</strong> Failure! Do not lose hope; dedicate more time to your studies.</p>
                     {% endif %}
                 </div>
             </div>
         </div>
 
-        <div class="signature-row" style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 60px;">
+        <div class="signature-row">
             <div style="width: 160px; text-align: center;">
-                <div style="border-top: 1.5px solid #000; width: 100%; margin-bottom: 5px;"></div>
+                <div style="border-top: 1.5px solid #000; width: 100%; margin-bottom: 3px;"></div>
                 <div style="font-weight: bold; font-size: 11px;">Class Teacher</div>
             </div>
             <div style="width: 160px; text-align: center;">
-                <img src="/static/images/sign.png" alt="Head Teacher Signature" style="width: 100%; max-width: 120px; height: auto; display: block; margin: 0 auto 5px;">
-                <div style="border-top: 1.5px solid #000; width: 100%; margin-bottom: 5px;"></div>
+                <img src="/static/images/sign.png" alt="Head Teacher Signature" style="width: 100%; max-width: 120px; height: auto; display: block; margin: 0 auto 3px;">
+                <div style="border-top: 1.5px solid #000; width: 100%; margin-bottom: 3px;"></div>
                 <div style="font-weight: bold; font-size: 11px;">Headmaster</div>
             </div>
         </div>
 
-        <div style="margin-top: 12px; padding-top: 6px; border-top: 1px dotted #999; text-align: center; font-size: 11px; line-height: 1.3; color: #555;">
+        <div class="footer-note">
             <div style="margin-bottom: 2px;">
-                <span style="color: #333; font-weight: 600; font-size: 13px;">Website:</span>
+                <span style="color: #333; font-weight: 600; font-size: 10px;">Website:</span>
                 <a href="https://knuhighschool.pythonanywhere.com/" style="color: #0066cc; text-decoration: none; font-weight: 500;">https://knuhighschool.pythonanywhere.com/</a>
             </div>
             <div>Designed by: Md. Imtiaz Sarder</div>

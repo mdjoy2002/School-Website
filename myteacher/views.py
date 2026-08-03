@@ -1094,6 +1094,7 @@ def get_student_result_summary(student, exam_type, exam_year=None):
 
     ranked_results.sort(key=lambda item: item['total_marks'], reverse=True)
 
+    highest_total_mark_in_class = ranked_results[0]['total_marks'] if ranked_results else Decimal('0.00')
     position = 0
     previous_total = None
     previous_position = 0
@@ -1125,6 +1126,7 @@ def get_student_result_summary(student, exam_type, exam_year=None):
         'has_marks': subject_count > 0,
         'position': position,
         'position_display': get_ordinal_suffix(position) if position else '-',
+        'highest_total_mark_in_class': highest_total_mark_in_class,
     }
 
 

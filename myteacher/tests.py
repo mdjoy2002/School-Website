@@ -180,6 +180,64 @@ class ResultSummarySubjectCodeTests(TestCase):
         self.assertEqual(summary['overall_gpa'], Decimal('3.00'))
         self.assertEqual(summary['optional_benefit'], Decimal('0.00'))
 
+    def test_result_summary_includes_highest_mark_in_class(self):
+        subject = Subject.objects.create(
+            subject_name='Bangla 1st',
+            subject_code='B101',
+            subject_type='1',
+            religion='None',
+            class_level='6',
+            has_practical=False,
+            full_mark=Decimal('100.00'),
+        )
+
+        first_student = Student.objects.create(
+            photo='',
+            full_name='First Student',
+            father_name='Father',
+            mother_name='Mother',
+            student_id='2000001',
+            gender='Male',
+            date_of_birth='2008-01-01',
+            current_class='6',
+            class_roll=1,
+            shift='Day',
+            mobile_num='01700000011',
+            group=None,
+            religion='Islam',
+        )
+        second_student = Student.objects.create(
+            photo='',
+            full_name='Second Student',
+            father_name='Father',
+            mother_name='Mother',
+            student_id='2000002',
+            gender='Male',
+            date_of_birth='2008-01-01',
+            current_class='6',
+            class_roll=2,
+            shift='Day',
+            mobile_num='01700000012',
+            group=None,
+            religion='Islam',
+        )
+
+        for student, total_mark in [(first_student, Decimal('85.00')), (second_student, Decimal('72.00'))]:
+            Mark.objects.create(
+                student=student,
+                subject=subject,
+                exam_type='Half Yearly',
+                exam_year=2026,
+                objective_mark=Decimal('20.00'),
+                subjective_mark=total_mark,
+                class_test_mark=Decimal('0.00'),
+                practical_mark=Decimal('0.00'),
+            )
+
+        summary = get_student_result_summary(first_student, 'Half Yearly', '2026')
+
+        self.assertEqual(summary['highest_total_mark_in_class'], Decimal('105.00'))
+
     def test_result_position_uses_competition_ranking_for_same_class_and_group(self):
         subject = Subject.objects.create(
             subject_name='Bangla 1st',
