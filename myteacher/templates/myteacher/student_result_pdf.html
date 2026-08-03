@@ -173,7 +173,7 @@
                     </thead>
                     <tbody>
                         {% for mark in result_data.marks %}
-                        <tr{% if not mark.optional %}{% if mark.grade == 'F' or mark.combined_grade == 'F' %} style="color:#b91c1c; font-weight: 600;"{% endif %}{% endif %}>
+                        <tr{% if not mark.optional %}{% if forloop.counter == 4 %}{% if mark.grade == 'F' or mark.combined_grade == 'F' %} style="color:#b91c1c;"{% endif %}{% endif %}{% endif %}>
                             <td style="border: 1px solid #000; padding: 4px; text-align: center; vertical-align: middle; height: 30px; font-size: 12px;">
                                 {{ mark.subject_code|default:'-' }}
                             </td>
