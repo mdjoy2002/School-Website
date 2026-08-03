@@ -877,7 +877,8 @@ def get_student_result_summary(student, exam_type, exam_year=None):
                 benefit = gpa_value - Decimal('2.00')
             else:
                 benefit = Decimal('0.00')
-            optional_benefit += benefit
+            # Treat optional (4th) subject as a regular GPA contributor for averaging
+            total_gpa += Decimal(gpa)
 
             subject_type_label = '4th'
             subject_name = f"{mark.subject.subject_name} ({subject_type_label} Subject)"
@@ -1048,27 +1049,19 @@ def get_student_result_summary(student, exam_type, exam_year=None):
         entry['subject_name'].lower()
     ))
 
-    if compulsory_subject_count > 0 and total_possible_marks > 0:
+    if subject_count > 0 and total_possible_marks > 0:
         average_mark = total_marks / subject_count
         overall_percentage = (total_marks / total_possible_marks * Decimal('100.00'))
-        average_gpa = (total_gpa / compulsory_subject_count).quantize(Decimal('0.00'))
+        # Average GPA across all subjects (including optional 4th) as requested.
+        average_gpa = (total_gpa / subject_count).quantize(Decimal('0.00'))
 
-        # Only compulsory subjects determine pass/fail. Optional subjects only affect GPA bonus.
+        # Only compulsory subjects determine pass/fail. If any compulsory subject failed, overall is Fail.
         if fail_count > 0:
             average_gpa = Decimal('0.00')
             overall_grade = 'F'
             overall_gpa = Decimal('0.00')
         else:
-            final_gpa = average_gpa + optional_benefit
-            # Business rule: if any compulsory subject is not perfect (average_gpa < 5.00),
-            # the final GPA must not be 5.00 even after optional bonus.
-            if average_gpa < Decimal('5.00') and final_gpa >= Decimal('5.00'):
-                # keep the achieved value but ensure it's less than 5.00
-                final_gpa = Decimal('4.99')
-            else:
-                if final_gpa > Decimal('5.00'):
-                    final_gpa = Decimal('5.00')
-            overall_gpa = final_gpa.quantize(Decimal('0.00'))
+            overall_gpa = average_gpa
             overall_grade = calculate_grade_from_gpa(overall_gpa)
 
         result_status = 'Pass' if fail_count == 0 else 'Fail'
