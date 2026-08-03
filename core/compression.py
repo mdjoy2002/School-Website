@@ -3,7 +3,12 @@ from io import BytesIO
 
 from django.core.files.base import ContentFile
 from django.db import models
-from PIL import Image, UnidentifiedImageError
+
+try:
+    from PIL import Image, UnidentifiedImageError
+except Exception:  # pragma: no cover - fallback when Pillow is unavailable or broken
+    Image = None
+    UnidentifiedImageError = Exception
 
 try:
     import PyPDF2
@@ -14,6 +19,9 @@ except ImportError:
 def compress_image_field(file_field, quality=85):
     """Compress image files for ImageField uploads."""
     if not file_field or not getattr(file_field, 'name', None):
+        return
+
+    if Image is None:
         return
 
     try:

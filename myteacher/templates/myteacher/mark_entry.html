@@ -125,11 +125,11 @@
                             </td>
                             <td class="fw-bold">{{ s.class_roll }}</td>
                             <td class="fw-bold">{{ s.full_name }}</td>
-                            <td><input type="number" min="0" max="100" step="0.01" name="obj_{{ s.id }}" class="form-control form-control-sm mark-input objective-input" data-student-id="{{ s.id }}" value="{{ s.mark.objective_mark|default_if_none:'' }}" style="max-width: 100px;"></td>
-                            <td><input type="number" min="0" max="100" step="0.01" name="sub_{{ s.id }}" class="form-control form-control-sm mark-input" data-student-id="{{ s.id }}" value="{{ s.mark.subjective_mark|default_if_none:'' }}" style="max-width: 100px;"></td>
-                            <td><input type="number" min="0" max="100" step="0.01" name="ct_{{ s.id }}" class="form-control form-control-sm mark-input" data-student-id="{{ s.id }}" value="{{ s.mark.class_test_mark|default_if_none:'' }}" style="max-width: 100px;"></td>
+                            <td><input type="text" inputmode="decimal" pattern="[0-9.]*" name="obj_{{ s.id }}" class="form-control form-control-sm mark-input objective-input" data-student-id="{{ s.id }}" value="{{ s.mark.objective_mark|default_if_none:'' }}" style="max-width: 100px;"></td>
+                            <td><input type="text" inputmode="decimal" pattern="[0-9.]*" name="sub_{{ s.id }}" class="form-control form-control-sm mark-input" data-student-id="{{ s.id }}" value="{{ s.mark.subjective_mark|default_if_none:'' }}" style="max-width: 100px;"></td>
+                            <td><input type="text" inputmode="decimal" pattern="[0-9.]*" name="ct_{{ s.id }}" class="form-control form-control-sm mark-input" data-student-id="{{ s.id }}" value="{{ s.mark.class_test_mark|default_if_none:'' }}" style="max-width: 100px;"></td>
                             {% if selected_subject_obj.has_practical %}
-                            <td><input type="number" min="0" max="100" step="0.01" name="prac_{{ s.id }}" class="form-control form-control-sm mark-input" data-student-id="{{ s.id }}" value="{{ s.mark.practical_mark|default_if_none:'' }}" style="max-width: 100px;"></td>
+                            <td><input type="text" inputmode="decimal" pattern="[0-9.]*" name="prac_{{ s.id }}" class="form-control form-control-sm mark-input" data-student-id="{{ s.id }}" value="{{ s.mark.practical_mark|default_if_none:'' }}" style="max-width: 100px;"></td>
                             {% endif %}
                             <td>
                                 <span id="total_{{ s.id }}" class="fw-bold">{{ s.total_mark|floatformat:2 }}</span>
@@ -218,6 +218,58 @@
         return '0.00';
     }
 
+    function getMaxAllowedMark() {
+        const fullMark = parseFloat(document.getElementById('subjectFullMark')?.value || '100');
+        return Number.isFinite(fullMark) && fullMark > 0 ? fullMark : 100;
+    }
+
+    function validateMarkInput(input) {
+        const rawValue = input.value;
+        const previousValue = input.dataset.lastValidValue ?? '';
+        const maxAllowed = getMaxAllowedMark();
+
+        if (rawValue === '' || rawValue === null) {
+            return true;
+        }
+
+        const numericValue = parseFloat(rawValue);
+        if (Number.isNaN(numericValue) || numericValue < 0) {
+            input.value = previousValue;
+            return false;
+        }
+
+        const studentId = input.dataset.studentId;
+        const isSingleFieldValid = numericValue <= maxAllowed;
+        if (!isSingleFieldValid) {
+            alert(`এই বিষয়ে সর্বোচ্চ ${maxAllowed} নম্বর দেওয়া যাবে। বেশি দিলে সেভ হবে না।`);
+            input.value = previousValue;
+            return false;
+        }
+
+        if (studentId) {
+            const objectiveInput = document.querySelector(`[name='obj_${studentId}']`);
+            const subjectiveInput = document.querySelector(`[name='sub_${studentId}']`);
+            const classTestInput = document.querySelector(`[name='ct_${studentId}']`);
+            const practicalInput = document.querySelector(`[name='prac_${studentId}']`);
+            const values = [
+                parseFloat(objectiveInput?.value || 0),
+                parseFloat(subjectiveInput?.value || 0),
+                parseFloat(classTestInput?.value || 0),
+                practicalInput ? parseFloat(practicalInput.value || 0) : 0,
+            ];
+            const total = values.reduce((sum, value) => sum + value, 0);
+
+            if (total > maxAllowed) {
+                alert(`মোট নম্বর ${maxAllowed} এর বেশি হতে পারবে না।`);
+                input.value = previousValue;
+                return false;
+            }
+        }
+
+        input.dataset.lastValidValue = input.value;
+        return true;
+    }
+
     function updateEnglishObjectiveState() {
         const selectedText = document.querySelector(`select[name='subject_id'] option:checked`)?.textContent.trim() || '';
         const isEnglish = selectedText.toLowerCase().includes('english');
@@ -239,9 +291,9 @@
 
     function updateRow(studentId) {
         const objectiveInput = document.querySelector(`[name='obj_${studentId}']`);
-        const objective = parseFloat(objectiveInput.value || 0);
-        const subjective = parseFloat(document.querySelector(`[name='sub_${studentId}']`).value || 0);
-        const classTest = parseFloat(document.querySelector(`[name='ct_${studentId}']`).value || 0);
+        const objective = parseFloat(objectiveInput?.value || 0);
+        const subjective = parseFloat(document.querySelector(`[name='sub_${studentId}']`)?.value || 0);
+        const classTest = parseFloat(document.querySelector(`[name='ct_${studentId}']`)?.value || 0);
         const practicalInput = document.querySelector(`[name='prac_${studentId}']`);
         const practical = practicalInput ? parseFloat(practicalInput.value || 0) : 0;
 
@@ -254,7 +306,22 @@
     }
 
     document.querySelectorAll('.mark-input').forEach(input => {
-        input.addEventListener('input', () => updateRow(input.dataset.studentId));
+        input.dataset.lastValidValue = input.value || '';
+        input.addEventListener('input', () => {
+            if (input.value === '') {
+                updateRow(input.dataset.studentId);
+                return;
+            }
+            updateRow(input.dataset.studentId);
+        });
+        input.addEventListener('blur', () => {
+            validateMarkInput(input);
+            updateRow(input.dataset.studentId);
+        });
+        input.addEventListener('change', () => {
+            validateMarkInput(input);
+            updateRow(input.dataset.studentId);
+        });
     });
 
     document.querySelector(`select[name='subject_id']`)?.addEventListener('change', updateEnglishObjectiveState);

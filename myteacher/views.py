@@ -10,8 +10,12 @@ from django.urls import reverse
 from django.db.models import Q
 from decimal import Decimal, InvalidOperation
 from io import BytesIO
-from xhtml2pdf import pisa
 import datetime
+
+try:
+    from xhtml2pdf import pisa
+except ImportError:  # pragma: no cover - environment fallback
+    pisa = None
 
 
 def calculate_grade_and_gpa(score):
@@ -171,7 +175,9 @@ def mark_entry_view(request):
         students_to_mark = Student.objects.filter(current_class=s_class)
         if selected_subject_obj.is_religion_based:
             students_to_mark = students_to_mark.filter(religion=selected_subject_obj.effective_religion)
-        
+
+        subject_full_mark = selected_subject_obj.full_mark_value or Decimal('0.00')
+        parsed_marks = []
         for student in students_to_mark:
             obj = request.POST.get(f'obj_{student.id}', 0) or 0
             sub = request.POST.get(f'sub_{student.id}', 0) or 0
@@ -195,6 +201,20 @@ def mark_entry_view(request):
             except (TypeError, ValueError, InvalidOperation):
                 prac = Decimal('0.00')
 
+            total_mark = obj + sub + ct + prac
+            if (
+                obj > subject_full_mark or
+                sub > subject_full_mark or
+                ct > subject_full_mark or
+                (selected_subject_obj.has_practical and prac > subject_full_mark) or
+                total_mark > subject_full_mark
+            ):
+                messages.error(request, f'সর্বোচ্চ {subject_full_mark} নম্বরের বেশি বা মোট নম্বর {subject_full_mark} এর বেশি দেওয়া যাবে না।')
+                return redirect(f"{url}?class_level={s_class}&subject_id={subject_id}&exam_type={exam_type}&exam_year={exam_year}")
+
+            parsed_marks.append((student, obj, sub, ct, prac))
+
+        for student, obj, sub, ct, prac in parsed_marks:
             Mark.objects.update_or_create(
                 student=student,
                 subject_id=subject_id,
@@ -214,12 +234,12 @@ def mark_entry_view(request):
                 class_level=s_class,
                 exam_type=exam_type,
                 exam_year=exam_year,
-                defaults={'is_published': True}
+                defaults={'is_published': False}
             )
-            if not publication.is_published:
-                publication.is_published = True
+            if publication.is_published:
+                publication.is_published = False
                 publication.save(update_fields=['is_published', 'updated_at'])
-            messages.success(request, 'Final Submit সম্পন্ন হয়েছে। মার্কগুলো ফলাফল কার্ডে যোগ করা হয়েছে।')
+            messages.success(request, 'Final Submit সম্পন্ন হয়েছে। মার্কগুলো ফলাফল কার্ডে সংরক্ষিত হয়েছে। প্রকাশের দায়িত্ব Headmaster-এর Publish/Unpublish বোতামে থাকবে।')
         elif 'save_draft' in request.POST:
             publication, created = StudentResultPublication.objects.get_or_create(
                 class_level=s_class,
@@ -1043,6 +1063,9 @@ def get_student_result_summary(student, exam_type, exam_year=None):
 
 
 def render_to_pdf(template_src, context_dict):
+    if pisa is None:
+        return None
+
     template = get_template(template_src)
     html = template.render(context_dict)
     result = BytesIO()
