@@ -19,43 +19,49 @@ except ImportError:  # pragma: no cover - environment fallback
 
 
 def calculate_grade_and_gpa(score):
+    """Return (grade_str, gpa_decimal) for a numeric score (0-100).
+
+    Uses Decimal for gpa to avoid floating point issues.
+    """
     try:
+        # Accept Decimal, int, float
         score = float(score)
     except (TypeError, ValueError):
-        return '-', '0.00'
+        return '-', Decimal('0.00')
 
     if score >= 80:
-        return 'A+', '5.00'
+        return 'A+', Decimal('5.00')
     if score >= 70:
-        return 'A', '4.00'
+        return 'A', Decimal('4.00')
     if score >= 60:
-        return 'A-', '3.50'
+        return 'A-', Decimal('3.50')
     if score >= 50:
-        return 'B', '3.00'
+        return 'B', Decimal('3.00')
     if score >= 40:
-        return 'C', '2.00'
+        return 'C', Decimal('2.00')
     if score >= 33:
-        return 'D', '1.00'
-    return 'F', '0.00'
+        return 'D', Decimal('1.00')
+    return 'F', Decimal('0.00')
 
 
 def calculate_grade_from_gpa(gpa):
+    """Map a Decimal gpa to final grade string."""
     try:
-        gpa = float(gpa)
-    except (TypeError, ValueError):
+        gpa_dec = Decimal(str(gpa))
+    except Exception:
         return 'F'
 
-    if gpa >= 5.0:
+    if gpa_dec >= Decimal('5.00'):
         return 'A+'
-    if gpa >= 4.0:
+    if gpa_dec >= Decimal('4.00'):
         return 'A'
-    if gpa >= 3.5:
+    if gpa_dec >= Decimal('3.50'):
         return 'A-'
-    if gpa >= 3.0:
+    if gpa_dec >= Decimal('3.00'):
         return 'B'
-    if gpa >= 2.0:
+    if gpa_dec >= Decimal('2.00'):
         return 'C'
-    if gpa >= 1.0:
+    if gpa_dec >= Decimal('1.00'):
         return 'D'
     return 'F'
 
@@ -1054,8 +1060,14 @@ def get_student_result_summary(student, exam_type, exam_year=None):
             overall_gpa = Decimal('0.00')
         else:
             final_gpa = average_gpa + optional_benefit
-            if final_gpa > Decimal('5.00'):
-                final_gpa = Decimal('5.00')
+            # Business rule: if any compulsory subject is not perfect (average_gpa < 5.00),
+            # the final GPA must not be 5.00 even after optional bonus.
+            if average_gpa < Decimal('5.00') and final_gpa >= Decimal('5.00'):
+                # keep the achieved value but ensure it's less than 5.00
+                final_gpa = Decimal('4.99')
+            else:
+                if final_gpa > Decimal('5.00'):
+                    final_gpa = Decimal('5.00')
             overall_gpa = final_gpa.quantize(Decimal('0.00'))
             overall_grade = calculate_grade_from_gpa(overall_gpa)
 
