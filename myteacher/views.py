@@ -851,8 +851,13 @@ def get_student_result_summary(student, exam_type, exam_year=None):
             percentage = (obtained / subject_max * Decimal('100.00')) if subject_max else Decimal('0.00')
             grade, gpa = calculate_grade_and_gpa(percentage)
             try:
-                benefit = max(Decimal(gpa) - Decimal('2.00'), Decimal('0.00'))
+                gpa_value = Decimal(str(gpa))
             except Exception:
+                gpa_value = Decimal('0.00')
+
+            if percentage >= Decimal('33.00') and grade != 'F' and gpa_value > Decimal('2.00'):
+                benefit = gpa_value - Decimal('2.00')
+            else:
                 benefit = Decimal('0.00')
             optional_benefit += benefit
 
@@ -920,7 +925,7 @@ def get_student_result_summary(student, exam_type, exam_year=None):
             total_possible_marks += subject_max
             total_gpa += Decimal(gpa)
             subject_count += 1
-            if grade == 'F':
+            if mark.subject.subject_type != '4' and grade == 'F':
                 fail_count += 1
 
     for lower_name, grouped in grouped_marks.items():
@@ -963,7 +968,7 @@ def get_student_result_summary(student, exam_type, exam_year=None):
                     })
                     total_gpa += Decimal(combined_gpa)
                     subject_count += 1
-                    if combined_grade == 'F':
+                    if mark.subject.subject_type != '4' and combined_grade == 'F':
                         fail_count += 1
                 subject_results.append(row)
                 total_marks += mark.total_mark
@@ -1007,7 +1012,7 @@ def get_student_result_summary(student, exam_type, exam_year=None):
             total_possible_marks += subject_max
             total_gpa += Decimal(gpa)
             subject_count += 1
-            if grade == 'F':
+            if mark.subject.subject_type != '4' and grade == 'F':
                 fail_count += 1
 
     subject_results.sort(key=lambda entry: (
@@ -1024,7 +1029,7 @@ def get_student_result_summary(student, exam_type, exam_year=None):
         overall_percentage = (total_marks / total_possible_marks * Decimal('100.00'))
         average_gpa = (total_gpa / subject_count).quantize(Decimal('0.00'))
 
-        # If any subject is failed, average GPA and final GPA must be 0.00
+        # Only compulsory subjects determine pass/fail. Optional subjects only affect GPA bonus.
         if fail_count > 0:
             average_gpa = Decimal('0.00')
             overall_grade = 'F'
@@ -1045,6 +1050,65 @@ def get_student_result_summary(student, exam_type, exam_year=None):
         overall_percentage = Decimal('0.00')
         result_status = 'Incomplete'
 
+    def get_total_marks_for_candidate(candidate_student):
+        candidate_marks = Mark.objects.filter(student=candidate_student, exam_type=exam_type).select_related('subject').order_by('subject__subject_name')
+        if exam_year is not None:
+            try:
+                candidate_marks = candidate_marks.filter(exam_year=int(exam_year))
+            except (TypeError, ValueError):
+                pass
+
+        filtered_candidate_marks = []
+        for mark in candidate_marks:
+            if mark.subject.is_religion_based and mark.subject.effective_religion != candidate_student.religion:
+                continue
+            filtered_candidate_marks.append(mark)
+
+        candidate_total = Decimal('0.00')
+        for mark in filtered_candidate_marks:
+            candidate_total += mark.total_mark
+        return candidate_total
+
+    def get_ordinal_suffix(value):
+        if value is None:
+            return '-'
+        if 10 <= value % 100 <= 20:
+            suffix = 'th'
+        else:
+            suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(value % 10, 'th')
+        return f'{value}{suffix}'
+
+    group_value = student.group if student.group else None
+    ranked_students = Student.objects.filter(current_class=student.current_class)
+    if group_value is not None:
+        ranked_students = ranked_students.filter(group=group_value)
+    else:
+        ranked_students = ranked_students.filter(Q(group__isnull=True) | Q(group=''))
+
+    ranked_results = []
+    for candidate_student in ranked_students:
+        ranked_results.append({
+            'student': candidate_student,
+            'total_marks': get_total_marks_for_candidate(candidate_student),
+        })
+
+    ranked_results.sort(key=lambda item: item['total_marks'], reverse=True)
+
+    position = 0
+    previous_total = None
+    previous_position = 0
+    for index, entry in enumerate(ranked_results):
+        if previous_total is None or entry['total_marks'] != previous_total:
+            current_position = index + 1
+            previous_total = entry['total_marks']
+            previous_position = current_position
+        else:
+            current_position = previous_position
+
+        if entry['student'].pk == student.pk:
+            position = current_position
+            break
+
     return {
         'student': student,
         'marks': subject_results,
@@ -1059,6 +1123,8 @@ def get_student_result_summary(student, exam_type, exam_year=None):
         'optional_benefit': optional_benefit.quantize(Decimal('0.00')),
         'result_status': result_status,
         'has_marks': subject_count > 0,
+        'position': position,
+        'position_display': get_ordinal_suffix(position) if position else '-',
     }
 
 
