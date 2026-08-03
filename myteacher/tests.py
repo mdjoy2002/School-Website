@@ -378,6 +378,74 @@ class ResultSummarySubjectCodeTests(TestCase):
         self.assertEqual(third_summary['position'], 3)
         self.assertEqual(third_summary['position_display'], '3rd')
 
+    def test_position_and_highest_total_consistency_with_optional_subjects(self):
+        # Create two students where one has an extra optional subject
+        subject_core = Subject.objects.create(
+            subject_name='Core Subject',
+            subject_code='C101',
+            subject_type='1',
+            religion='None',
+            class_level='6',
+            has_practical=False,
+            full_mark=Decimal('100.00'),
+        )
+        optional_subject = Subject.objects.create(
+            subject_name='Optional Subject',
+            subject_code='O401',
+            subject_type='4',
+            religion='None',
+            class_level='6',
+            has_practical=False,
+            full_mark=Decimal('100.00'),
+        )
+
+        student_a = Student.objects.create(
+            photo='',
+            full_name='Student A',
+            father_name='Father',
+            mother_name='Mother',
+            student_id='5000001',
+            gender='Male',
+            date_of_birth='2008-01-01',
+            current_class='6',
+            class_roll=1,
+            shift='Day',
+            mobile_num='01700000020',
+            group=None,
+            religion='Islam',
+        )
+        student_b = Student.objects.create(
+            photo='',
+            full_name='Student B',
+            father_name='Father',
+            mother_name='Mother',
+            student_id='5000002',
+            gender='Male',
+            date_of_birth='2008-01-01',
+            current_class='6',
+            class_roll=2,
+            shift='Day',
+            mobile_num='01700000021',
+            group=None,
+            religion='Islam',
+        )
+
+        # Both get same core marks
+        Mark.objects.create(student=student_a, subject=subject_core, exam_type='Half Yearly', exam_year=2026, objective_mark=Decimal('30.00'), subjective_mark=Decimal('40.00'), class_test_mark=Decimal('10.00'), practical_mark=Decimal('0.00'))
+        Mark.objects.create(student=student_b, subject=subject_core, exam_type='Half Yearly', exam_year=2026, objective_mark=Decimal('30.00'), subjective_mark=Decimal('40.00'), class_test_mark=Decimal('10.00'), practical_mark=Decimal('0.00'))
+
+        # Student A has an optional extra that boosts total
+        Mark.objects.create(student=student_a, subject=optional_subject, exam_type='Half Yearly', exam_year=2026, objective_mark=Decimal('25.00'), subjective_mark=Decimal('25.00'), class_test_mark=Decimal('0.00'), practical_mark=Decimal('0.00'))
+
+        summary_a = get_student_result_summary(student_a, 'Half Yearly', '2026')
+        summary_b = get_student_result_summary(student_b, 'Half Yearly', '2026')
+
+        # Student A's total should be higher due to optional subject
+        self.assertTrue(summary_a['total_marks'] > summary_b['total_marks'])
+        # Therefore Student A's position should be 1 and highest_total_in_class should equal Student A's total
+        self.assertEqual(summary_a['position'], 1)
+        self.assertEqual(summary_a['highest_total_mark_in_class'], summary_a['total_marks'])
+
     def test_final_submit_keeps_result_unpublished_until_headmaster_toggle(self):
         user_model = get_user_model()
         user = user_model.objects.create_user(username='teacher1', password='secret123')
