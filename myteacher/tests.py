@@ -376,8 +376,78 @@ class ResultSummarySubjectCodeTests(TestCase):
 
         self.assertEqual(tied_summary['position'], 1)
         self.assertEqual(tied_summary['position_display'], '1st')
-        self.assertEqual(third_summary['position'], 3)
-        self.assertEqual(third_summary['position_display'], '3rd')
+        self.assertEqual(third_summary['position'], 2)
+        self.assertEqual(third_summary['position_display'], '2nd')
+
+    def test_failed_students_receive_positions_after_passed_students(self):
+        subject = Subject.objects.create(
+            subject_name='Bangla 1st',
+            subject_code='B101',
+            subject_type='1',
+            religion='None',
+            class_level='6',
+            has_practical=False,
+            full_mark=Decimal('100.00'),
+        )
+
+        passed_student = Student.objects.create(
+            photo='',
+            full_name='Passed Student',
+            father_name='Father',
+            mother_name='Mother',
+            student_id='3000001',
+            gender='Male',
+            date_of_birth='2008-01-01',
+            current_class='6',
+            class_roll=1,
+            shift='Day',
+            mobile_num='01700000005',
+            group=None,
+            religion='Islam',
+        )
+        failed_student = Student.objects.create(
+            photo='',
+            full_name='Failed Student',
+            father_name='Father',
+            mother_name='Mother',
+            student_id='3000002',
+            gender='Male',
+            date_of_birth='2008-01-01',
+            current_class='6',
+            class_roll=2,
+            shift='Day',
+            mobile_num='01700000006',
+            group=None,
+            religion='Islam',
+        )
+
+        Mark.objects.create(
+            student=passed_student,
+            subject=subject,
+            exam_type='Half Yearly',
+            exam_year=2026,
+            objective_mark=Decimal('20.00'),
+            subjective_mark=Decimal('70.00'),
+            class_test_mark=Decimal('0.00'),
+            practical_mark=Decimal('0.00'),
+        )
+        Mark.objects.create(
+            student=failed_student,
+            subject=subject,
+            exam_type='Half Yearly',
+            exam_year=2026,
+            objective_mark=Decimal('0.00'),
+            subjective_mark=Decimal('0.00'),
+            class_test_mark=Decimal('0.00'),
+            practical_mark=Decimal('0.00'),
+        )
+
+        passed_summary = get_student_result_summary(passed_student, 'Half Yearly', '2026')
+        failed_summary = get_student_result_summary(failed_student, 'Half Yearly', '2026')
+
+        self.assertEqual(passed_summary['position'], 1)
+        self.assertEqual(failed_summary['position'], 2)
+        self.assertEqual(failed_summary['position_display'], '2nd')
 
     def test_position_and_highest_total_consistency_with_optional_subjects(self):
         # Create two students where one has an extra optional subject

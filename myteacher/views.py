@@ -1099,6 +1099,59 @@ def get_student_result_summary(student, exam_type, exam_year=None):
             candidate_total += mark.total_mark
         return candidate_total
 
+    def get_candidate_result_status(candidate_student):
+        candidate_marks = Mark.objects.filter(student=candidate_student, exam_type=exam_type).select_related('subject').order_by('subject__subject_name')
+        if exam_year is not None:
+            try:
+                candidate_marks = candidate_marks.filter(exam_year=int(exam_year))
+            except (TypeError, ValueError):
+                pass
+
+        filtered_candidate_marks = []
+        for mark in candidate_marks:
+            if mark.subject.is_religion_based and mark.subject.effective_religion != candidate_student.religion:
+                continue
+            filtered_candidate_marks.append(mark)
+
+        grouped_marks = {}
+        fail_count = 0
+        for mark in filtered_candidate_marks:
+            subject_type = mark.subject.subject_type
+            lower_name = mark.subject.subject_name.strip().lower()
+
+            if subject_type == '4':
+                continue
+
+            is_combined_subject = (
+                subject_type in ['1', '2'] and
+                ('bangla' in lower_name or 'english' in lower_name)
+            )
+
+            if is_combined_subject:
+                grouped_marks.setdefault(lower_name, []).append(mark)
+            else:
+                percentage = (mark.total_mark / mark.subject.full_mark_value * Decimal('100.00')) if mark.subject.full_mark_value else Decimal('0.00')
+                grade, _ = calculate_grade_and_gpa(percentage)
+                if grade == 'F':
+                    fail_count += 1
+
+        for grouped in grouped_marks.values():
+            if len(grouped) > 1:
+                combined_full_mark = sum(m.subject.full_mark_value for m in grouped)
+                combined_total_mark = sum(m.total_mark for m in grouped)
+                combined_percentage = (combined_total_mark / combined_full_mark * Decimal('100.00')) if combined_full_mark else Decimal('0.00')
+                combined_grade, _ = calculate_grade_and_gpa(combined_percentage)
+                if combined_grade == 'F':
+                    fail_count += 1
+            else:
+                mark = grouped[0]
+                percentage = (mark.total_mark / mark.subject.full_mark_value * Decimal('100.00')) if mark.subject.full_mark_value else Decimal('0.00')
+                grade, _ = calculate_grade_and_gpa(percentage)
+                if grade == 'F':
+                    fail_count += 1
+
+        return 'Pass' if fail_count == 0 else 'Fail'
+
     def get_ordinal_suffix(value):
         if value is None:
             return '-'
@@ -1117,20 +1170,29 @@ def get_student_result_summary(student, exam_type, exam_year=None):
 
     ranked_results = []
     for candidate_student in ranked_students:
+        candidate_total_marks = get_total_marks_for_candidate(candidate_student)
+        candidate_result_status = get_candidate_result_status(candidate_student)
         ranked_results.append({
             'student': candidate_student,
-            'total_marks': get_total_marks_for_candidate(candidate_student),
+            'total_marks': candidate_total_marks,
+            'result_status': candidate_result_status,
         })
 
-    ranked_results.sort(key=lambda item: item['total_marks'], reverse=True)
+    passed_results = [entry for entry in ranked_results if entry['result_status'] == 'Pass']
+    failed_results = [entry for entry in ranked_results if entry['result_status'] != 'Pass']
 
-    highest_total_mark_in_class = ranked_results[0]['total_marks'] if ranked_results else Decimal('0.00')
-    position = 0
+    passed_results.sort(key=lambda item: item['total_marks'], reverse=True)
+    failed_results.sort(key=lambda item: item['total_marks'], reverse=True)
+
+    ranked_results = passed_results + failed_results
+
+    highest_total_mark_in_class = max((entry['total_marks'] for entry in ranked_results), default=Decimal('0.00'))
+    position = None
     previous_total = None
     previous_position = 0
-    for index, entry in enumerate(ranked_results):
+    for entry in ranked_results:
         if previous_total is None or entry['total_marks'] != previous_total:
-            current_position = index + 1
+            current_position = previous_position + 1
             previous_total = entry['total_marks']
             previous_position = current_position
         else:
