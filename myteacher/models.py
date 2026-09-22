@@ -207,8 +207,7 @@ class Testimonial(models.Model):
         verbose_name = 'Saved Testimonial'
         verbose_name_plural = 'Saved Testimonials'
 
-=======
->>>>>>> 7806ec946d8f6663dad1e65accab3da711aeebab
+
     def __str__(self):
         return f"{self.student.full_name} - {self.subject.subject_name} ({self.total_mark}) - {self.exam_type}"
 

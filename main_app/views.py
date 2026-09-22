@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import (
-<<<<<<< HEAD
+
     Notice, Slider, SchoolInfo, LeadershipProfile, Teacher, GalleryCategory, 
-=======
+
     Notice, Slider, SchoolInfo, Teacher, GalleryCategory, 
->>>>>>> 7806ec946d8f6663dad1e65accab3da711aeebab
+
     GalleryImage, ContactMessage, ExamRoutine, StudentCornerData,
     AdmissionInfo, ResultData
 )
@@ -31,10 +31,9 @@ def home(request):
 
     # আমাদের সম্পর্কে (School Info) ডাটা নিয়ে আসা
     school_info = SchoolInfo.objects.first()
-<<<<<<< HEAD
+
     leadership_profiles = LeadershipProfile.objects.in_bulk(field_name='profile_type')
-=======
->>>>>>> 7806ec946d8f6663dad1e65accab3da711aeebab
+
     
     # হোমপেজে দেখানোর জন্য প্রথম ৪ জন শিক্ষক (স্লাইস ব্যবহার করা হয়েছে)
     teachers = Teacher.objects.all().order_by('order')[:4]
@@ -48,11 +47,10 @@ def home(request):
         'gallery_categories': gallery_categories,
         'sliders': sliders,
         'school_info': school_info,
-<<<<<<< HEAD
+
         'headmaster_profile': leadership_profiles.get('HEADMASTER'),
         'committee_profile': leadership_profiles.get('COMMITTEE'),
-=======
->>>>>>> 7806ec946d8f6663dad1e65accab3da711aeebab
+
         'teachers': teachers,
     }
     

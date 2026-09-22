@@ -88,7 +88,7 @@ class SchoolInfo(models.Model):
     class Meta: 
         verbose_name_plural = "৭. বিদ্যালয় পরিচিতি ও তথ্য"
 
-<<<<<<< HEAD
+
 
 class LeadershipProfile(CompressedUploadMixin, models.Model):
     PROFILE_TYPES = (
@@ -115,8 +115,7 @@ class LeadershipProfile(CompressedUploadMixin, models.Model):
         verbose_name = "প্রধান শিক্ষক ও ম্যানেজিং কমিটি"
         verbose_name_plural = "প্রধান শিক্ষক ও ম্যানেজিং কমিটি"
 
-=======
->>>>>>> 7806ec946d8f6663dad1e65accab3da711aeebab
+
 class AboutImage(CompressedUploadMixin, models.Model):
     school_info = models.ForeignKey(SchoolInfo, related_name='images', on_delete=models.CASCADE)
     image = models.ImageField(upload_to='about_slider/', verbose_name="স্লাইডার ছবি")
