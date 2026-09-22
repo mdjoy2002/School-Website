@@ -168,7 +168,6 @@ class Mark(models.Model):
         self.full_clean()
         super().save(*args, **kwargs)
 
-<<<<<<< HEAD
 
 class Testimonial(models.Model):
     STATUS_CHOICES = (

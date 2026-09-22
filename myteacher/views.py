@@ -372,7 +372,7 @@ def mark_entry_history_view(request):
 
 # mark show view and print button
 
-<<<<<<< HEAD
+
 @login_required
 def testimonial_view(request):
     teacher = getattr(request.user, 'teacher', None)

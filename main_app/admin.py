@@ -1,10 +1,10 @@
 from django.contrib import admin
 from .models import (
-<<<<<<< HEAD
+
     Notice, TickerNews, Slider, SchoolInfo, LeadershipProfile, AboutImage, Teacher, 
 =======
     Notice, TickerNews, Slider, SchoolInfo, AboutImage, Teacher, 
->>>>>>> 7806ec946d8f6663dad1e65accab3da711aeebab
+
     Headmaster, GeneralTeacher, Staff, GalleryCategory, GalleryImage,
     ContactMessage, ExamRoutine, StudentCornerData, AdmissionInfo, ResultData
 )
