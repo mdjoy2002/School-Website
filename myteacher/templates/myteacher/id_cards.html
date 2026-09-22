@@ -1,45 +1,66 @@
-﻿{% extends 'myteacher/base.html' %}
+{% extends 'myteacher/base.html' %}
 {% block content %}
 <style>
-    body { font-family: 'Times New Roman', Times, serif; background-color: #e0e0e0; }
+    body { font-family: var(--card-font, 'Times New Roman'), Times, serif; background-color: #e0e0e0; }
     .page-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-    .control-panel { background: #fff; padding: 15px 25px; border-radius: 8px; margin-bottom: 30px; display: flex; gap: 20px; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08); flex-wrap: wrap; }
+    .control-panel { background: #fff; padding: 15px 25px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 20px; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08); flex-wrap: wrap; }
     .control-panel select, .control-panel button { font-size: 14px; }
     .control-panel .download-selected { background-color: #27ae60; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; }
     .control-panel .class-select { padding: 10px 14px; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; }
+
+    /* Advanced Section-wise & Font-Pattern Customizer Panel */
+    .customizer-panel { background: #ffffff; padding: 15px 25px; border-radius: 8px; margin-bottom: 30px; display: flex; gap: 15px; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08); flex-wrap: wrap; border-left: 5px solid #f37021; }
+    .customizer-panel label { font-size: 12px; font-weight: bold; color: #1a2a6c; display: flex; align-items: center; gap: 5px; }
+    .customizer-panel input[type="color"] { border: none; width: 24px; height: 24px; cursor: pointer; border-radius: 4px; background: none; }
+    .customizer-panel select { padding: 5px 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 12px; }
+
     .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 26px; }
     .card-holder { position: relative; }
     .card-checkbox { position: absolute; top: -10px; left: -10px; z-index: 10; transform: scale(1.3); }
-    .id-card { width: 210px; min-height: 332px; background: #ffffff; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); border: 2px solid #1a2a6c; overflow: hidden; position: relative; }
-    .header { background: linear-gradient(135deg, #1a2a6c, #2c3e92); height: 42px; display: flex; align-items: center; gap: 8px; padding: 0 10px; color: #ffffff; }
-    .logo-circle { width: 28px; height: 28px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #f37021; flex-shrink: 0; }
-    .logo-circle img { max-width: 70%; max-height: 70%; }
+
+    .id-card {
+        width: 210px;
+        height: 332px;
+        background-color: var(--card-bg, #ffffff);
+        background-image: var(--card-pattern, none);
+        font-family: var(--card-font, 'Times New Roman'), Times, serif;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        border: 2px solid var(--card-border-color, #1a2a6c);
+        overflow: hidden;
+        position: relative;
+        box-sizing: border-box;
+    }
+
+    .header { background: linear-gradient(135deg, var(--card-header-bg1, #1a2a6c), var(--card-header-bg2, #2c3e92)); height: 42px; display: flex; align-items: center; gap: 8px; padding: 0 10px; color: #ffffff; }
+    .logo-circle { width: 30px; height: 30px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #f37021; flex-shrink: 0; overflow: hidden; }
+    .logo-circle img { width: 100%; height: 100%; object-fit: contain; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; }
     .school-name { font-size: 10px; font-weight: 800; line-height: 1.1; text-transform: uppercase; }
-    .slogan-bar { background: #f77728; color: white; font-size: 8px; text-align: center; padding: 3px 0; font-weight: 700; }
-    .id-card-label { background-color: #000; color: white; text-align: center; font-size: 8px; font-weight: 700; padding: 2px 0; margin: 6px auto 0; width: 58%; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
-    .photo-area { display: flex; justify-content: center; margin: 8px 0 4px; }
-    .profile-photo { width: 54px; height: 54px; border: 1px solid #2c3e92; border-radius: 4px; overflow: hidden; background-color: #f0f0f0; }
+    .slogan-bar { background: var(--slogan-bg, #f77728); color: var(--slogan-text, white); font-size: 8px; text-align: center; padding: 3px 0; font-weight: 700; }
+    .id-card-label { background-color: var(--label-badge-bg, #000); color: var(--label-badge-text, white); text-align: center; font-size: 8px; font-weight: 700; padding: 2px 0; margin: 4px auto 0; width: 58%; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+    .photo-area { display: flex; justify-content: center; margin: 6px 0 2px; }
+    .profile-photo { width: 54px; height: 54px; border: 1px solid var(--card-border-color, #1a2a6c); border-radius: 4px; overflow: hidden; background-color: #f0f0f0; }
     .profile-photo img { width: 100%; height: 100%; object-fit: cover; }
-    .student-id-text { text-align: center; font-size: 8.5pt; font-weight: 700; margin-bottom: 4px; color: #2c3e92; }
-    .name-bar { background-color: #2c3e92; color: white; text-align: center; font-size: 9pt; font-weight: 800; padding: 4px 0; text-transform: uppercase; margin: 4px 10px 8px; border-radius: 4px; }
-    .details-container { padding: 0 10px 10px; font-size: 7.5pt; color: #222222; line-height: 1.35; }
-    .row { display: flex; align-items: center; margin-bottom: 2px; }
-    .label { min-width: 38px; font-weight: 700; color: #2c3e92; font-size: 7.4pt; }
-    .colon { min-width: 8px; text-align: center; font-weight: 700; color: #f37021; }
-    .value { font-weight: 700; flex: 1; color: #2a2a2a; font-size: 7.4pt; }
-    .dual-row { display: flex; gap: 6px; margin-bottom: 2px; }
-    .half-col { flex: 1; display: flex; align-items: center; }
-    .small-label { min-width: 36px; font-weight: 700; color: #2c3e92; font-size: 7pt; }
-    .footer-container { position: absolute; bottom: 8px; width: 100%; display: flex; justify-content: center; padding: 0 10px; box-sizing: border-box; }
+    .student-id-text { text-align: center; font-size: 8.5pt; font-weight: 700; margin-bottom: 2px; color: var(--id-text-color, #2c3e92); }
+    .name-bar { background-color: var(--namebar-bg, #2c3e92); color: var(--namebar-text, white); text-align: center; font-size: 9pt; font-weight: 800; padding: 3px 0; text-transform: uppercase; margin: 2px 10px 6px; border-radius: 4px; }
+
+    .details-container { padding: 0 10px; font-size: var(--card-font-size, 7.2pt); color: var(--info-text-color, #222222); line-height: 1.2; }
+    .info-row { display: flex; align-items: flex-start; margin-bottom: 2px; }
+    .label { width: 44px; min-width: 44px; font-weight: 700; color: var(--info-label-color, #2c3e92); font-size: inherit; text-align: left; }
+    .colon { width: 10px; min-width: 10px; text-align: center; font-weight: 700; color: #f37021; }
+    .value { font-weight: 700; flex: 1; color: var(--info-value-color, #2a2a2a); font-size: inherit; word-break: break-word; white-space: normal; line-height: 1.15; }
+
+    .footer-container { position: absolute; bottom: 8px; width: 100%; display: flex; justify-content: flex-end; padding: 0 10px; box-sizing: border-box; }
     .signature-box { text-align: center; display: flex; flex-direction: column; align-items: center; }
     .sig-image { width: 65px; height: auto; display: block; margin-bottom: -5px; mix-blend-mode: multiply; }
     .sig-line { width: 58px; border-top: 0.8px solid #000; margin-bottom: 1px; }
-    .sig-text { font-size: 6.5pt; font-weight: 700; color: #1a2a6c; }
-    .bottom-border { position: absolute; bottom: 0; width: 100%; height: 5px; background: #f37021; }
+    .sig-text { font-size: 6.5pt; font-weight: 700; color: var(--sig-text-color, #1a2a6c); }
+    .bottom-border { position: absolute; bottom: 0; width: 100%; height: 5px; background: var(--bottom-bar-bg, #f37021); }
+
     .download-action { margin-top: 12px; display: flex; justify-content: center; }
     .download-button { background: #27ae60; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 700; }
     .note-box { margin-top: 10px; font-size: 12px; color: #334155; }
-    @media print { .control-panel, .download-action { display: none; } .page-container { padding: 0; } }
+    @media print { .control-panel, .customizer-panel, .download-action { display: none; } .page-container { padding: 0; } }
 </style>
 
 <div class="page-container">
@@ -60,6 +81,41 @@
         {% endif %}
     </div>
 
+    <!-- Advanced Font, Pattern & Color Customizer Panel -->
+    <div class="customizer-panel">
+        <span style="font-weight: bold; color: #1a2a6c;">🎨 Customizer:</span>
+        <label>Font:
+            <select id="fontFamilySelector" onchange="updateCardTheme()">
+                <option value="'Times New Roman', Times, serif" selected>Times New Roman</option>
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="Georgia, serif">Georgia</option>
+                <option value="'Courier New', monospace">Courier New</option>
+                <option value="Verdana, sans-serif">Verdana</option>
+            </select>
+        </label>
+        <label>Pattern:
+            <select id="cardPatternSelector" onchange="updateCardTheme()">
+                <option value="none" selected>Plain (Solid)</option>
+                <option value="stripes">Diagonal Stripes</option>
+                <option value="dots">Dot Grid</option>
+            </select>
+        </label>
+        <label>H1: <input type="color" id="primaryColorPicker" value="#1a2a6c" oninput="updateCardTheme()"></label>
+        <label>H2: <input type="color" id="secondaryColorPicker" value="#2c3e92" oninput="updateCardTheme()"></label>
+        <label>Slogan: <input type="color" id="sloganBgPicker" value="#f77728" oninput="updateCardTheme()"></label>
+        <label>Badge: <input type="color" id="badgeBgPicker" value="#000000" oninput="updateCardTheme()"></label>
+        <label>Name Bar: <input type="color" id="nameBarPicker" value="#2c3e92" oninput="updateCardTheme()"></label>
+        <label>Text: <input type="color" id="textColorPicker" value="#2a2a2a" oninput="updateCardTheme()"></label>
+        <label>BG: <input type="color" id="cardBgPicker" value="#ffffff" oninput="updateCardTheme()"></label>
+        <label>Size:
+            <select id="fontSizeSelector" onchange="updateCardTheme()">
+                <option value="6.5pt">Small</option>
+                <option value="7.2pt" selected>Normal</option>
+                <option value="8pt">Large</option>
+            </select>
+        </label>
+    </div>
+
     <div class="card-grid">
         {% for student in students %}
         <div class="card-holder">
@@ -69,7 +125,7 @@
             <div class="id-card" id="card-{{ student.id }}">
                 <div class="header">
                     <div class="logo-circle"><img src="/static/images/logo.png" alt="Logo"></div>
-                    <div class="school-name">Khandoker Naser<br>Uddin High School</div>
+                    <div class="school-name">Khondoker Naser<br>Uddin High School</div>
                 </div>
                 <div class="slogan-bar">A HOME OF QUALITY & MORALITY</div>
                 <div class="id-card-label">STUDENT ID CARD</div>
@@ -81,18 +137,15 @@
                 <div class="student-id-text">ID: {{ student.student_id }}</div>
                 <div class="name-bar">{{ student.full_name }}</div>
                 <div class="details-container">
-                    <div class="row"><span class="label">Father</span><span class="colon">:</span><span class="value">{{ student.father_name }}</span></div>
-                    <div class="row"><span class="label">Mother</span><span class="colon">:</span><span class="value">{{ student.mother_name }}</span></div>
-                    <div class="dual-row">
-                        <div class="half-col"><span class="small-label">Roll</span><span class="colon">:</span><span class="value">{{ student.class_roll }}</span></div>
-                        <div class="half-col"><span class="small-label">Class</span><span class="colon">:</span><span class="value">{{ student.current_class }}</span></div>
-                    </div>
-                    <div class="dual-row">
-                        <div class="half-col"><span class="small-label">Shift</span><span class="colon">:</span><span class="value">{{ student.shift }}</span></div>
-                        <div class="half-col"><span class="small-label">Group</span><span class="colon">:</span><span class="value">{{ student.group|default:'General' }}</span></div>
-                    </div>
-                    <div class="row"><span class="label">Mobile</span><span class="colon">:</span><span class="value">{{ student.mobile_num }}</span></div>
-                    <div class="row"><span class="label">Year</span><span class="colon">:</span><span class="value">{{ current_year }}</span></div>
+                    <div class="info-row"><span class="label">Father</span><span class="colon">:</span><span class="value">{{ student.father_name }}</span></div>
+                    <div class="info-row"><span class="label">Mother</span><span class="colon">:</span><span class="value">{{ student.mother_name }}</span></div>
+                    <div class="info-row"><span class="label">Roll</span><span class="colon">:</span><span class="value">{{ student.class_roll }}</span></div>
+                    <div class="info-row"><span class="label">Class</span><span class="colon">:</span><span class="value">{{ student.current_class }}</span></div>
+                    <div class="info-row"><span class="label">Shift</span><span class="colon">:</span><span class="value">{{ student.shift }}</span></div>
+                    <div class="info-row"><span class="label">Group</span><span class="colon">:</span><span class="value">{{ student.group|default:'General' }}</span></div>
+                    <div class="info-row"><span class="label">DOB</span><span class="colon">:</span><span class="value">{{ student.date_of_birth|date:"d M Y" }}</span></div>
+                    <div class="info-row"><span class="label">Religion</span><span class="colon">:</span><span class="value">{{ student.religion|default:'Islam' }}</span></div>
+                    <div class="info-row"><span class="label">Year</span><span class="colon">:</span><span class="value">{{ current_year }}</span></div>
                 </div>
                 <div class="footer-container">
                     <div class="signature-box">
@@ -116,23 +169,186 @@
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <script>
+    function updateCardTheme() {
+        const primaryColor = document.getElementById('primaryColorPicker').value;
+        const secondaryColor = document.getElementById('secondaryColorPicker').value;
+        const sloganBg = document.getElementById('sloganBgPicker').value;
+        const badgeBg = document.getElementById('badgeBgPicker').value;
+        const nameBarBg = document.getElementById('nameBarPicker').value;
+        const textColor = document.getElementById('textColorPicker').value;
+        const cardBg = document.getElementById('cardBgPicker').value;
+        const fontSize = document.getElementById('fontSizeSelector').value;
+        const fontFamily = document.getElementById('fontFamilySelector').value;
+        const patternType = document.getElementById('cardPatternSelector').value;
+
+        let patternCSS = 'none';
+        if (patternType === 'stripes') {
+            patternCSS = `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.02) 10px, rgba(0,0,0,0.02) 20px)`;
+        } else if (patternType === 'dots') {
+            patternCSS = `radial-gradient(rgba(0,0,0,0.06) 1px, transparent 1px)`;
+        }
+
+        const cards = document.querySelectorAll('.id-card');
+        cards.forEach(card => {
+            card.style.setProperty('--card-border-color', primaryColor);
+            card.style.setProperty('--card-bg', cardBg);
+            card.style.setProperty('--card-font', fontFamily);
+            card.style.setProperty('--card-font-size', fontSize);
+            card.style.setProperty('--card-pattern', patternCSS);
+            if(patternType === 'dots') {
+                card.style.backgroundSize = '12px 12px';
+            } else {
+                card.style.backgroundSize = 'auto';
+            }
+
+            const header = card.querySelector('.header');
+            if (header) header.style.background = `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`;
+
+            const slogan = card.querySelector('.slogan-bar');
+            if (slogan) slogan.style.backgroundColor = sloganBg;
+
+            const badge = card.querySelector('.id-card-label');
+            if (badge) badge.style.backgroundColor = badgeBg;
+
+            const studentIdText = card.querySelector('.student-id-text');
+            if (studentIdText) studentIdText.style.color = secondaryColor;
+
+            const nameBar = card.querySelector('.name-bar');
+            if (nameBar) nameBar.style.backgroundColor = nameBarBg;
+
+            const values = card.querySelectorAll('.value');
+            values.forEach(v => v.style.color = textColor);
+
+            const labels = card.querySelectorAll('.label');
+            labels.forEach(l => l.style.color = secondaryColor);
+
+            const sigTexts = card.querySelectorAll('.sig-text');
+            sigTexts.forEach(st => st.style.color = primaryColor);
+
+            const bottomBorder = card.querySelector('.bottom-border');
+            if (bottomBorder) bottomBorder.style.background = sloganBg;
+        });
+    }
+
     async function renderCardToBlob(cardId) {
         const element = document.getElementById(cardId);
-        const canvas = await html2canvas(element, {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: '#ffffff',
-            onclone: (clonedDoc) => {
-                clonedDoc.querySelectorAll('.card-checkbox, .download-action').forEach(el => {
-                    el.style.display = 'none';
+
+        const images = element.querySelectorAll('img');
+        const imagePromises = Array.from(images).map(async (img) => {
+            try {
+                if (img.src.startsWith('data:')) return;
+                const response = await fetch(img.src, { mode: 'cors' });
+                const blob = await response.blob();
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        img.dataset.originalSrc = img.src;
+                        img.src = reader.result;
+                        resolve();
+                    };
+                    reader.readAsDataURL(blob);
                 });
+            } catch (e) {
+                console.warn('Image convert failed:', e);
             }
         });
-        return await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+
+        await Promise.all(imagePromises);
+
+        const clone = element.cloneNode(true);
+        clone.style.margin = '0';
+        clone.style.boxShadow = 'none';
+
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'fixed';
+        wrapper.style.left = '-9999px';
+        wrapper.style.top = '0';
+        wrapper.style.width = '210px';
+        wrapper.style.height = '332px';
+        wrapper.appendChild(clone);
+        document.body.appendChild(wrapper);
+
+        const htmlString = new XMLSerializer().serializeToString(clone);
+        document.body.removeChild(wrapper);
+
+        images.forEach((img) => {
+            if (img.dataset.originalSrc) {
+                img.src = img.dataset.originalSrc;
+                delete img.dataset.originalSrc;
+            }
+        });
+
+        const patternType = document.getElementById('cardPatternSelector').value;
+        let patternCSS = 'none';
+        let bgSizeAttr = 'auto';
+        if (patternType === 'stripes') {
+            patternCSS = `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.02) 10px, rgba(0,0,0,0.02) 20px)`;
+        } else if (patternType === 'dots') {
+            patternCSS = `radial-gradient(rgba(0,0,0,0.06) 1px, transparent 1px)`;
+            bgSizeAttr = '12px 12px';
+        }
+
+        const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="210" height="332">
+            <foreignObject width="100%" height="100%">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    <style>
+                        body { font-family: ${document.getElementById('fontFamilySelector').value}; margin: 0; padding: 0; }
+                        .id-card { width: 210px; height: 332px; background-color: ${document.getElementById('cardBgPicker').value}; background-image: ${patternCSS}; background-size: ${bgSizeAttr}; font-family: ${document.getElementById('fontFamilySelector').value}; border-radius: 8px; border: 2px solid ${document.getElementById('primaryColorPicker').value}; overflow: hidden; position: relative; box-sizing: border-box; }
+                        .header { background: linear-gradient(135deg, ${document.getElementById('primaryColorPicker').value}, ${document.getElementById('secondaryColorPicker').value}); height: 42px; display: flex; align-items: center; gap: 8px; padding: 0 10px; color: #ffffff; }
+                        .logo-circle { width: 30px; height: 30px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #f37021; flex-shrink: 0; overflow: hidden; }
+                        .logo-circle img { width: 100%; height: 100%; object-fit: contain; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; }
+                        .school-name { font-size: 10px; font-weight: 800; line-height: 1.1; text-transform: uppercase; }
+                        .slogan-bar { background: ${document.getElementById('sloganBgPicker').value}; color: white; font-size: 8px; text-align: center; padding: 3px 0; font-weight: 700; }
+                        .id-card-label { background-color: ${document.getElementById('badgeBgPicker').value}; color: white; text-align: center; font-size: 8px; font-weight: 700; padding: 2px 0; margin: 4px auto 0; width: 58%; border-radius: 20px; }
+                        .photo-area { display: flex; justify-content: center; margin: 6px 0 2px; }
+                        .profile-photo { width: 54px; height: 54px; border: 1px solid ${document.getElementById('primaryColorPicker').value}; border-radius: 4px; overflow: hidden; background-color: #f0f0f0; }
+                        .profile-photo img { width: 100%; height: 100%; object-fit: cover; }
+                        .student-id-text { text-align: center; font-size: 8.5pt; font-weight: 700; margin-bottom: 2px; color: ${document.getElementById('secondaryColorPicker').value}; }
+                        .name-bar { background-color: ${document.getElementById('nameBarPicker').value}; color: white; text-align: center; font-size: 9pt; font-weight: 800; padding: 3px 0; text-transform: uppercase; margin: 2px 10px 6px; border-radius: 4px; }
+                        .details-container { padding: 0 10px; font-size: ${document.getElementById('fontSizeSelector').value}; color: #222222; line-height: 1.2; }
+                        .info-row { display: flex; align-items: flex-start; margin-bottom: 2px; }
+                        .label { width: 44px; min-width: 44px; font-weight: 700; color: ${document.getElementById('secondaryColorPicker').value}; font-size: inherit; text-align: left; }
+                        .colon { width: 10px; min-width: 10px; text-align: center; font-weight: 700; color: #f37021; }
+                        .value { font-weight: 700; flex: 1; color: ${document.getElementById('textColorPicker').value}; font-size: inherit; word-break: break-word; white-space: normal; line-height: 1.15; }
+                        .footer-container { position: absolute; bottom: 8px; width: 100%; display: flex; justify-content: flex-end; padding: 0 10px; box-sizing: border-box; }
+                        .signature-box { text-align: center; display: flex; flex-direction: column; align-items: center; }
+                        .sig-image { width: 65px; height: auto; display: block; margin-bottom: -5px; }
+                        .sig-line { width: 58px; border-top: 0.8px solid #000; margin-bottom: 1px; }
+                        .sig-text { font-size: 6.5pt; font-weight: 700; color: ${document.getElementById('primaryColorPicker').value}; }
+                        .bottom-border { position: absolute; bottom: 0; width: 100%; height: 5px; background: ${document.getElementById('sloganBgPicker').value}; }
+                    </style>
+                    ${htmlString}
+                </div>
+            </foreignObject>
+        </svg>`;
+
+        const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        const URL = window.URL || window.webkitURL || window;
+        const blobURL = URL.createObjectURL(blob);
+
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                // Ultra HD 4x Scaling for maximum clarity
+                const scale = 10;
+                canvas.width = 210 * scale;
+                canvas.height = 332 * scale;
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.scale(scale, scale);
+                ctx.drawImage(img, 0, 0);
+                URL.revokeObjectURL(blobURL);
+                canvas.toBlob((pngBlob) => {
+                    resolve(pngBlob);
+                }, 'image/png', 1.0);
+            };
+            img.src = blobURL;
+        });
     }
 
     function downloadCardImage(cardId, studentSlug) {

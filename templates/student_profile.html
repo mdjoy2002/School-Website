@@ -5,76 +5,213 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Profile</title>
+    <!-- Add Nikosh and Times New Roman styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        @font-face {
+            font-family: 'Nikosh';
+            src: local('Nikosh'), url('https://fonts.cdnfonts.com/s/15077/Nikosh.woff') format('woff');
+        }
+    </style>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #f4f7ff; color: #1e293b; overflow-x: hidden; }
-        .portal-header { background: #0d6efd; color: white; padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
-        .portal-header img { height: 52px; }
-        .portal-header .title-text { font-size: 1.25rem; font-weight: 700; margin-bottom: 0; }
-        .portal-header small { color: #dceafe; }
-        .profile-card { border: none; border-radius: 1rem; }
-        .profile-card .card-body { padding: 1.75rem; }
-        .stat-card { border: none; border-radius: 1rem; height: 100%; }
-        .stat-card .card-body { padding: 1.25rem; }
-        .list-group-item a { color: #0d6efd; }
-        .list-group-item a:hover { text-decoration: none; color: #0b5ed7; }
-        .bg-muted-soft { background: rgba(13, 110, 253, 0.08); }
+        :root {
+            --bg-body: #f4f7ff;
+            --text-main: #1e293b;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --muted-soft-bg: rgba(13, 110, 253, 0.05);
+            --muted-soft-border: rgba(13, 110, 253, 0.08);
+            --header-bg: linear-gradient(135deg, #0d6efd, #0a58ca);
+            --header-text: #ffffff;
+            --footer-bg: #0f172a;
+            --footer-text: #e2e8f0;
+            --input-bg: #ffffff;
+            --input-text: #1e293b;
+            --input-border: #ced4da;
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #0b0f19;
+            --text-main: #f1f5f9;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --muted-soft-bg: rgba(56, 189, 248, 0.08);
+            --muted-soft-border: rgba(56, 189, 248, 0.15);
+            --header-bg: linear-gradient(135deg, #1e293b, #0f172a);
+            --header-text: #f8fafc;
+            --footer-bg: #020617;
+            --footer-text: #94a3b8;
+            --input-bg: #0f172a;
+            --input-text: #f8fafc;
+            --input-border: #475569;
+        }
+
+        body {
+            background: var(--bg-body);
+            color: var(--text-main);
+            overflow-x: hidden;
+            font-family: 'Inter', 'Times New Roman', Times, serif, 'Nikosh';
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .bangla-text {
+            font-family: 'Nikosh', 'Times New Roman', Times, serif, sans-serif !important;
+        }
+
+        .english-text {
+            font-family: 'Times New Roman', Times, serif, 'Inter', sans-serif !important;
+        }
+
+        .portal-header {
+            background: var(--header-bg);
+            color: var(--header-text);
+            padding: 1.25rem 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+            box-shadow: 0 6px 25px rgba(13, 110, 253, 0.18);
+            border-radius: 0 0 1.5rem 1.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            transition: background 0.3s ease;
+        }
+        .portal-header img { height: 58px; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.15)); }
+        .portal-header .title-text { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0; }
+        .portal-header small { color: #ffd700; font-size: 1.05rem; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+
+        .theme-toggle-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            padding: 0.5rem 1rem;
+            border-radius: 50rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .theme-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .profile-card { border: none; border-radius: 1.25rem; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05); overflow: hidden; background: var(--card-bg); border: 1px solid var(--card-border); transition: background 0.3s ease, border 0.3s ease; }
+        .profile-card .card-body { padding: 2rem; }
+
+        .stat-card { border: none; border-radius: 1.25rem; height: 100%; box-shadow: 0 8px 25px rgba(15, 23, 42, 0.04); transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease; background: var(--card-bg); border: 1px solid var(--card-border); }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08); }
+        .stat-card .card-body { padding: 1.5rem; }
+
+        .list-group-item { background-color: transparent !important; color: var(--text-main) !important; }
+        .list-group-item a { color: #38bdf8; font-weight: 500; }
+        .list-group-item a:hover { text-decoration: none; color: #7dd3fc; }
+
+        .bg-muted-soft { background: var(--muted-soft-bg); border: 1px solid var(--muted-soft-border); transition: background 0.2s ease; }
+        .bg-muted-soft:hover { background: rgba(56, 189, 248, 0.12); }
+
         .print-block { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.96); color: #000; z-index: 9999; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
         .no-print { user-select: none; }
-        .card-header { border-radius: 1rem 1rem 0 0; }
+        .card-header { border-radius: 1.25rem 1.25rem 0 0 !important; font-weight: 700; letter-spacing: -0.01em; padding: 1rem 1.5rem; }
+
         .result-print-card {
-            overflow-x: auto;
             width: 100%;
-            background: #f8fafc;
-            border-radius: 24px;
-            padding: 1.5rem;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 1.25rem;
             margin: 0 auto !important;
+            overflow-x: auto !important;
+            box-sizing: border-box;
+            border: 1px solid var(--card-border);
         }
         .result-print-card .card {
-            min-width: 950px;
-            border: 1px solid #e9ecef;
-            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+            width: 100%;
+            min-width: 850px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 12px 35px rgba(15, 23, 42, 0.06);
+            max-height: none !important;
+            overflow: visible !important;
+            border-radius: 16px;
+            background: var(--card-bg);
+            color: var(--text-main);
         }
-        .nav-actions .btn { min-width: 140px; }
-        .toggle-header { cursor: pointer; }
-        .toggle-header .toggle-icon { transition: transform 0.2s ease; }
-        .collapse-content { max-height: 999px; overflow: hidden; transition: max-height 0.3s ease, opacity 0.25s ease; opacity: 1; }
-        .collapse-content.hide-content { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; }
-        .collapse-content.hide-content > * { opacity: 0; }
-        .admit-toggle { color: #0d6efd; background: none; border: none; width: 100%; text-align: left; padding: 0; }
-        .admit-toggle:hover { color: #0b5ed7; text-decoration: underline; }
+
+        .nav-actions .btn { min-width: 140px; border-radius: 0.75rem; font-weight: 600; padding: 0.65rem 1rem; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+        .toggle-header { cursor: pointer; user-select: none; }
+        .toggle-header .toggle-icon { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-weight: bold; font-size: 1.1rem; }
+        .collapse-content { max-height: 9999px; overflow: visible; transition: max-height 0.35s ease-in-out, opacity 0.3s ease-in-out, padding 0.3s ease; opacity: 1; }
+        .collapse-content.hide-content { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; overflow: hidden; margin: 0; }
+        .collapse-content.hide-content > * { opacity: 0; pointer-events: none; }
+
+        .admit-toggle { color: #38bdf8; background: none; border: none; width: 100%; text-align: left; padding: 0.5rem 0.75rem; border-radius: 0.5rem; transition: background 0.15s ease; }
+        .admit-toggle:hover { background: rgba(56, 189, 248, 0.1); color: #7dd3fc; text-decoration: none; }
         .admit-panel { transition: all 0.3s ease; }
-        .admit-preview { border: 1px solid #dee2e6; border-radius: 1rem; padding: 1rem; background: #fff; }
+        .admit-preview { border: 1px solid var(--card-border); border-radius: 1rem; padding: 1.25rem; background: var(--card-bg); box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
         .admit-preview .preview-header { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: space-between; }
         .admit-preview .preview-title { font-weight: 700; margin-bottom: 0.25rem; }
-        .admit-preview .preview-meta { font-size: 0.9rem; color: #495057; }
+        .admit-preview .preview-meta { font-size: 0.9rem; color: var(--text-main); }
         .admit-preview .preview-table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; }
         .admit-preview .preview-table th,
-        .admit-preview .preview-table td { border: 1px solid #ced4da; padding: 0.35rem 0.5rem; text-align: center; font-size: 0.9rem; }
-        .admit-preview .preview-table th { background: #e9ecef; }
-        .admit-preview .preview-notes { font-size: 0.85rem; color: #495057; margin-top: 0.75rem; }
+        .admit-preview .preview-table td { border: 1px solid var(--card-border); padding: 0.35rem 0.5rem; text-align: center; font-size: 0.9rem; }
+        .admit-preview .preview-table th { background: var(--muted-soft-bg); }
+        .admit-preview .preview-notes { font-size: 0.85rem; color: var(--text-main); margin-top: 0.75rem; }
         .admit-preview .preview-footer { display: flex; justify-content: space-between; gap: 1rem; margin-top: 0.75rem; font-size: 0.85rem; }
-        .student-portal-footer { background: #0f172a; color: #e2e8f0; border: 1px solid rgba(148, 163, 184, 0.25); width: 100%; box-sizing: border-box; }
-        .student-portal-footer .footer-title { color: #fff; font-size: 1.1rem; font-weight: 700; }
-        .student-portal-footer .footer-text { color: #cbd5e1; line-height: 1.65; }
-        .footer-contact-row { gap: 1rem; }
-        .footer-contact { display: inline-flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
-        .footer-link { color: #7dd3fc; text-decoration: underline; }
-        .footer-link:hover { color: #38bdf8; }
-        .footer-label { color: #94a3b8; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.08em; }
-        .footer-hotline { color: #38bdf8; font-size: 1.05rem; }
-        .footer-note { color: #94a3b8; font-size: 0.9rem; }
-        
-        /* Responsive adjustments for seamless fitting */
+
+        .student-portal-footer { background: var(--footer-bg); color: var(--footer-text); border: 1px solid rgba(148, 163, 184, 0.15); width: 100%; box-sizing: border-box; box-shadow: 0 -4px 25px rgba(15, 23, 42, 0.08); transition: background 0.3s ease; }
+        .student-portal-footer .footer-title { color: #ffffff; font-size: 1.15rem; font-weight: 700; letter-spacing: -0.01em; }
+        .student-portal-footer .footer-text { color: var(--footer-text); line-height: 1.65; font-size: 0.92rem; font-family: 'Times New Roman', Times, serif, 'Nikosh'; }
+        .footer-contact-row { gap: 1.25rem; }
+        .footer-contact { display: inline-flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; background: rgba(255, 255, 255, 0.04); padding: 0.5rem 0.85rem; border-radius: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.08); }
+        .footer-link { color: #38bdf8; text-decoration: none; font-weight: 600; font-family: 'Times New Roman', Times, serif; }
+        .footer-link:hover { color: #7dd3fc; text-decoration: underline; }
+        .footer-label { color: #94a3b8; text-transform: uppercase; font-size: 0.73rem; letter-spacing: 0.08em; font-weight: 700; font-family: 'Times New Roman', Times, serif; }
+        .footer-hotline { color: #38bdf8; font-size: 1.02rem; font-weight: 700; letter-spacing: 0.02em; font-family: 'Times New Roman', Times, serif; }
+
+        /* Form Overrides for Theme */
+        .form-control, .form-select {
+            background-color: var(--input-bg) !important;
+            color: var(--input-text) !important;
+            border-color: var(--input-border) !important;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: var(--input-bg) !important;
+            color: var(--input-text) !important;
+        }
+
+        /* Generic card overrides for dark mode readability */
+        [data-theme="dark"] .card:not(.portal-header):not(.student-portal-footer) {
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            border-color: var(--card-border);
+        }
+        [data-theme="dark"] .card-header.bg-white {
+            background-color: #1e293b !important;
+            color: #f1f5f9 !important;
+            border-color: #334155 !important;
+        }
+        [data-theme="dark"] .text-muted {
+            color: #94a3b8 !important;
+        }
+        [data-theme="dark"] .text-dark {
+            color: #f1f5f9 !important;
+        }
+
+        /* Universal Responsiveness & Layout Safety */
         img, .table, .card { max-width: 100%; }
-        .container-fluid { overflow-x: hidden; width: 100%; }
-        
+        .container-fluid { overflow-x: hidden; width: 100%; max-width: 1400px; margin: 0 auto; }
+
         @media (max-width: 991px) {
-            .portal-header { justify-content: center; text-align: center; }
-            .portal-header img { margin-bottom: 0.5rem; }
-            .portal-header .title-text { font-size: 1.1rem; }
+            .portal-header { justify-content: center; text-align: center; padding: 1rem; }
+            .portal-header img { margin-bottom: 0.25rem; }
+            .portal-header .title-text { font-size: 1.15rem; }
             .student-portal-footer { text-align: center; }
             .student-portal-footer .footer-contact-row { justify-content: center; }
+            .profile-card .card-body { padding: 1.25rem; }
         }
         @media print {
             body { visibility: hidden !important; }
@@ -90,68 +227,67 @@
     </div>
 </div>
 <div class="portal-header no-print">
-    <img src="{% static 'images/logo.png' %}" alt="Logo">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+        <img src="{% static 'images/logo.png' %}" alt="Logo">
+        <div>
+            <div class="title-text english-text">Student Portal</div>
+            <small class="bangla-text">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</small>
+        </div>
+    </div>
     <div>
-        <div class="title-text">Student Portal</div>
-        <small>খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</small>
+        <button type="button" class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
+            <span id="themeIcon">🌙</span> <span id="themeText" class="english-text">Dark Mode</span>
+        </button>
     </div>
 </div>
-<div class="container-fluid py-4 px-3 px-md-4">
+<div class="container-fluid py-3 py-md-4 px-3 px-md-4">
     <div class="row mb-3 align-items-center">
         <div class="col-md-6 mb-2 mb-md-0">
-            <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm">Back to Home</a>
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm px-3 py-2 fw-semibold rounded-pill shadow-sm english-text">&larr; Back to Home</a>
         </div>
-        <div class="col-md-6 text-md-end">
-            {% if prev_student_id %}
-                <a href="{% url 'student_profile' prev_student_id %}" class="btn btn-sm btn-outline-primary me-1">&larr; Prev</a>
-            {% endif %}
-            {% if next_student_id %}
-                <a href="{% url 'student_profile' next_student_id %}" class="btn btn-sm btn-outline-primary">Next &rarr;</a>
-            {% endif %}
-        </div>
-    </div>
+
 
     {% include 'includes/news_ticker.html' with student_tickers=student_tickers %}
 
-    <div class="card profile-card shadow-sm mb-4">
+    <div class="card profile-card mb-4">
         <div class="card-body">
             <div class="row g-4 align-items-center">
                 <div class="col-xl-2 col-lg-3 col-md-4 text-center">
                     {% if student.photo %}
-                        <img src="{{ student.photo.url }}" class="img-fluid rounded-circle border border-white shadow-sm" alt="{{ student.full_name }}" style="max-width: 150px; height: 150px; object-fit: cover;">
+                        <img src="{{ student.photo.url }}" class="img-fluid rounded-circle border border-3 border-white shadow" alt="{{ student.full_name }}" style="width: 140px; height: 140px; object-fit: cover;">
                     {% else %}
-                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 150px; height: 150px;">
-                            <span class="text-muted">No Photo</span>
+                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm border border-2 border-white" style="width: 140px; height: 140px;">
+                            <span class="text-muted fw-semibold small english-text">No Photo</span>
                         </div>
                     {% endif %}
                 </div>
                 <div class="col-xl-7 col-lg-6 col-md-8">
-                    <h2 class="mb-1 text-break">{{ student.full_name }}</h2>
-                    <p class="text-muted mb-3">Student ID: <span class="fw-semibold">{{ student.student_id }}</span></p>
+                    <h2 class="mb-1 fw-bold text-dark text-break english-text">{{ student.full_name }}</h2>
+                    <p class="text-muted mb-3 english-text">Student ID: <span class="fw-bold text-primary font-monospace">{{ student.student_id }}</span></p>
                     <div class="row g-2">
                         <div class="col-sm-4">
-                            <div class="bg-muted-soft rounded-3 p-3">
-                                <small class="text-uppercase text-secondary d-block">Class</small>
-                                <div class="fw-bold fs-5 text-truncate">{{ student.current_class }}</div>
+                            <div class="bg-muted-soft rounded-4 p-3 text-center text-sm-start">
+                                <small class="text-uppercase text-secondary fw-bold d-block english-text" style="font-size: 0.72rem; letter-spacing: 0.05em;">Class</small>
+                                <div class="fw-bold fs-5 text-truncate text-dark mt-1 english-text">{{ student.current_class }}</div>
                             </div>
                         </div>
                         <div class="col-sm-4">
-                            <div class="bg-muted-soft rounded-3 p-3">
-                                <small class="text-uppercase text-secondary d-block">Roll</small>
-                                <div class="fw-bold fs-5 text-truncate">{{ student.class_roll }}</div>
+                            <div class="bg-muted-soft rounded-4 p-3 text-center text-sm-start">
+                                <small class="text-uppercase text-secondary fw-bold d-block english-text" style="font-size: 0.72rem; letter-spacing: 0.05em;">Roll</small>
+                                <div class="fw-bold fs-5 text-truncate text-dark mt-1 english-text">{{ student.class_roll }}</div>
                             </div>
                         </div>
                         <div class="col-sm-4">
-                            <div class="bg-muted-soft rounded-3 p-3">
-                                <small class="text-uppercase text-secondary d-block">Shift</small>
-                                <div class="fw-bold fs-5 text-truncate">{{ student.shift }}</div>
+                            <div class="bg-muted-soft rounded-4 p-3 text-center text-sm-start">
+                                <small class="text-uppercase text-secondary fw-bold d-block english-text" style="font-size: 0.72rem; letter-spacing: 0.05em;">Shift</small>
+                                <div class="fw-bold fs-5 text-truncate text-dark mt-1 english-text">{{ student.shift }}</div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-3 col-lg-3 col-md-12 text-lg-end">
-                    <span class="badge bg-primary fs-6">Student Portal</span>
-                    <p class="text-muted mb-0 mt-2">Welcome to your profile dashboard.</p>
+                <div class="col-xl-3 col-lg-3 col-md-12 text-lg-end text-center">
+                    <span class="badge bg-primary bg-gradient px-3 py-2 rounded-pill shadow-sm fs-6 english-text">Student Portal</span>
+                    <p class="text-muted small mb-0 mt-2 english-text">Welcome to your profile dashboard.</p>
                 </div>
             </div>
         </div>
@@ -161,45 +297,45 @@
         <div class="col-xl-8">
             <div class="row g-4 mb-4">
                 <div class="col-md-6">
-                    <div class="card stat-card shadow-sm">
+                    <div class="card stat-card">
                         <div class="card-body">
-                            <h6 class="text-secondary text-uppercase mb-3">Parents</h6>
-                            <p class="mb-2 text-break"><strong>Father:</strong> {{ student.father_name }}</p>
-                            <p class="mb-0 text-break"><strong>Mother:</strong> {{ student.mother_name }}</p>
+                            <h6 class="text-secondary text-uppercase fw-bold mb-3 english-text" style="font-size: 0.78rem; letter-spacing: 0.06em;">Parents Information</h6>
+                            <p class="mb-2 text-break english-text"><strong>Father:</strong> <span class="text-dark">{{ student.father_name }}</span></p>
+                            <p class="mb-0 text-break english-text"><strong>Mother:</strong> <span class="text-dark">{{ student.mother_name }}</span></p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="card stat-card shadow-sm">
+                    <div class="card stat-card">
                         <div class="card-body">
-                            <h6 class="text-secondary text-uppercase mb-3">Personal Info</h6>
-                            <p class="mb-2 text-break"><strong>Gender:</strong> {{ student.gender }}</p>
-                            <p class="mb-2 text-break"><strong>DOB:</strong> {{ student.date_of_birth }}</p>
-                            <p class="mb-0 text-break"><strong>Religion:</strong> {{ student.religion }}</p>
+                            <h6 class="text-secondary text-uppercase fw-bold mb-3 english-text" style="font-size: 0.78rem; letter-spacing: 0.06em;">Personal Details</h6>
+                            <p class="mb-2 text-break english-text"><strong>Gender:</strong> <span class="text-dark">{{ student.gender }}</span></p>
+                            <p class="mb-2 text-break english-text"><strong>DOB:</strong> <span class="text-dark">{{ student.date_of_birth }}</span></p>
+                            <p class="mb-0 text-break english-text"><strong>Religion:</strong> <span class="text-dark">{{ student.religion }}</span></p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="card shadow-sm border-0 mb-4">
+            <div class="card shadow-sm border-0 mb-4 rounded-4 overflow-hidden">
                 <div class="card-header bg-white border-bottom-0 d-flex justify-content-between align-items-center px-4 py-3">
                     <div>
-                        <h5 class="mb-0">Contact & class details</h5>
-                        <small class="text-muted">Update your phone number directly from your profile.</small>
+                        <h5 class="mb-0 fw-bold text-dark english-text">Contact & Class Details</h5>
+                        <small class="text-muted english-text">Update your phone number directly from your profile.</small>
                     </div>
                 </div>
                 <div class="card-body px-4 pb-4">
                     <div class="row g-3 mb-3">
                         <div class="col-sm-6">
-                            <div class="bg-muted-soft rounded-3 p-3 h-100">
-                                <small class="text-uppercase text-secondary d-block">Group</small>
-                                <div class="fw-semibold fs-5 text-truncate">{{ student.group|default:'General' }}</div>
+                            <div class="bg-muted-soft rounded-4 p-3 h-100">
+                                <small class="text-uppercase text-secondary fw-bold d-block english-text" style="font-size: 0.72rem; letter-spacing: 0.05em;">Group</small>
+                                <div class="fw-semibold fs-5 text-dark text-truncate mt-1 english-text">{{ student.group|default:'General' }}</div>
                             </div>
                         </div>
                         <div class="col-sm-6">
-                            <div class="bg-muted-soft rounded-3 p-3 h-100">
-                                <small class="text-uppercase text-secondary d-block">Class Level</small>
-                                <div class="fw-semibold fs-5 text-truncate">{{ student.current_class }}</div>
+                            <div class="bg-muted-soft rounded-4 p-3 h-100">
+                                <small class="text-uppercase text-secondary fw-bold d-block english-text" style="font-size: 0.72rem; letter-spacing: 0.05em;">Class Level</small>
+                                <div class="fw-semibold fs-5 text-dark text-truncate mt-1 english-text">{{ student.current_class }}</div>
                             </div>
                         </div>
                     </div>
@@ -208,18 +344,18 @@
                         <form method="post" class="row g-3 align-items-end">
                             {% csrf_token %}
                             <div class="col-lg-8">
-                                <label class="form-label">Mobile Number</label>
-                                <input type="text" name="mobile_num" class="form-control form-control-lg" value="{{ student.mobile_num }}" required>
+                                <label class="form-label fw-semibold text-secondary small english-text">Mobile Number</label>
+                                <input type="text" name="mobile_num" class="form-control form-control-lg rounded-3 shadow-sm" value="{{ student.mobile_num }}" required>
                             </div>
                             <div class="col-lg-4 d-grid">
-                                <button type="submit" class="btn btn-primary btn-lg">Update Phone</button>
+                                <button type="submit" class="btn btn-primary btn-lg rounded-3 shadow-sm fw-semibold english-text">Update Phone</button>
                             </div>
                         </form>
                     {% else %}
                         <div class="row g-3">
                             <div class="col-12">
-                                <p class="text-muted mb-1">Mobile Number</p>
-                                <p class="fs-5 mb-0 text-break">{{ student.mobile_num }}</p>
+                                <p class="text-muted small mb-1 fw-semibold text-uppercase english-text">Mobile Number</p>
+                                <p class="fs-5 mb-0 text-dark font-monospace fw-bold text-break english-text">{{ student.mobile_num }}</p>
                             </div>
                         </div>
                     {% endif %}
@@ -227,25 +363,25 @@
             </div>
 
             {% if can_view_sensitive %}
-                <div class="card border-danger border-1 shadow-sm mb-4">
+                <div class="card border-danger border-1 shadow-sm mb-4 rounded-4 overflow-hidden">
                     <div class="card-body px-4 py-3">
-                        <h5 class="text-danger mb-3">Sensitive / Login Info</h5>
-                        <p class="mb-2 text-break"><strong>Username:</strong> {% if student.user %}{{ student.user.username }}{% else %}<span class="text-danger">Not generated</span>{% endif %}</p>
-                        <p class="mb-0 text-break"><strong>Auto Generated Password:</strong> {% if student.generated_password %}{{ student.generated_password }}{% else %}<span class="text-danger">Not available</span>{% endif %}</p>
+                        <h5 class="text-danger mb-3 fw-bold english-text">Sensitive / Login Info</h5>
+                        <p class="mb-2 text-break english-text"><strong>Username:</strong> {% if student.user %}<span class="font-monospace fw-semibold">{{ student.user.username }}</span>{% else %}<span class="text-danger">Not generated</span>{% endif %}</p>
+                        <p class="mb-0 text-break english-text"><strong>Auto Generated Password:</strong> {% if student.generated_password %}<span class="font-monospace fw-semibold text-secondary">{{ student.generated_password }}</span>{% else %}<span class="text-danger">Not available</span>{% endif %}</p>
                     </div>
                 </div>
             {% endif %}
 
-            <div class="card shadow-sm border-0 mb-4">
+            <div class="card shadow-sm border-0 mb-4 rounded-4 overflow-hidden">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center toggle-header" data-target="resultCardContent">
-                    <span>Result Card</span>
+                    <span class="fw-bold english-text">Result Card</span>
                     <span class="toggle-icon">▾</span>
                 </div>
-                <div id="resultCardContent" class="card-body collapse-content show-content">
-                    <form method="get" class="mb-3">
-                        <div class="input-group input-group-sm">
-                            <label class="input-group-text bg-white border-primary text-primary" for="examSelect">Exam</label>
-                            <select id="examSelect" name="exam_option" class="form-select" onchange="submitExamSelection(this)">
+                <div id="resultCardContent" class="card-body collapse-content show-content p-4" style="overflow: visible !important;">
+                    <form method="get" class="mb-4">
+                        <div class="input-group input-group-md shadow-sm rounded-3 overflow-hidden">
+                            <label class="input-group-text border-primary text-primary fw-semibold english-text" for="examSelect" style="background: var(--card-bg);">Exam</label>
+                            <select id="examSelect" name="exam_option" class="form-select border-primary-subtle english-text" onchange="submitExamSelection(this)">
                                 {% for option in exam_options %}
                                     <option value="{{ option.exam_type }}||{{ option.exam_year }}" {% if option.exam_type == selected_exam and option.exam_year|stringformat:'s' == selected_year|stringformat:'s' %}selected{% endif %}>
                                         {{ option.label }}
@@ -255,33 +391,33 @@
                         </div>
                     </form>
                     {% if result_data %}
-                        <div class="result-print-card">
+                        <div class="result-print-card" style="overflow: visible !important;">
                             {% include 'myteacher/result_card_display.html' %}
                         </div>
                     {% elif selected_exam and selected_year and result_published == False %}
-                        <div class="alert alert-warning mb-0 py-3">
-                            <strong>Result not published yet.</strong> এই পরীক্ষার ফলাফল এখনও প্রকাশিত হয়নি।
+                        <div class="alert alert-warning mb-0 py-3 rounded-3 shadow-sm border-0">
+                            <strong class="english-text">Result not published yet.</strong> <span class="bangla-text">এই পরীক্ষার ফলাফল এখনও প্রকাশিত হয়নি।</span>
                         </div>
                     {% else %}
-                        <p class="text-muted mb-0">No result card available for this student.</p>
+                        <p class="text-muted mb-0 py-2 english-text">No result card available for this student.</p>
                     {% endif %}
                 </div>
             </div>
         </div>
 
         <div class="col-xl-4">
-            <div class="card shadow-sm border-0 mb-4">
+            <div class="card shadow-sm border-0 mb-4 rounded-4 overflow-hidden">
                 <div class="card-header bg-success text-white d-flex justify-content-between align-items-center toggle-header" data-target="admitCardContent">
-                    <span>Admit Cards</span>
+                    <span class="fw-bold english-text">Admit Cards</span>
                     <span class="toggle-icon">▾</span>
                 </div>
-                <div id="admitCardContent" class="card-body collapse-content show-content">
+                <div id="admitCardContent" class="card-body collapse-content show-content p-4">
                     {% if admit_cards %}
                         <ul class="list-group list-group-flush">
                             {% for admit in admit_cards %}
-                                <li class="list-group-item px-0 py-2 border-0">
-                                    <button type="button" class="btn btn-link text-start p-0 admit-toggle text-break" data-target="admitPanel{{ admit.pk }}">
-                                        <span class="fw-semibold">{{ admit.display_name }}</span>
+                                <li class="list-group-item px-0 py-2 border-0 bg-transparent">
+                                    <button type="button" class="btn btn-link text-start p-2 admit-toggle text-break fw-semibold english-text" data-target="admitPanel{{ admit.pk }}">
+                                        <span>📄 {{ admit.display_name }}</span>
                                     </button>
                                 </li>
                             {% endfor %}
@@ -296,22 +432,22 @@
                             {% endfor %}
                         </div>
                     {% else %}
-                        <p class="text-muted mb-0">No admit cards enabled for this class.</p>
+                        <p class="text-muted mb-0 py-2 english-text">No admit cards enabled for this class.</p>
                     {% endif %}
                 </div>
             </div>
 
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-body">
-                    <h5 class="mb-3">Quick Actions</h5>
-                    <p class="text-muted">Navigate easily between students and return to the main site.</p>
+            <div class="card shadow-sm border-0 mb-4 rounded-4 overflow-hidden">
+                <div class="card-body p-4">
+                    <h5 class="mb-2 fw-bold text-dark english-text">Quick Actions</h5>
+                    <p class="text-muted small mb-3 english-text">Navigate easily between students and return to the main site.</p>
                     <div class="d-grid gap-2 nav-actions">
-                        <a href="{% url 'home' %}" class="btn btn-outline-secondary">Back to Home</a>
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary shadow-sm english-text">Back to Home</a>
                         {% if prev_student_id %}
-                            <a href="{% url 'student_profile' prev_student_id %}" class="btn btn-outline-primary">Previous Student</a>
+                            <a href="{% url 'student_profile' prev_student_id %}" class="btn btn-outline-primary shadow-sm english-text">Previous Student</a>
                         {% endif %}
                         {% if next_student_id %}
-                            <a href="{% url 'student_profile' next_student_id %}" class="btn btn-outline-primary">Next Student</a>
+                            <a href="{% url 'student_profile' next_student_id %}" class="btn btn-outline-primary shadow-sm english-text">Next Student</a>
                         {% endif %}
                     </div>
                 </div>
@@ -319,25 +455,25 @@
         </div>
     </div>
 
-    <footer class="student-portal-footer mt-4 py-4 px-3 rounded-4 shadow-sm">
-        <div class="row g-3 align-items-center justify-content-between">
+    <footer class="student-portal-footer mt-4 py-4 px-3 px-md-4 rounded-4">
+        <div class="row g-4 align-items-center justify-content-between">
             <div class="col-12 col-md-6">
-                <h5 class="footer-title mb-2">Student Portal Support</h5>
-                <p class="footer-text mb-1">For any issue, contact your class teacher first. If further help is needed, reach out to the headmaster or developer.</p>
-                <p class="footer-text mb-0">Office hours: Sunday to Thursday, 9:00 AM – 4:00 PM.</p>
+                <h5 class="footer-title mb-2 english-text">Student Portal Support</h5>
+                <p class="footer-text mb-1 english-text">For any issue, contact your class teacher first. If further help is needed, reach out to the headmaster or developer.</p>
+                <p class="footer-text mb-0 english-text">Office hours: Sunday to Thursday, 9:00 AM – 4:00 PM.</p>
             </div>
             <div class="col-12 col-md-6">
                 <div class="footer-contact-row d-flex flex-column flex-sm-row flex-wrap justify-content-md-end gap-3">
                     <div class="footer-contact">
-                        <span class="footer-label">Headmaster:</span>
+                        <span class="footer-label english-text">Headmaster:</span>
                         <strong class="footer-hotline">01714 939122</strong>
                     </div>
                     <div class="footer-contact">
-                        <span class="footer-label">Developer:</span>
+                        <span class="footer-label english-text">Developer:</span>
                         <a href="https://www.facebook.com/md.imtiaz.sarder" target="_blank" rel="noopener" class="footer-link">Md. Imtiaz Sarder</a>
                     </div>
                     <div class="footer-contact">
-                        <span class="footer-label">WhatsApp:</span>
+                        <span class="footer-label english-text">WhatsApp:</span>
                         <strong class="footer-hotline">01736 712955</strong>
                     </div>
                 </div>
@@ -347,6 +483,36 @@
 </div>
 
 <script>
+    function toggleTheme() {
+        var htmlEl = document.documentElement;
+        var themeIcon = document.getElementById('themeIcon');
+        var themeText = document.getElementById('themeText');
+
+        if (htmlEl.getAttribute('data-theme') === 'dark') {
+            htmlEl.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'light');
+            themeIcon.textContent = '🌙';
+            themeText.textContent = 'Dark Mode';
+        } else {
+            htmlEl.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+            themeIcon.textContent = '☀️';
+            themeText.textContent = 'Light Mode';
+        }
+    }
+
+    // Load saved theme preference
+    (function() {
+        var savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            var themeIcon = document.getElementById('themeIcon');
+            var themeText = document.getElementById('themeText');
+            if (themeIcon) themeIcon.textContent = '☀️';
+            if (themeText) themeText.textContent = 'Light Mode';
+        }
+    })();
+
     document.addEventListener('keydown', function(event) {
         if ((event.ctrlKey || event.metaKey) && (event.key === 'p' || event.key === 'P')) {
             event.preventDefault();
