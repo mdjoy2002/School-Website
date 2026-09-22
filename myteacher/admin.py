@@ -1,9 +1,5 @@
 from django.contrib import admin
-<<<<<<< HEAD
 from .models import Subject, Mark, Teacher, TeacherSubjectAssignment, ExamRoutine, Testimonial
-=======
-from .models import Subject, Mark, Teacher, TeacherSubjectAssignment, ExamRoutine
->>>>>>> 7806ec946d8f6663dad1e65accab3da711aeebab
 
 # Subject Admin
 @admin.register(Subject)
@@ -64,7 +60,6 @@ class ExamRoutineAdmin(admin.ModelAdmin):
     list_display = ('class_name', 'group_name', 'subject_name', 'exam_date', 'exam_type')
     list_filter = ('class_name', 'exam_type', 'exam_date')
     search_fields = ('subject_name', 'class_name')
-<<<<<<< HEAD
 
 
 @admin.register(Testimonial)
@@ -72,5 +67,3 @@ class TestimonialAdmin(admin.ModelAdmin):
     list_display = ('serial_number', 'name', 'student', 'class_level', 'status', 'updated_at')
     list_filter = ('class_level', 'status', 'gender')
     search_fields = ('name', 'student__full_name', 'student__student_id', 'registration')
-=======
->>>>>>> 7806ec946d8f6663dad1e65accab3da711aeebab

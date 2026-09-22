@@ -625,13 +625,6 @@ def testimonial_pdf_page(request, token):
         },
     }
     return render(request, 'myteacher/testimonial.html', context)
-=======
-# testimonial template view
-
-
-# class update view 
-
-
 def manage_routine_view(request):
     teacher = request.user.teacher
     is_head_teacher = is_head_or_admin(teacher, request.user)

@@ -20,12 +20,9 @@ urlpatterns = [
     path('seat-plan/generate/', views.generate_seat_plan, name='generate_seat_plan'),
     path('student-results/', views.student_results_view, name='student_results'),
     path('student-results/pdf/<int:student_id>/', views.student_results_pdf_view, name='student_result_pdf'),
-<<<<<<< HEAD
     path('testimonial/', views.testimonial_view, name='testimonial'),
     path('testimonial/pdf/', views.testimonial_pdf_view, name='testimonial_pdf'),
     path('testimonial/pdf-page/<str:token>/', views.testimonial_pdf_page, name='testimonial_pdf_page'),
-=======
->>>>>>> 7806ec946d8f6663dad1e65accab3da711aeebab
     path('delete-routine/<int:id>/', views.delete_routine, name='delete_routine'),
     path('copy-routine/<int:from_id>/<str:target_class>/', views.copy_routine, name='copy_routine'),
     path('generate-admit/', views.generate_admit_card, name='generate_admit_card'),
