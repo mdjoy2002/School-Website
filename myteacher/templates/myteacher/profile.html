@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .profile-card { 
+        border-radius: 25px; 
+        border: none; 
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+        transition: transform 0.3s ease;
+        background: #ffffff;
+    }
+    .profile-card:hover { transform: translateY(-5px); }
+    
+    .profile-img { 
+        border: 6px solid #f8f9fa; 
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+    }
+    
+    .info-item {
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .info-item:last-child { border-bottom: none; }
+    
+    .btn-custom {
+        border-radius: 50px;
+        padding: 10px 30px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-8 col-sm-12">
+            <div class="card profile-card p-4 text-center">
+                <img src="{{ teacher.teacher_img.url }}" 
+                     class="rounded-circle mb-3 mx-auto profile-img" 
+                     style="width: 150px; height: 150px; object-fit: cover;">
+                
+                <h3 class="fw-bold mb-1">{{ teacher.teacher_name }}</h3>
+                <p class="text-primary fw-bold text-uppercase small">{{ teacher.designation }}</p>
+                
+                <hr class="my-3 opacity-25">
+                
+                <div class="text-start px-3">
+                    <div class="info-item d-flex justify-content-between">
+                        <span class="text-muted"><i class="fas fa-id-badge me-2"></i>Teacher ID:</span>
+                        <span class="fw-semibold">{{ teacher.teacher_id }}</span>
+                    </div>
+                    <div class="info-item d-flex justify-content-between">
+                        <span class="text-muted"><i class="fas fa-envelope me-2"></i>Email:</span>
+                        <span class="fw-semibold">{{ teacher.email }}</span>
+                    </div>
+                    <div class="info-item d-flex justify-content-between">
+                        <span class="text-muted"><i class="fas fa-phone-alt me-2"></i>Mobile:</span>
+                        <span class="fw-semibold">{{ teacher.mobile }}</span>
+                    </div>
+                    <div class="info-item d-flex justify-content-between">
+                        <span class="text-muted"><i class="fas fa-chalkboard me-2"></i>Class Teacher:</span>
+                        <span class="fw-semibold">
+                            {% if teacher.is_class_teacher %}
+                                <span class="badge bg-success rounded-pill">Class {{ teacher.class_teacher_of }}</span>
+                            {% else %}
+                                <span class="text-muted">None</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <a href="{% url 'myteacher:dashboard' %}" class="btn btn-outline-primary btn-custom shadow-sm">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

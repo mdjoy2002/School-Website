@@ -1,0 +1,1809 @@
+from itertools import groupby
+from django.contrib.auth.decorators import login_required
+from django.conf import settings
+from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
+from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Student, TeacherSubjectAssignment, Mark, Subject, ExamRoutine, TeacherClassAssignment, Teacher, Testimonial
+from students.models import StudentAdmitCard, StudentResultPublication
+from django.http import HttpResponse, HttpResponseForbidden
+from django.template.loader import get_template, render_to_string
+from django.urls import reverse
+from django.db.models import Max, Q
+from decimal import Decimal, InvalidOperation
+from io import BytesIO
+import datetime
+import os
+import shutil
+import subprocess
+import tempfile
+import threading
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+
+try:
+    from xhtml2pdf import pisa
+except ImportError:  # pragma: no cover - environment fallback
+    pisa = None
+
+
+def calculate_grade_and_gpa(score):
+    """Return (grade_str, gpa_decimal) for a numeric score (0-100).
+
+    Uses Decimal for gpa to avoid floating point issues.
+    """
+    try:
+        # Accept Decimal, int, float
+        score = float(score)
+    except (TypeError, ValueError):
+        return '-', Decimal('0.00')
+
+    if score >= 80:
+        return 'A+', Decimal('5.00')
+    if score >= 70:
+        return 'A', Decimal('4.00')
+    if score >= 60:
+        return 'A-', Decimal('3.50')
+    if score >= 50:
+        return 'B', Decimal('3.00')
+    if score >= 40:
+        return 'C', Decimal('2.00')
+    if score >= 33:
+        return 'D', Decimal('1.00')
+    return 'F', Decimal('0.00')
+
+
+def calculate_grade_from_gpa(gpa):
+    """Map a Decimal gpa to final grade string."""
+    try:
+        gpa_dec = Decimal(str(gpa))
+    except Exception:
+        return 'F'
+
+    if gpa_dec >= Decimal('5.00'):
+        return 'A+'
+    if gpa_dec >= Decimal('4.00'):
+        return 'A'
+    if gpa_dec >= Decimal('3.50'):
+        return 'A-'
+    if gpa_dec >= Decimal('3.00'):
+        return 'B'
+    if gpa_dec >= Decimal('2.00'):
+        return 'C'
+    if gpa_dec >= Decimal('1.00'):
+        return 'D'
+    return 'F'
+
+
+CLASS_PROMOTION_MAP = {
+    '6': '7',
+    '7': '8',
+    '8': '9',
+    '9': '10',
+}
+
+
+@login_required
+def home(request):
+    # শিক্ষক লগইন করা থাকলে তাকে ড্যাশবোর্ডে পাঠান
+    return redirect('myteacher:dashboard') 
+@login_required
+def teacher_profile(request):
+    teacher = request.user.teacher
+    return render(request, 'myteacher/profile.html', {'teacher': teacher})
+
+@login_required
+def dashboard_view(request):
+    teacher = request.user.teacher
+    is_head_teacher = is_head_or_admin(teacher, request.user)
+
+    # Get all assignments for this teacher (subject-level class assignments for view only)
+    assignments = TeacherSubjectAssignment.objects.filter(teacher=teacher)
+    class_assign_qs = TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)
+    subj_class_qs = TeacherSubjectAssignment.objects.filter(teacher=teacher).values_list('subject__class_level', flat=True)
+    assigned_classes = sorted(set(list(class_assign_qs) + list(subj_class_qs)), key=lambda x: int(x))
+
+    # Determine dashboard student list
+    class_students = None
+    if is_head_teacher:
+        class_students = Student.objects.all().order_by('current_class', 'class_roll')
+    elif teacher.is_class_teacher and teacher.class_teacher_of:
+        class_students = Student.objects.filter(current_class=teacher.class_teacher_of).order_by('class_roll')
+    elif assigned_classes:
+        class_students = Student.objects.filter(current_class__in=assigned_classes).order_by('current_class', 'class_roll')
+
+    return render(request, 'myteacher/dashboard.html', {
+        'teacher': teacher,
+        'assignments': assignments,
+        'class_students': class_students,
+        'assigned_classes': assigned_classes,
+        'can_manage_routine': teacher.is_class_teacher or is_head_teacher,
+        'is_head_teacher': is_head_teacher,
+    })
+
+@login_required
+def mark_entry_view(request):
+    teacher = request.user.teacher
+    assignments = TeacherSubjectAssignment.objects.filter(teacher=teacher)
+    
+    # Get assigned classes for this teacher
+    assigned_classes = list(set(list(TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)) + list(TeacherSubjectAssignment.objects.filter(teacher=teacher).values_list('subject__class_level', flat=True))))
+    
+    selected_class = request.GET.get('class_level')
+    selected_subject = request.GET.get('subject_id')
+    selected_exam = request.GET.get('exam_type')
+    selected_year = request.GET.get('exam_year') or str(datetime.date.today().year)
+    exam_years = [str(year) for year in range(datetime.date.today().year - 3, datetime.date.today().year + 2)]
+    
+    students = None
+    selected_subject_obj = None
+    
+    # Validate selected class is assigned to teacher
+    if selected_class and selected_class not in assigned_classes:
+        return HttpResponseForbidden("You are not authorized to access this class.")
+
+    if selected_class and selected_subject and selected_exam and selected_year:
+        assignment = assignments.filter(subject_id=selected_subject, subject__class_level=selected_class).first()
+        if not assignment:
+            return HttpResponseForbidden("You are not authorized to enter marks for this subject/class.")
+
+        selected_subject_obj = assignment.subject
+        if selected_subject_obj.is_religion_based:
+            students = Student.objects.filter(
+                current_class=selected_class,
+                religion=selected_subject_obj.effective_religion,
+            ).order_by('class_roll')
+        else:
+            students = Student.objects.filter(current_class=selected_class).order_by('class_roll')
+        subject_full_mark = selected_subject_obj.full_mark_value
+        
+        for student in students:
+            student.mark = Mark.objects.filter(
+                student=student, 
+                subject=selected_subject_obj,
+                exam_type=selected_exam,
+                exam_year=selected_year,
+            ).first()
+            if student.mark:
+                student.total_mark = student.mark.total_mark
+                percentage = (student.total_mark / subject_full_mark * Decimal('100.00')) if subject_full_mark else Decimal('0.00')
+                student.grade, student.gpa = calculate_grade_and_gpa(percentage)
+            else:
+                student.total_mark = Decimal('0.00')
+                student.grade, student.gpa = calculate_grade_and_gpa(0)
+
+    if request.method == 'POST':
+        subject_id = request.POST.get('subject_id')
+        s_class = request.POST.get('class_level')
+        exam_type = request.POST.get('exam_type')
+        exam_year = request.POST.get('exam_year') or str(datetime.date.today().year)
+        
+        # Validate class is assigned to teacher
+        if s_class not in assigned_classes:
+            return HttpResponseForbidden("Unauthorized access!")
+        
+        assignment = assignments.filter(subject_id=subject_id, subject__class_level=s_class).first()
+        if not assignment:
+            return HttpResponseForbidden("Unauthorized access!")
+        selected_subject_obj = assignment.subject
+
+        students_to_mark = Student.objects.filter(current_class=s_class)
+        if selected_subject_obj.is_religion_based:
+            students_to_mark = students_to_mark.filter(religion=selected_subject_obj.effective_religion)
+
+        subject_full_mark = selected_subject_obj.full_mark_value or Decimal('0.00')
+        parsed_marks = []
+        for student in students_to_mark:
+            obj = request.POST.get(f'obj_{student.id}', 0) or 0
+            sub = request.POST.get(f'sub_{student.id}', 0) or 0
+            ct = request.POST.get(f'ct_{student.id}', 0) or 0
+            prac = request.POST.get(f'prac_{student.id}', 0) or 0
+
+            try:
+                obj = Decimal(obj)
+            except (TypeError, ValueError, InvalidOperation):
+                obj = Decimal('0.00')
+            try:
+                sub = Decimal(sub)
+            except (TypeError, ValueError, InvalidOperation):
+                sub = Decimal('0.00')
+            try:
+                ct = Decimal(ct)
+            except (TypeError, ValueError, InvalidOperation):
+                ct = Decimal('0.00')
+            try:
+                prac = Decimal(prac)
+            except (TypeError, ValueError, InvalidOperation):
+                prac = Decimal('0.00')
+
+            total_mark = obj + sub + ct + prac
+            if (
+                obj > subject_full_mark or
+                sub > subject_full_mark or
+                ct > subject_full_mark or
+                (selected_subject_obj.has_practical and prac > subject_full_mark) or
+                total_mark > subject_full_mark
+            ):
+                messages.error(request, f'সর্বোচ্চ {subject_full_mark} নম্বরের বেশি বা মোট নম্বর {subject_full_mark} এর বেশি দেওয়া যাবে না।')
+                return redirect(f"{url}?class_level={s_class}&subject_id={subject_id}&exam_type={exam_type}&exam_year={exam_year}")
+
+            parsed_marks.append((student, obj, sub, ct, prac))
+
+        for student, obj, sub, ct, prac in parsed_marks:
+            Mark.objects.update_or_create(
+                student=student,
+                subject_id=subject_id,
+                exam_type=exam_type,
+                exam_year=exam_year,
+                defaults={
+                    'objective_mark': obj,
+                    'subjective_mark': sub,
+                    'class_test_mark': ct,
+                    'practical_mark': prac,
+                    'exam_year': exam_year,
+                }
+            )
+
+        if 'final_submit' in request.POST:
+            publication, created = StudentResultPublication.objects.get_or_create(
+                class_level=s_class,
+                exam_type=exam_type,
+                exam_year=exam_year,
+                defaults={'is_published': False}
+            )
+            if publication.is_published:
+                publication.is_published = False
+                publication.save(update_fields=['is_published', 'updated_at'])
+            messages.success(request, 'Final Submit সম্পন্ন হয়েছে। মার্কগুলো ফলাফল কার্ডে সংরক্ষিত হয়েছে। প্রকাশের দায়িত্ব Headmaster-এর Publish/Unpublish বোতামে থাকবে।')
+        elif 'save_draft' in request.POST:
+            publication, created = StudentResultPublication.objects.get_or_create(
+                class_level=s_class,
+                exam_type=exam_type,
+                exam_year=exam_year,
+                defaults={'is_published': False}
+            )
+            if publication.is_published:
+                publication.is_published = False
+                publication.save(update_fields=['is_published', 'updated_at'])
+            messages.info(request, 'Draft হিসেবে সংরক্ষণ করা হয়েছে। পরে আবার ঢুকে সম্পাদনা করতে পারবেন।')
+        elif 'unpublish' in request.POST:
+            publication, created = StudentResultPublication.objects.get_or_create(
+                class_level=s_class,
+                exam_type=exam_type,
+                exam_year=exam_year,
+                defaults={'is_published': False}
+            )
+            if publication.is_published:
+                publication.is_published = False
+                publication.save(update_fields=['is_published', 'updated_at'])
+            messages.warning(request, 'ফলাফল বর্তমানে অপ্রকাশিত অবস্থায় ফিরে গেছে।')
+
+        url = reverse('myteacher:mark_entry')
+        return redirect(f"{url}?class_level={s_class}&subject_id={subject_id}&exam_type={exam_type}&exam_year={exam_year}")
+
+    publication = None
+    result_published = False
+    if selected_class and selected_subject and selected_exam and selected_year:
+        publication = StudentResultPublication.objects.filter(
+            class_level=selected_class,
+            exam_type=selected_exam,
+            exam_year=selected_year
+        ).first()
+        result_published = publication.is_published if publication else False
+
+    return render(request, 'myteacher/mark_entry.html', {
+        'assignments': assignments,
+        'assigned_classes': list(assigned_classes),
+        'selected_class': selected_class,
+        'selected_subject': selected_subject,
+        'selected_exam': selected_exam,
+        'selected_year': selected_year,
+        'exam_years': exam_years,
+        'selected_subject_obj': selected_subject_obj,
+        'students': students,
+        'result_publication': publication,
+        'result_published': result_published,
+    })
+
+@login_required
+def mark_entry_history_view(request):
+    teacher = request.user.teacher
+    assignments = TeacherSubjectAssignment.objects.filter(teacher=teacher)
+    assigned_classes = list(set(list(TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)) + list(TeacherSubjectAssignment.objects.filter(teacher=teacher).values_list('subject__class_level', flat=True))))
+
+    selected_class = request.GET.get('class_level')
+    selected_subject = request.GET.get('subject_id')
+    selected_exam = request.GET.get('exam_type')
+    selected_year = request.GET.get('exam_year')
+
+    marks = Mark.objects.none()
+    selected_subject_obj = None
+
+    exam_years = sorted(set(Mark.objects.values_list('exam_year', flat=True)), reverse=True)
+
+    if selected_class:
+        if selected_class not in assigned_classes:
+            return HttpResponseForbidden("You are not authorized to access this class.")
+
+        marks = Mark.objects.filter(student__current_class=selected_class)
+
+        if selected_subject:
+            selected_subject_obj = get_object_or_404(Subject, id=selected_subject)
+            marks = marks.filter(subject=selected_subject_obj)
+
+        if selected_exam:
+            marks = marks.filter(exam_type=selected_exam)
+
+        if selected_year:
+            marks = marks.filter(exam_year=selected_year)
+
+        marks = marks.select_related('student', 'subject').order_by('student__class_roll')
+
+        for mark in marks:
+            full_mark = mark.subject.full_mark_value or 100
+            percentage = (mark.total_mark / full_mark * Decimal('100.00')) if full_mark else Decimal('0.00')
+            mark.grade, mark.gpa = calculate_grade_and_gpa(percentage)
+
+    return render(request, 'myteacher/mark_entry_history.html', {
+        'assignments': assignments,
+        'assigned_classes': list(assigned_classes),
+        'selected_class': selected_class,
+        'selected_subject': selected_subject,
+        'selected_exam': selected_exam,
+        'selected_year': selected_year,
+        'selected_subject_obj': selected_subject_obj,
+        'exam_years': exam_years,
+        'marks': marks,
+    })
+
+# mark show view and print button
+
+@login_required
+def testimonial_view(request):
+    teacher = getattr(request.user, 'teacher', None)
+    if not request.user.is_superuser and (not teacher or not is_head_or_admin(teacher, request.user)):
+        return HttpResponseForbidden("শুধুমাত্র Headmaster বা Admin এই পেজ ব্যবহার করতে পারবেন।")
+
+    query = request.GET.get('q', '').strip()
+    students = Student.objects.none()
+    if query:
+        students = Student.objects.filter(
+            Q(full_name__icontains=query) |
+            Q(student_id__icontains=query) |
+            Q(class_roll__icontains=query)
+        ).order_by('current_class', 'class_roll')[:25]
+
+    selected_student = None
+    student_id = request.GET.get('student_id') or request.POST.get('student_id')
+    if student_id:
+        selected_student = get_object_or_404(Student, pk=student_id)
+
+    saved_testimonial = Testimonial.objects.filter(student=selected_student).first() if selected_student else None
+
+    values = {
+        'serial_number': saved_testimonial.serial_number if saved_testimonial else '',
+        'generated_date': saved_testimonial.generated_date.strftime('%d/%m/%Y') if saved_testimonial and saved_testimonial.generated_date else '',
+        'student_id': selected_student.student_id if selected_student else '',
+        'name': saved_testimonial.name if saved_testimonial else (selected_student.full_name if selected_student else ''),
+        'father_name': saved_testimonial.father_name if saved_testimonial else (selected_student.father_name if selected_student else ''),
+        'mother_name': saved_testimonial.mother_name if saved_testimonial else (selected_student.mother_name if selected_student else ''),
+        'class_level': saved_testimonial.class_level if saved_testimonial else (selected_student.current_class if selected_student else ''),
+        'group': saved_testimonial.group if saved_testimonial else (selected_student.group if selected_student else ''),
+        'roll': saved_testimonial.roll if saved_testimonial else (str(selected_student.class_roll) if selected_student else ''),
+        'registration': saved_testimonial.registration if saved_testimonial else '',
+        'session': saved_testimonial.session if saved_testimonial else '',
+        'date_of_birth': saved_testimonial.date_of_birth if saved_testimonial else (selected_student.date_of_birth.strftime('%d/%m/%Y') if selected_student and selected_student.date_of_birth else ''),
+        'gender': saved_testimonial.gender if saved_testimonial else (selected_student.gender if selected_student else ''),
+        'status': saved_testimonial.status if saved_testimonial else 'current',
+        'ssc_year': saved_testimonial.ssc_year if saved_testimonial else '',
+        'ssc_board': saved_testimonial.ssc_board if saved_testimonial else '',
+        'candidate_type': saved_testimonial.candidate_type if saved_testimonial else 'Regular',
+        'gpa': saved_testimonial.gpa if saved_testimonial else '',
+    }
+    errors = []
+    generated = False
+    pdf_url = None
+
+    if request.method == 'POST':
+        for key in values:
+            if key != 'student_id' and key in request.POST:
+                values[key] = request.POST.get(key, '').strip()
+        if not selected_student:
+            errors.append('প্রথমে একজন শিক্ষার্থী নির্বাচন করুন।')
+        if values['gender'] not in ('Male', 'Female'):
+            errors.append('Gender নির্বাচন করুন।')
+        if values['status'] == 'ssc_passed':
+            if not values['ssc_year'].isdigit() or not 1900 <= int(values['ssc_year']) <= datetime.date.today().year + 1:
+                errors.append('SSC Examination Year সঠিকভাবে দিন।')
+            if not values['ssc_board']:
+                errors.append('SSC Board দিন।')
+            try:
+                if not Decimal(values['gpa']) <= Decimal('5.00') or Decimal(values['gpa']) < Decimal('0.00'):
+                    raise InvalidOperation
+            except (InvalidOperation, TypeError, ValueError):
+                errors.append('GPA অবশ্যই 0.00 থেকে 5.00-এর মধ্যে হতে হবে।')
+        if not errors:
+            if saved_testimonial and saved_testimonial.serial_number:
+                values['serial_number'] = saved_testimonial.serial_number
+            else:
+                last_serial = Testimonial.objects.aggregate(max_serial=Max('serial_number'))['max_serial'] or 0
+                values['serial_number'] = last_serial + 1
+            generated_date = datetime.date.today()
+            values['generated_date'] = generated_date.strftime('%d/%m/%Y')
+            testimonial_values = {
+                key: value for key, value in values.items()
+                if key != 'student_id'
+            }
+            testimonial_values['generated_date'] = generated_date
+            Testimonial.objects.update_or_create(
+                student=selected_student,
+                defaults=testimonial_values,
+            )
+            generated = True
+            pdf_token = TimestampSigner().sign_object({
+                'user_id': request.user.pk,
+                'student_id': selected_student.pk,
+            })
+            pdf_url = f"{reverse('myteacher:testimonial_pdf')}?token={pdf_token}"
+
+    return render(request, 'myteacher/testimonial.html', {
+        'teacher': teacher,
+        'query': query,
+        'students': students,
+        'selected_student': selected_student,
+        'values': values,
+        'errors': errors,
+        'generated': generated,
+        'saved_testimonial': saved_testimonial,
+        'pdf_url': pdf_url,
+    })
+
+
+def _testimonial_browser_path():
+    configured_path = getattr(settings, 'TESTIMONIAL_PDF_BROWSER', '')
+    candidates = [
+        configured_path,
+        shutil.which('chrome'),
+        shutil.which('msedge'),
+        r'C:\Program Files\Google\Chrome\Application\chrome.exe',
+        r'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe',
+    ]
+    return next((path for path in candidates if path and os.path.isfile(path)), None)
+
+
+def testimonial_pdf_view(request):
+    token = request.GET.get('token', '')
+    try:
+        payload = TimestampSigner().unsign_object(token, max_age=300)
+    except (BadSignature, SignatureExpired, ValueError):
+        return HttpResponse('PDF link expired or invalid. Generate the testimonial again.', status=400)
+
+    user = request.user
+    if not user.is_authenticated or user.pk != payload.get('user_id'):
+        return HttpResponseForbidden('You are not authorized to generate this PDF.')
+
+    teacher = getattr(user, 'teacher', None)
+    if not user.is_superuser and (not teacher or not is_head_or_admin(teacher, user)):
+        return HttpResponseForbidden('Only Headmaster or Admin can generate this PDF.')
+
+    student = get_object_or_404(Student, pk=payload.get('student_id'))
+    testimonial = get_object_or_404(Testimonial, student=student)
+    values = {
+        'serial_number': testimonial.serial_number or '',
+        'generated_date': testimonial.generated_date.strftime('%d/%m/%Y') if testimonial.generated_date else '',
+        'student_id': student.student_id,
+        'name': testimonial.name,
+        'father_name': testimonial.father_name,
+        'mother_name': testimonial.mother_name,
+        'class_level': testimonial.class_level,
+        'group': testimonial.group,
+        'roll': testimonial.roll,
+        'registration': testimonial.registration,
+        'session': testimonial.session,
+        'date_of_birth': testimonial.date_of_birth,
+        'gender': testimonial.gender,
+        'status': testimonial.status,
+        'ssc_year': testimonial.ssc_year,
+        'ssc_board': testimonial.ssc_board,
+        'candidate_type': testimonial.candidate_type,
+        'gpa': testimonial.gpa,
+    }
+    browser_path = _testimonial_browser_path()
+    if not browser_path:
+        return HttpResponse('A Chrome or Edge browser is required for exact PDF generation.', status=503)
+
+    try:
+        with tempfile.TemporaryDirectory(prefix='testimonial-pdf-') as temp_dir:
+            output_path = os.path.join(temp_dir, 'testimonial.pdf')
+            profile_dir = os.path.join(temp_dir, 'profile')
+            static_root = Path(temp_dir) / 'static' / 'images'
+            static_root.mkdir(parents=True)
+            shutil.copy2(settings.BASE_DIR / 'static' / 'images' / 'logo.png', static_root / 'logo.png')
+            rendered_html = render_to_string('myteacher/testimonial.html', {
+                'generated': True,
+                'pdf_mode': True,
+                'values': values,
+            })
+            Path(temp_dir, 'index.html').write_text(rendered_html, encoding='utf-8')
+
+            class QuietHandler(SimpleHTTPRequestHandler):
+                def log_message(self, format, *args):
+                    pass
+
+            server = ThreadingHTTPServer(('127.0.0.1', 0), QuietHandler)
+            server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+            server_thread.start()
+            previous_directory = os.getcwd()
+            os.chdir(temp_dir)
+            local_url = f'http://127.0.0.1:{server.server_port}/index.html'
+            command = [
+                browser_path,
+                '--headless=new',
+                '--disable-gpu',
+                '--disable-extensions',
+                '--no-pdf-header-footer',
+                '--run-all-compositor-stages-before-draw',
+                '--virtual-time-budget=2500',
+                f'--user-data-dir={profile_dir}',
+                f'--print-to-pdf={output_path}',
+                local_url,
+            ]
+            try:
+                result = subprocess.run(
+                    command,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    timeout=30,
+                    check=False,
+                    creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0),
+                )
+            finally:
+                os.chdir(previous_directory)
+                server.shutdown()
+                server.server_close()
+                server_thread.join(timeout=2)
+            if result.returncode != 0 or not os.path.isfile(output_path):
+                return HttpResponse('PDF generation failed. Please try again.', status=500)
+            with open(output_path, 'rb') as pdf_file:
+                pdf_content = pdf_file.read()
+    except subprocess.TimeoutExpired:
+        return HttpResponse('PDF generation timed out. Please try again.', status=504)
+    except OSError:
+        return HttpResponse('PDF generation could not start. Please try again.', status=503)
+
+    response = HttpResponse(pdf_content, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="testimonial_{student.student_id}.pdf"'
+    return response
+
+
+def testimonial_pdf_page(request, token):
+    try:
+        payload = TimestampSigner().unsign_object(token, max_age=300)
+    except (BadSignature, SignatureExpired, ValueError):
+        return HttpResponse('PDF link expired or invalid.', status=400)
+    if request.user.is_authenticated and request.user.pk != payload.get('user_id'):
+        return HttpResponseForbidden('You are not authorized to view this PDF.')
+    student = get_object_or_404(Student, pk=payload.get('student_id'))
+    testimonial = get_object_or_404(Testimonial, student=student)
+    context = {
+        'generated': True,
+        'pdf_mode': True,
+        'values': {
+            'serial_number': testimonial.serial_number or '',
+            'generated_date': testimonial.generated_date.strftime('%d/%m/%Y') if testimonial.generated_date else '',
+            'student_id': student.student_id,
+            'name': testimonial.name,
+            'father_name': testimonial.father_name,
+            'mother_name': testimonial.mother_name,
+            'class_level': testimonial.class_level,
+            'group': testimonial.group,
+            'roll': testimonial.roll,
+            'registration': testimonial.registration,
+            'session': testimonial.session,
+            'date_of_birth': testimonial.date_of_birth,
+            'gender': testimonial.gender,
+            'status': testimonial.status,
+            'ssc_year': testimonial.ssc_year,
+            'ssc_board': testimonial.ssc_board,
+            'candidate_type': testimonial.candidate_type,
+            'gpa': testimonial.gpa,
+        },
+    }
+    return render(request, 'myteacher/testimonial.html', context)
+
+# class update view 
+
+
+def manage_routine_view(request):
+    teacher = request.user.teacher
+    is_head_teacher = is_head_or_admin(teacher, request.user)
+
+    # Only class teachers and head/admin may manage routines
+    if not teacher.is_class_teacher and not is_head_teacher:
+        return HttpResponseForbidden("আপনি রুটিন তৈরি বা সম্পাদনা করার অনুমোদিত নন।")
+
+    routines = ExamRoutine.objects.all().order_by('exam_date', 'class_name')
+
+    edit_mode = False
+    routine_id = ''
+    class_name = ''
+    group_name = ''
+    exam_type = 'Half Yearly'
+    exam_year = datetime.date.today().year
+    subject = ''
+    subject_code = ''
+    date = ''
+    time = '10:00 AM'
+    selected_apply_to = []
+    selected_bulk_groups = []
+
+    if request.method == 'POST':
+        if 'save_routine' in request.POST:
+            hidden_id = request.POST.get('routine_id')
+            c = request.POST.get('class_name')
+            g = request.POST.get('group_name') if c in ['9', '10'] else ''
+            
+            # Class teachers and head/admin may save routines for any class
+            et = request.POST.get('exam_type')
+            ey = request.POST.get('exam_year') or datetime.date.today().year
+            s = request.POST.get('subject')
+            sc = request.POST.get('subject_code')
+            d = request.POST.get('date')
+            t = request.POST.get('time')
+            extra_classes = request.POST.getlist('apply_to')
+            bulk_groups = request.POST.getlist('bulk_groups')
+
+            if hidden_id:
+                routine = get_object_or_404(ExamRoutine, id=hidden_id)
+                routine.class_name = c
+                routine.group_name = g
+                routine.exam_type = et
+                routine.exam_year = ey
+                routine.subject_name = s
+                routine.subject_code = sc
+                routine.exam_date = d
+                routine.exam_time = t
+                routine.save()
+            else:
+                routine = ExamRoutine.objects.create(
+                    class_name=c,
+                    group_name=g,
+                    exam_type=et,
+                    exam_year=ey,
+                    subject_name=s,
+                    subject_code=sc,
+                    exam_date=d,
+                    exam_time=t
+                )
+                for ec in extra_classes:
+                    if ec != c:
+                        if ec in ['9', '10'] and bulk_groups:
+                            for bg in bulk_groups:
+                                ExamRoutine.objects.create(
+                                    class_name=ec,
+                                    group_name=bg,
+                                    exam_type=routine.exam_type,
+                                    exam_year=routine.exam_year,
+                                    subject_name=routine.subject_name,
+                                    subject_code=routine.subject_code,
+                                    exam_date=routine.exam_date,
+                                    exam_time=routine.exam_time
+                                )
+                        else:
+                            ExamRoutine.objects.create(
+                                class_name=ec,
+                                group_name='' if ec not in ['9', '10'] else g,
+                                exam_type=routine.exam_type,
+                                exam_year=routine.exam_year,
+                                subject_name=routine.subject_name,
+                                subject_code=routine.subject_code,
+                                exam_date=routine.exam_date,
+                                exam_time=routine.exam_time
+                            )
+            return redirect('myteacher:manage_routine')
+
+        elif 'clear_all' in request.POST:
+            ExamRoutine.objects.all().delete()
+            return redirect('myteacher:manage_routine')
+
+    if request.method == 'GET' and 'edit' in request.GET:
+        edit_mode = True
+        routine_id = request.GET.get('edit')
+        routine = get_object_or_404(ExamRoutine, id=routine_id)
+        class_name = routine.class_name
+        group_name = routine.group_name or ''
+        exam_type = routine.exam_type
+        exam_year = routine.exam_year
+        subject = routine.subject_name
+        subject_code = routine.subject_code
+        date = routine.exam_date.strftime('%Y-%m-%d')
+        time = routine.exam_time
+
+    return render(request, 'myteacher/manage_routine.html', {
+        'routines': routines,
+        'edit_mode': edit_mode,
+        'routine_id': routine_id,
+        'class_name': class_name,
+        'group_name': group_name,
+        'exam_type': exam_type,
+        'exam_year': exam_year,
+        'subject': subject,
+        'subject_code': subject_code,
+        'date': date,
+        'time': time,
+        'selected_apply_to': selected_apply_to,
+        'selected_bulk_groups': selected_bulk_groups,
+    })
+
+# ডিলিট এবং কপি ভিউ
+def delete_routine(request, id):
+    teacher = request.user.teacher
+    is_head_teacher = is_head_or_admin(teacher, request.user)
+    if not teacher.is_class_teacher and not is_head_teacher:
+        return HttpResponseForbidden("আপনি রুটিন মুছে ফেলার অনুমোদিত নন।")
+
+    routine = get_object_or_404(ExamRoutine, id=id)
+    routine.delete()
+    return redirect('myteacher:manage_routine')
+
+def copy_routine(request, from_id, target_class):
+    teacher = request.user.teacher
+    is_head_teacher = is_head_or_admin(teacher, request.user)
+    if not teacher.is_class_teacher and not is_head_teacher:
+        return HttpResponseForbidden("আপনি রুটিন কপি করার অনুমোদিত নন।")
+
+    original = get_object_or_404(ExamRoutine, id=from_id)
+    original.pk = None  # নতুন অবজেক্ট তৈরির জন্য
+    original.class_name = target_class
+    original.group_name = original.group_name if target_class in ['9', '10'] else ''
+    original.save()
+    return redirect('myteacher:manage_routine')
+
+@login_required
+def view_routine(request):
+    years = ExamRoutine.objects.order_by('-exam_year').values_list('exam_year', flat=True).distinct()
+    selected_year = request.GET.get('year')
+    selected_type = request.GET.get('type', '')
+
+    if not selected_year:
+        selected_year = years[0] if years else datetime.date.today().year
+
+    exam_types = ExamRoutine.objects.filter(exam_type__isnull=False).exclude(exam_type='').values_list('exam_type', flat=True).distinct()
+
+    routines = ExamRoutine.objects.filter(exam_year=selected_year)
+    if selected_type:
+        routines = routines.filter(exam_type=selected_type)
+
+    dates = routines.order_by('exam_date').values_list('exam_date', flat=True).distinct()
+
+    date_rows = []
+    for exam_date in dates:
+        row = {'date': exam_date, 'cells': []}
+
+        def find_routine(class_name, group_name=''):
+            return routines.filter(class_name=class_name, group_name=group_name, exam_date=exam_date).order_by('exam_time', 'id').first()
+
+        for class_val in ['6', '7', '8']:
+            routine = find_routine(class_val)
+            row['cells'].append(routine)
+
+        for group_val in ['Science', 'Commerce', 'Arts']:
+            row['cells'].append(find_routine('9', group_val))
+        for group_val in ['Science', 'Commerce', 'Arts']:
+            row['cells'].append(find_routine('10', group_val))
+
+        date_rows.append(row)
+
+    return render(request, 'myteacher/view_routine.html', {
+        'years': years,
+        'exam_types': exam_types,
+        'selected_year': selected_year,
+        'selected_type': selected_type,
+        'date_rows': date_rows,
+        'now_year': datetime.date.today().year,
+    })
+
+
+@login_required
+def student_corner_view(request):
+    teacher = request.user.teacher
+    is_head_teacher = is_head_or_admin(teacher, request.user)
+    class_teacher_classes = get_teacher_class_teacher_classes(teacher)
+    own_class_teacher_classes = get_teacher_own_class_teacher_classes(teacher)
+    
+    if is_head_teacher:
+        assigned_classes = list(Student.objects.order_by('current_class').values_list('current_class', flat=True).distinct())
+    else:
+        assigned_classes = get_teacher_allowed_classes(teacher)
+        if teacher.class_teacher_of and teacher.class_teacher_of not in assigned_classes:
+            assigned_classes.insert(0, teacher.class_teacher_of)
+        if not assigned_classes and own_class_teacher_classes:
+            assigned_classes = own_class_teacher_classes
+    
+    class_options = ['all'] + assigned_classes if is_head_teacher else assigned_classes
+    selected_class = request.GET.get('class_level')
+    search_query = request.GET.get('search', '').strip()
+
+    students = Student.objects.none()
+    class_students = None
+    
+    if assigned_classes:
+        if selected_class == 'all' and is_head_teacher:
+            class_students = Student.objects.all().order_by('current_class', 'class_roll')
+            if search_query:
+                class_students = class_students.filter(
+                    Q(full_name__icontains=search_query) |
+                    Q(student_id__icontains=search_query) |
+                    Q(father_name__icontains=search_query) |
+                    Q(mother_name__icontains=search_query)
+                )
+            students = class_students
+        else:
+            if selected_class and selected_class in assigned_classes:
+                current_class = selected_class
+            else:
+                current_class = assigned_classes[0]
+            
+            class_students = Student.objects.filter(current_class=current_class).order_by('class_roll')
+            if search_query:
+                class_students = class_students.filter(
+                    Q(full_name__icontains=search_query) |
+                    Q(student_id__icontains=search_query) |
+                    Q(father_name__icontains=search_query) |
+                    Q(mother_name__icontains=search_query)
+                )
+            students = class_students
+            selected_class = current_class
+
+    return render(request, 'myteacher/student_corner.html', {
+        'teacher': teacher,
+        'assigned_classes': assigned_classes,
+        'class_options': class_options,
+        'selected_class': selected_class,
+        'class_students': class_students,
+        'students': students,
+        'search_query': search_query,
+        'can_generate_admit': is_head_teacher or (teacher.is_class_teacher and selected_class == teacher.class_teacher_of),
+        'can_generate_seat': is_head_teacher or (teacher.is_class_teacher and selected_class == teacher.class_teacher_of),
+        'is_head_teacher': is_head_teacher,
+    })
+
+
+@login_required
+def id_cards_view(request):
+    teacher = request.user.teacher
+    is_head_teacher = is_head_or_admin(teacher, request.user)
+    class_teacher_classes = get_teacher_class_teacher_classes(teacher)
+    viewable_classes = get_teacher_viewable_classes(teacher, request.user)
+
+    selected_class = request.GET.get('class_level')
+    if selected_class and selected_class not in viewable_classes:
+        selected_class = None
+
+    if not selected_class:
+        if class_teacher_classes:
+            selected_class = class_teacher_classes[0]
+        elif viewable_classes:
+            selected_class = viewable_classes[0]
+
+    students = Student.objects.none()
+    if selected_class:
+        students = Student.objects.filter(current_class=selected_class).order_by('class_roll')
+
+    can_download = selected_class in class_teacher_classes or is_head_teacher
+    current_year = datetime.date.today().year
+
+    return render(request, 'myteacher/id_cards.html', {
+        'teacher': teacher,
+        'assigned_classes': viewable_classes,
+        'selected_class': selected_class,
+        'students': students,
+        'can_download': can_download,
+        'current_year': current_year,
+        'is_head_teacher': is_head_teacher,
+    })
+
+
+@login_required
+def clear_student_records_view(request):
+    teacher = request.user.teacher
+    if not is_head_or_admin(teacher, request.user):
+        return HttpResponseForbidden("আপনি এই অপারেশনটি করার অনুমোদিত নন।")
+
+    cleared_count = 0
+    if request.method == 'POST':
+        student_ids = request.POST.getlist('student_ids[]')
+        if student_ids:
+            students = Student.objects.filter(id__in=student_ids)
+            for student in students:
+                if hasattr(student, 'saved_admit_cards'):
+                    student.saved_admit_cards.all().delete()
+                cleared_count += 1
+
+        if cleared_count:
+            messages.success(request, f'{cleared_count} জন ছাত্র/ছাত্রীর অ্যাডমিট কার্ড মুছে ফেলা হয়েছে।')
+        else:
+            messages.warning(request, 'কোনো ছাত্র/ছাত্রী নির্বাচন করা হয়নি বা মুছার মতো তথ্য পাওয়া যায়নি।')
+
+        return redirect(request.META.get('HTTP_REFERER', reverse('myteacher:student_corner')))
+
+    return HttpResponseForbidden("Invalid request method.")
+
+
+@login_required
+def student_promotion_view(request):
+    teacher = request.user.teacher
+    is_admin_or_head = is_head_or_admin(teacher, request.user)
+
+    if not teacher.is_class_teacher and not is_admin_or_head:
+        return HttpResponseForbidden("আপনি এই অপারেশনটি করার অনুমোদিত নন।")
+
+    if is_admin_or_head:
+        allowed_classes = [value for value, _ in Student.CLASS_CHOICES]
+    else:
+        if teacher.is_class_teacher and teacher.class_teacher_of:
+            allowed_classes = [teacher.class_teacher_of]
+        else:
+            allowed_classes = get_teacher_allowed_classes(teacher)
+
+    allowed_classes = sorted(set([c for c in allowed_classes if c]), key=lambda x: int(x))
+    if not allowed_classes:
+        return HttpResponseForbidden("আপনার কোনো ক্লাস প্রোমোশন করার অনুমোদিত নেই।")
+
+    selected_class = request.GET.get('selected_class') or request.POST.get('selected_class')
+    if selected_class and selected_class not in allowed_classes:
+        return HttpResponseForbidden("আপনি এই ক্লাসের জন্য অনুমোদিত নন।")
+
+    if not selected_class:
+        selected_class = allowed_classes[0]
+
+    next_class = CLASS_PROMOTION_MAP.get(selected_class)
+    students = Student.objects.filter(current_class=selected_class).order_by('class_roll')
+    status = None
+    status_type = None
+
+    if request.method == 'POST':
+        selected_class = request.POST.get('selected_class') or selected_class
+        if selected_class not in allowed_classes:
+            return HttpResponseForbidden("আপনি এই ক্লাসের জন্য অনুমোদিত নন।")
+
+        next_class = CLASS_PROMOTION_MAP.get(selected_class)
+        selected_ids = request.POST.getlist('promote_student')
+        promoted_count = 0
+
+        if not next_class:
+            status = f"Class {selected_class} থেকে আর কোন ক্লাসে প্রোমোট করা যাবে না।"
+            status_type = 'warning'
+        elif not selected_ids:
+            status = 'কমপক্ষে একজন ছাত্র নির্বাচন করুন প্রোমোশন করার জন্য।'
+            status_type = 'danger'
+        else:
+            for student_id in selected_ids:
+                student = Student.objects.filter(id=student_id, current_class=selected_class).first()
+                if not student:
+                    continue
+
+                roll_value = request.POST.get(f'roll_{student.id}')
+                if roll_value:
+                    try:
+                        student.class_roll = int(roll_value)
+                    except (ValueError, TypeError):
+                        pass
+
+                student.current_class = next_class
+                student.save()
+                promoted_count += 1
+
+            if promoted_count:
+                status = f'{promoted_count} জন ছাত্র/ছাত্রী এখন ক্লাস {next_class} এ প্রোমোট হয়েছে।'
+                status_type = 'success'
+            else:
+                status = 'কোন ছাত্র/ছাত্রী প্রোমোট হয়নি।'
+                status_type = 'warning'
+
+            return redirect(f"{reverse('myteacher:student_promotion')}?selected_class={selected_class}")
+
+    return render(request, 'myteacher/student_promotion.html', {
+        'teacher': teacher,
+        'students': students,
+        'current_class': selected_class,
+        'next_class': next_class,
+        'status': status,
+        'status_type': status_type,
+        'promotion_classes': Student.CLASS_CHOICES,
+        'allowed_classes': allowed_classes,
+        'selected_class': selected_class,
+    })
+
+
+@login_required
+def seat_plan_view(request):
+    teacher = request.user.teacher
+    assigned_class = teacher.class_teacher_of if teacher.is_class_teacher else None
+    students = Student.objects.filter(current_class=assigned_class).order_by('class_roll') if assigned_class else None
+    return render(request, 'myteacher/seat_plan.html', {
+        'teacher': teacher,
+        'assigned_class': assigned_class,
+        'students': students,
+    })
+
+
+def is_head_or_admin(teacher, user):
+    return user.is_superuser or teacher.designation in ['Headmaster', 'Assistant Headmaster']
+
+
+def get_teacher_allowed_classes(teacher):
+    return list(set(list(TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)) + list(TeacherSubjectAssignment.objects.filter(teacher=teacher).values_list('subject__class_level', flat=True))))
+
+
+def get_teacher_class_teacher_classes(teacher):
+    assigned_classes = list(set(list(TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)) + list(TeacherSubjectAssignment.objects.filter(teacher=teacher).values_list('subject__class_level', flat=True))))
+    if not assigned_classes and teacher.is_class_teacher and teacher.class_teacher_of:
+        assigned_classes = [teacher.class_teacher_of]
+    return assigned_classes
+
+
+def get_teacher_own_class_teacher_classes(teacher):
+    if teacher.is_class_teacher and teacher.class_teacher_of:
+        return [teacher.class_teacher_of]
+    return []
+
+
+def get_teacher_viewable_classes(teacher, user):
+    if is_head_or_admin(teacher, user):
+        return list(Student.objects.order_by('current_class').values_list('current_class', flat=True).distinct())
+
+    allowed_classes = get_teacher_allowed_classes(teacher)
+    class_teacher_classes = get_teacher_class_teacher_classes(teacher)
+    if class_teacher_classes:
+        for c in class_teacher_classes:
+            if c not in allowed_classes:
+                allowed_classes.append(c)
+    return allowed_classes
+
+
+def get_student_result_summary(student, exam_type, exam_year=None):
+    marks = Mark.objects.filter(student=student, exam_type=exam_type).select_related('subject').order_by('subject__subject_name')
+    if exam_year is not None:
+        try:
+            exam_year = int(exam_year)
+            marks = marks.filter(exam_year=exam_year)
+        except (TypeError, ValueError):
+            pass
+
+    filtered_marks = []
+    for mark in marks:
+        if mark.subject.is_religion_based and mark.subject.effective_religion != mark.student.religion:
+            continue
+        filtered_marks.append(mark)
+    marks = filtered_marks
+    subject_results = []
+    total_marks = Decimal('0.00')
+    total_possible_marks = Decimal('0.00')
+    total_gpa = Decimal('0.00')
+    subject_count = 0
+    compulsory_subject_count = 0
+    fail_count = 0
+    optional_benefit = Decimal('0.00')
+    # Determine the set of published/displayed subject IDs for this class/exam/year
+    try:
+        published_qs = Mark.objects.filter(student__current_class=student.current_class, exam_type=exam_type)
+        if exam_year is not None:
+            try:
+                published_qs = published_qs.filter(exam_year=int(exam_year))
+            except (TypeError, ValueError):
+                pass
+        published_subject_ids = set(published_qs.values_list('subject_id', flat=True).distinct())
+    except Exception:
+        published_subject_ids = set()
+    routine_codes = {}
+
+    def get_subject_code(subject_name, subject_obj=None, subject_type=None):
+        cache_key = (subject_name or '', subject_type or '', getattr(subject_obj, 'pk', None))
+        if cache_key in routine_codes:
+            return routine_codes[cache_key]
+
+        code = ''
+        if subject_obj is not None and getattr(subject_obj, 'subject_code', ''):
+            code = subject_obj.subject_code
+        elif subject_name:
+            code = ExamRoutine.objects.filter(
+                class_name=student.current_class,
+                exam_type=exam_type,
+                exam_year=exam_year,
+                subject_name__iexact=subject_name
+            ).values_list('subject_code', flat=True).first() or ''
+
+        routine_codes[cache_key] = code
+        return code
+
+    # Group Bangla/English papers into one combined subject grade
+    grouped_marks = {}
+    for mark in marks:
+        subject_type = mark.subject.subject_type
+        lower_name = mark.subject.subject_name.strip().lower()
+
+        if subject_type == '4':
+            obtained = mark.total_mark
+            subject_max = mark.subject.full_mark_value
+            percentage = (obtained / subject_max * Decimal('100.00')) if subject_max else Decimal('0.00')
+            grade, gpa = calculate_grade_and_gpa(percentage)
+            try:
+                gpa_value = Decimal(str(gpa))
+            except Exception:
+                gpa_value = Decimal('0.00')
+
+            if percentage >= Decimal('33.00') and grade != 'F' and gpa_value > Decimal('2.00'):
+                benefit = gpa_value - Decimal('2.00')
+            else:
+                benefit = Decimal('0.00')
+            # Treat optional (4th) subject as a regular GPA contributor for averaging
+            total_gpa += Decimal(gpa)
+
+            subject_type_label = '4th'
+            subject_name = f"{mark.subject.subject_name} ({subject_type_label} Subject)"
+
+            subject_results.append({
+                'subject_name': subject_name,
+                'subject_code': get_subject_code(mark.subject.subject_name, mark.subject, mark.subject.subject_type),
+                'subject_type': mark.subject.get_subject_type_display() if hasattr(mark.subject, 'get_subject_type_display') else mark.subject.subject_type,
+                'objective_mark': mark.objective_mark,
+                'subjective_mark': mark.subjective_mark,
+                'class_test_mark': mark.class_test_mark,
+                'practical_mark': mark.practical_mark or Decimal('0.00'),
+                'total_mark': obtained,
+                'full_mark': subject_max,
+                'grade': grade,
+                'gpa': gpa,
+                'group_rowspan': 1,
+                'show_combined': True,
+                'optional': True,
+                'benefit': benefit.quantize(Decimal('0.00')),
+            })
+            total_marks += obtained
+            total_possible_marks += subject_max
+            subject_count += 1
+            continue
+
+        is_combined_subject = (
+            subject_type in ['1', '2'] and
+            ('bangla' in lower_name or 'english' in lower_name)
+        )
+
+        if is_combined_subject:
+            grouped_marks.setdefault(lower_name, []).append(mark)
+        else:
+            obtained = mark.total_mark
+            subject_max = mark.subject.full_mark_value
+            percentage = (obtained / subject_max * Decimal('100.00')) if subject_max else Decimal('0.00')
+            grade, gpa = calculate_grade_and_gpa(percentage)
+            subject_type_label = None
+            if subject_type == '1':
+                subject_type_label = '1st'
+            elif subject_type == '2':
+                subject_type_label = '2nd'
+            elif subject_type == '4':
+                subject_type_label = '4th'
+            subject_name = mark.subject.subject_name
+            if subject_type_label and subject_type != '4':
+                subject_name = f"{subject_name} {subject_type_label}"
+
+            subject_results.append({
+                'subject_name': subject_name,
+                'subject_code': get_subject_code(mark.subject.subject_name, mark.subject, mark.subject.subject_type),
+                'subject_type': mark.subject.get_subject_type_display() if hasattr(mark.subject, 'get_subject_type_display') else mark.subject.subject_type,
+                'objective_mark': mark.objective_mark,
+                'subjective_mark': mark.subjective_mark,
+                'class_test_mark': mark.class_test_mark,
+                'practical_mark': mark.practical_mark or Decimal('0.00'),
+                'total_mark': obtained,
+                'full_mark': subject_max,
+                'grade': grade,
+                'gpa': gpa,
+                'group_rowspan': 1,
+                'show_combined': True,
+            })
+            total_marks += obtained
+            total_possible_marks += subject_max
+            total_gpa += Decimal(gpa)
+            subject_count += 1
+            compulsory_subject_count += 1
+            if mark.subject.subject_type != '4' and grade == 'F':
+                fail_count += 1
+
+    for lower_name, grouped in grouped_marks.items():
+        if len(grouped) > 1:
+            grouped.sort(key=lambda m: m.subject.subject_type)
+            combined_full_mark = sum(m.subject.full_mark_value for m in grouped)
+            combined_total_mark = sum(m.total_mark for m in grouped)
+            combined_percentage = (combined_total_mark / combined_full_mark * Decimal('100.00')) if combined_full_mark else Decimal('0.00')
+            combined_grade, combined_gpa = calculate_grade_and_gpa(combined_percentage)
+
+            for index, mark in enumerate(grouped):
+                subject_type_label = '1st' if mark.subject.subject_type == '1' else '2nd' if mark.subject.subject_type == '2' else ''
+                subject_name = mark.subject.subject_name
+                if subject_type_label:
+                    subject_name = f"{subject_name} {subject_type_label}"
+
+                row = {
+                    'subject_name': subject_name,
+                    'subject_code': get_subject_code(mark.subject.subject_name, mark.subject, mark.subject.subject_type),
+                    'subject_type': mark.subject.get_subject_type_display() if hasattr(mark.subject, 'get_subject_type_display') else mark.subject.subject_type,
+                    'objective_mark': mark.objective_mark,
+                    'subjective_mark': mark.subjective_mark,
+                    'class_test_mark': mark.class_test_mark,
+                    'practical_mark': mark.practical_mark or Decimal('0.00'),
+                    'total_mark': mark.total_mark,
+                    'full_mark': mark.subject.full_mark_value,
+                    'group_rowspan': len(grouped),
+                    'show_combined': index == 0,
+                    'combined_grade': combined_grade,
+                    'grade': combined_grade,
+                }
+
+                if index == 0:
+                    row.update({
+                        'combined_total_mark': combined_total_mark,
+                        'combined_gpa': combined_gpa,
+                        'combined_percentage': combined_percentage.quantize(Decimal('0.00')),
+                        'gpa': combined_gpa,
+                        'grade': combined_grade,
+                    })
+                    total_gpa += Decimal(combined_gpa)
+                    subject_count += 1
+                    compulsory_subject_count += 1
+                    if mark.subject.subject_type != '4' and combined_grade == 'F':
+                        fail_count += 1
+                subject_results.append(row)
+                total_marks += mark.total_mark
+                total_possible_marks += mark.subject.full_mark_value
+        else:
+            mark = grouped[0]
+            obtained = mark.total_mark
+            subject_max = mark.subject.full_mark_value
+            percentage = (obtained / subject_max * Decimal('100.00')) if subject_max else Decimal('0.00')
+            grade, gpa = calculate_grade_and_gpa(percentage)
+            subject_type = mark.subject.subject_type
+            subject_type_label = None
+            if subject_type == '1':
+                subject_type_label = '1st'
+            elif subject_type == '2':
+                subject_type_label = '2nd'
+            subject_name = mark.subject.subject_name
+            if subject_type_label:
+                subject_name = f"{subject_name} {subject_type_label}"
+
+            subject_results.append({
+                'subject_name': subject_name,
+                'subject_code': get_subject_code(mark.subject.subject_name, mark.subject, mark.subject.subject_type),
+                'subject_type': mark.subject.get_subject_type_display() if hasattr(mark.subject, 'get_subject_type_display') else mark.subject.subject_type,
+                'objective_mark': mark.objective_mark,
+                'subjective_mark': mark.subjective_mark,
+                'class_test_mark': mark.class_test_mark,
+                'practical_mark': mark.practical_mark or Decimal('0.00'),
+                'total_mark': obtained,
+                'full_mark': subject_max,
+                'grade': grade,
+                'gpa': gpa,
+                'group_rowspan': 1,
+                'show_combined': True,
+                'combined_total_mark': obtained,
+                'combined_gpa': gpa,
+                'combined_grade': grade,
+                'combined_percentage': percentage.quantize(Decimal('0.00')),
+            })
+            total_marks += obtained
+            total_possible_marks += subject_max
+            total_gpa += Decimal(gpa)
+            subject_count += 1
+            compulsory_subject_count += 1
+            if mark.subject.subject_type != '4' and grade == 'F':
+                fail_count += 1
+
+    subject_results.sort(key=lambda entry: (
+        0 if entry['subject_name'].lower().startswith('bangla 1st') else
+        1 if entry['subject_name'].lower().startswith('bangla 2nd') else
+        2 if entry['subject_name'].lower().startswith('english 1st') else
+        3 if entry['subject_name'].lower().startswith('english 2nd') else
+        10,
+        entry['subject_name'].lower()
+    ))
+
+    if subject_count > 0 and total_possible_marks > 0:
+        average_mark = total_marks / subject_count
+        overall_percentage = (total_marks / total_possible_marks * Decimal('100.00'))
+        # Average GPA across all subjects (including optional 4th) as requested.
+        average_gpa = (total_gpa / subject_count).quantize(Decimal('0.00'))
+
+        # Only compulsory subjects determine pass/fail. If any compulsory subject failed, overall is Fail.
+        if fail_count > 0:
+            average_gpa = Decimal('0.00')
+            overall_grade = 'F'
+            overall_gpa = Decimal('0.00')
+        else:
+            overall_gpa = average_gpa
+            overall_grade = calculate_grade_from_gpa(overall_gpa)
+
+        result_status = 'Pass' if fail_count == 0 else 'Fail'
+    else:
+        average_mark = Decimal('0.00')
+        average_gpa = Decimal('0.00')
+        overall_grade = '-'
+        overall_gpa = '0.00'
+        overall_percentage = Decimal('0.00')
+        result_status = 'Incomplete'
+
+    def get_total_marks_for_candidate(candidate_student):
+        if not published_subject_ids:
+            return Decimal('0.00')
+
+        candidate_marks = Mark.objects.filter(
+            student=candidate_student,
+            subject_id__in=published_subject_ids,
+            exam_type=exam_type,
+        ).select_related('subject').order_by('subject__subject_name')
+        if exam_year is not None:
+            try:
+                candidate_marks = candidate_marks.filter(exam_year=int(exam_year))
+            except (TypeError, ValueError):
+                pass
+
+        filtered_candidate_marks = []
+        for mark in candidate_marks:
+            if mark.subject.is_religion_based and mark.subject.effective_religion != candidate_student.religion:
+                continue
+            filtered_candidate_marks.append(mark)
+
+        candidate_total = Decimal('0.00')
+        for mark in filtered_candidate_marks:
+            candidate_total += mark.total_mark
+        return candidate_total
+
+    def get_candidate_result_status(candidate_student):
+        candidate_marks = Mark.objects.filter(student=candidate_student, exam_type=exam_type).select_related('subject').order_by('subject__subject_name')
+        if exam_year is not None:
+            try:
+                candidate_marks = candidate_marks.filter(exam_year=int(exam_year))
+            except (TypeError, ValueError):
+                pass
+
+        filtered_candidate_marks = []
+        for mark in candidate_marks:
+            if mark.subject.is_religion_based and mark.subject.effective_religion != candidate_student.religion:
+                continue
+            filtered_candidate_marks.append(mark)
+
+        grouped_marks = {}
+        fail_count = 0
+        for mark in filtered_candidate_marks:
+            subject_type = mark.subject.subject_type
+            lower_name = mark.subject.subject_name.strip().lower()
+
+            if subject_type == '4':
+                continue
+
+            is_combined_subject = (
+                subject_type in ['1', '2'] and
+                ('bangla' in lower_name or 'english' in lower_name)
+            )
+
+            if is_combined_subject:
+                grouped_marks.setdefault(lower_name, []).append(mark)
+            else:
+                percentage = (mark.total_mark / mark.subject.full_mark_value * Decimal('100.00')) if mark.subject.full_mark_value else Decimal('0.00')
+                grade, _ = calculate_grade_and_gpa(percentage)
+                if grade == 'F':
+                    fail_count += 1
+
+        for grouped in grouped_marks.values():
+            if len(grouped) > 1:
+                combined_full_mark = sum(m.subject.full_mark_value for m in grouped)
+                combined_total_mark = sum(m.total_mark for m in grouped)
+                combined_percentage = (combined_total_mark / combined_full_mark * Decimal('100.00')) if combined_full_mark else Decimal('0.00')
+                combined_grade, _ = calculate_grade_and_gpa(combined_percentage)
+                if combined_grade == 'F':
+                    fail_count += 1
+            else:
+                mark = grouped[0]
+                percentage = (mark.total_mark / mark.subject.full_mark_value * Decimal('100.00')) if mark.subject.full_mark_value else Decimal('0.00')
+                grade, _ = calculate_grade_and_gpa(percentage)
+                if grade == 'F':
+                    fail_count += 1
+
+        return 'Pass' if fail_count == 0 else 'Fail'
+
+    def get_ordinal_suffix(value):
+        if value is None:
+            return '-'
+        if 10 <= value % 100 <= 20:
+            suffix = 'th'
+        else:
+            suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(value % 10, 'th')
+        return f'{value}{suffix}'
+
+    group_value = student.group if student.group else None
+    ranked_students = Student.objects.filter(current_class=student.current_class)
+    if group_value is not None:
+        ranked_students = ranked_students.filter(group=group_value)
+    else:
+        ranked_students = ranked_students.filter(Q(group__isnull=True) | Q(group=''))
+
+    ranked_results = []
+    for candidate_student in ranked_students:
+        candidate_total_marks = get_total_marks_for_candidate(candidate_student)
+        candidate_result_status = get_candidate_result_status(candidate_student)
+        ranked_results.append({
+            'student': candidate_student,
+            'total_marks': candidate_total_marks,
+            'result_status': candidate_result_status,
+        })
+
+    passed_results = [entry for entry in ranked_results if entry['result_status'] == 'Pass']
+    failed_results = [entry for entry in ranked_results if entry['result_status'] != 'Pass']
+
+    passed_results.sort(key=lambda item: item['total_marks'], reverse=True)
+    failed_results.sort(key=lambda item: item['total_marks'], reverse=True)
+
+    ranked_results = passed_results + failed_results
+
+    highest_total_mark_in_class = max((entry['total_marks'] for entry in ranked_results), default=Decimal('0.00'))
+    position = None
+    previous_total = None
+    previous_position = 0
+    for entry in ranked_results:
+        if previous_total is None or entry['total_marks'] != previous_total:
+            current_position = previous_position + 1
+            previous_total = entry['total_marks']
+            previous_position = current_position
+        else:
+            current_position = previous_position
+
+        if entry['student'].pk == student.pk:
+            position = current_position
+            break
+
+    return {
+        'student': student,
+        'marks': subject_results,
+        'subject_count': subject_count,
+        'total_marks': total_marks,
+        'total_possible_marks': total_possible_marks,
+        'percentage': overall_percentage.quantize(Decimal('0.00')) if subject_count and total_possible_marks > 0 else Decimal('0.00'),
+        'average_mark': average_mark.quantize(Decimal('0.00')) if subject_count else average_mark,
+        'average_gpa': average_gpa,
+        'overall_gpa': overall_gpa,
+        'overall_grade': overall_grade,
+        'optional_benefit': optional_benefit.quantize(Decimal('0.00')),
+        'result_status': result_status,
+        'has_marks': subject_count > 0,
+        'position': position,
+        'position_display': get_ordinal_suffix(position) if position else '-',
+        'highest_total_mark_in_class': highest_total_mark_in_class,
+    }
+
+
+def render_to_pdf(template_src, context_dict):
+    if pisa is None:
+        return None
+
+    template = get_template(template_src)
+    html = template.render(context_dict)
+    result = BytesIO()
+    pdf_status = pisa.CreatePDF(html, dest=result)
+    if pdf_status.err:
+        return None
+    return result.getvalue()
+
+
+@login_required
+def student_results_view(request):
+    teacher = request.user.teacher
+    result_classes = list(
+        Mark.objects.order_by('student__current_class')
+            .values_list('student__current_class', flat=True)
+            .distinct()
+    )
+
+    selected_class = request.GET.get('class_level') or (result_classes[0] if result_classes else None)
+
+    exam_choices = []
+    if selected_class:
+        exam_choices = list(
+            Mark.objects.filter(student__current_class=selected_class)
+                .order_by('exam_type')
+                .values_list('exam_type', flat=True)
+                .distinct()
+        )
+
+    selected_exam = request.GET.get('exam_type') or (exam_choices[0] if exam_choices else None)
+    if selected_exam and selected_exam not in exam_choices:
+        selected_exam = exam_choices[0] if exam_choices else None
+
+    exam_years = []
+    if selected_class and selected_exam:
+        exam_years = [str(year) for year in Mark.objects.filter(
+            student__current_class=selected_class,
+            exam_type=selected_exam
+        ).order_by('-exam_year').values_list('exam_year', flat=True).distinct()]
+    elif selected_class:
+        exam_years = [str(year) for year in Mark.objects.filter(
+            student__current_class=selected_class
+        ).order_by('-exam_year').values_list('exam_year', flat=True).distinct()]
+
+    if not exam_years:
+        exam_years = [str(datetime.date.today().year)]
+
+    selected_year = request.GET.get('exam_year') or exam_years[0]
+    if selected_year not in exam_years:
+        selected_year = exam_years[0]
+
+    search_query = request.GET.get('search', '').strip()
+    student_pk = request.GET.get('student_id', '').strip()
+    is_head_teacher = is_head_or_admin(teacher, request.user)
+
+    if request.method == 'POST':
+        if not is_head_teacher:
+            return HttpResponseForbidden("Only headmaster or assistant headmaster can publish results.")
+        selected_class = request.POST.get('class_level') or selected_class
+        selected_exam = request.POST.get('exam_type') or selected_exam
+        selected_year = request.POST.get('exam_year') or selected_year
+        if 'toggle_publish' in request.POST and selected_class and selected_exam and selected_year:
+            publication, created = StudentResultPublication.objects.get_or_create(
+                class_level=selected_class,
+                exam_type=selected_exam,
+                exam_year=selected_year,
+                defaults={'is_published': True}
+            )
+            if not created:
+                publication.is_published = not publication.is_published
+                publication.save(update_fields=['is_published', 'updated_at'])
+            status = 'published' if publication.is_published else 'unpublished'
+            # Remove previous result-toggle messages from the storage so they don't accumulate
+            from django.contrib.messages import get_messages
+            storage = get_messages(request)
+            kept = []
+            for m in storage:
+                try:
+                    text = str(m.message)
+                except Exception:
+                    text = ''
+                if 'Result cards have been' in text:
+                    continue
+                kept.append(m)
+            # Re-add the non-toggle messages back into the storage
+            for m in kept:
+                messages.add_message(request, m.level, m.message, extra_tags=getattr(m, 'tags', ''))
+
+            messages.success(request, f'Result cards have been {status} for Class {selected_class}, {selected_exam} {selected_year}.')
+            return redirect(f"{reverse('myteacher:student_results')}?class_level={selected_class}&exam_type={selected_exam}&exam_year={selected_year}")
+
+    publication = None
+    result_published = False
+    if selected_class and selected_exam and selected_year:
+        publication = StudentResultPublication.objects.filter(
+            class_level=selected_class,
+            exam_type=selected_exam,
+            exam_year=selected_year
+        ).first()
+        result_published = publication.is_published if publication else False
+
+    class_students = Student.objects.none()
+    student_summary = None
+    class_summary = []
+
+    if selected_class and selected_exam and selected_year:
+        result_student_ids = list(
+            Mark.objects.filter(
+                student__current_class=selected_class,
+                exam_type=selected_exam,
+                exam_year=selected_year
+            ).values_list('student_id', flat=True).distinct()
+        )
+
+        class_students = Student.objects.filter(id__in=result_student_ids).order_by('class_roll')
+        if search_query:
+            class_students = class_students.filter(
+                Q(full_name__icontains=search_query) |
+                Q(student_id__icontains=search_query)
+            )
+
+        for student in class_students:
+            summary = get_student_result_summary(student, selected_exam, selected_year)
+            class_summary.append(summary)
+
+        if student_pk and student_pk.isdigit():
+            selected_student = get_object_or_404(
+                Student,
+                id=int(student_pk),
+                current_class=selected_class,
+                id__in=result_student_ids
+            )
+            student_summary = get_student_result_summary(selected_student, selected_exam, selected_year)
+
+    can_download = is_head_teacher or (teacher.is_class_teacher and selected_class == teacher.class_teacher_of)
+
+    return render(request, 'myteacher/student_results.html', {
+        'teacher': teacher,
+        'allowed_classes': result_classes,
+        'exam_choices': exam_choices,
+        'exam_years': exam_years,
+        'selected_class': selected_class,
+        'selected_exam': selected_exam,
+        'selected_year': selected_year,
+        'search_query': search_query,
+        'class_students': class_students,
+        'result_data': student_summary,
+        'class_summary': class_summary,
+        'can_download': can_download,
+        'is_head_teacher': is_head_teacher,
+        'result_published': result_published,
+        'publication': publication,
+    })
+
+@login_required
+def student_results_pdf_view(request, student_id):
+    teacher = request.user.teacher
+    selected_exam = request.GET.get('exam_type') or (Mark.EXAM_CHOICES[0][0] if Mark.EXAM_CHOICES else 'Half Yearly')
+    selected_year = request.GET.get('exam_year') or str(datetime.date.today().year)
+    student = get_object_or_404(Student, id=student_id)
+
+    student_summary = get_student_result_summary(student, selected_exam, selected_year)
+    is_head_teacher = is_head_or_admin(teacher, request.user)
+    if not is_head_teacher and not (teacher.is_class_teacher and student.current_class == teacher.class_teacher_of):
+        return HttpResponseForbidden("Download permission denied.")
+
+    context = {
+        'results': [student_summary],
+        'selected_exam': selected_exam,
+        'exam_year': selected_year,
+        'school_name': 'খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়',
+        'generated_on': datetime.date.today(),
+    }
+    pdf = render_to_pdf('myteacher/student_result_pdf.html', context)
+    if not pdf:
+        return HttpResponse("PDF generation failed. Please try again.")
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="result_{student.student_id}_{selected_exam}.pdf"'
+    return response
+
+
+@login_required
+def generate_admit_card(request):
+    if request.method == 'POST':
+        teacher = request.user.teacher
+        class_teacher_classes = get_teacher_class_teacher_classes(teacher)
+        is_head_teacher = is_head_or_admin(teacher, request.user)
+        
+        student_ids = request.POST.getlist('student_ids')
+        exam_name = request.POST.get('exam_name') or 'Examination'
+        exam_year = request.POST.get('exam_year') or datetime.date.today().year
+
+        if not student_ids:
+            student_ids = request.POST.getlist('student_ids[]')
+
+        if not student_ids:
+            return render(request, 'myteacher/error.html', {'message': 'অনুগ্রহ করে স্টুডেন্ট সিলেক্ট করুন!'})
+
+        students = Student.objects.filter(id__in=student_ids)
+        for student in students:
+            if not is_head_teacher and student.current_class not in class_teacher_classes:
+                return HttpResponseForbidden("You are not authorized to generate admit card for this student!")
+        
+        students = students.order_by('current_class', 'class_roll')
+        exam_title = f"{exam_name} - {exam_year}"
+        for student in students:
+            student.save_admit_card(exam_type=exam_name, exam_year=exam_year, exam_title=exam_title)
+        context = {
+            'students': students,
+            'exam_title': exam_title,
+            'exam_year': exam_year,
+            'selected_ids': student_ids,
+        }
+        return render(request, 'myteacher/admit_card_template.html', context)
+    return render(request, 'myteacher/error.html', {'message': 'Invalid Request'})
+
+
+@login_required
+def generate_seat_plan(request):
+    if request.method == 'POST':
+        teacher = request.user.teacher
+        class_teacher_classes = get_teacher_class_teacher_classes(teacher)
+        is_head_teacher = is_head_or_admin(teacher, request.user)
+        
+        student_ids = request.POST.getlist('student_ids')
+        exam_name = request.POST.get('exam_name')
+        exam_year = request.POST.get('exam_year')
+
+        if not student_ids:
+            student_ids = request.POST.getlist('student_ids[]')
+
+        if not student_ids:
+            return render(request, 'myteacher/error.html', {'message': 'অনুগ্রহ করে স্টুডেন্ট সিলেক্ট করুন!'})
+
+        # Validate that all students belong to assigned classes
+        students = Student.objects.filter(id__in=student_ids)
+        own_class_teacher_classes = get_teacher_own_class_teacher_classes(teacher)
+        for student in students:
+            if not is_head_teacher and student.current_class not in own_class_teacher_classes:
+                return HttpResponseForbidden("You are not authorized to generate seat plan for this student!")
+        
+        students = students.order_by('current_class', 'class_roll')
+        return render(request, 'myteacher/seat_plan_template.html', {
+            'students': students,
+            'exam_name': exam_name,
+            'exam_year': exam_year,
+            'logo_url': '/static/images/logo.png',
+        })
+    return render(request, 'myteacher/error.html', {'message': 'Invalid Request'})
+
+# models.py-তে যোগ করুন
+def get_routines(self):
+    return ExamRoutine.objects.filter(class_name=self.current_class).order_by('exam_date')
+
+@login_required
+def student_list_view(request):
+    teacher = request.user.teacher
+    is_head_teacher = is_head_or_admin(teacher, request.user)
+    class_filter = request.GET.get('class_filter', '')
+
+    if is_head_teacher:
+        students_qs = Student.objects.all()
+    else:
+        allowed_classes = get_teacher_allowed_classes(teacher)
+        own_class_teacher_classes = get_teacher_own_class_teacher_classes(teacher)
+        if own_class_teacher_classes:
+            allowed_classes = list(set(allowed_classes) | set(own_class_teacher_classes))
+        students_qs = Student.objects.filter(current_class__in=allowed_classes)
+
+    if class_filter:
+        students_qs = students_qs.filter(current_class=class_filter)
+
+    students = students_qs.order_by('current_class', 'class_roll')
+    can_generate = is_head_teacher or (teacher.is_class_teacher and class_filter == teacher.class_teacher_of)
+    return render(request, 'myteacher/student_list.html', {
+        'students': students,
+        'selected_class': class_filter,
+        'is_head_teacher': is_head_teacher,
+        'can_generate_admit': can_generate,
+        'can_generate_seat': can_generate,
+    })
+
+
+@login_required
+def student_list_report_view(request):
+    teacher = request.user.teacher
+    is_head_teacher = is_head_or_admin(teacher, request.user)
+    if not is_head_teacher and not teacher.is_class_teacher:
+        return HttpResponseForbidden('Only headmaster, assistant headmaster, or class teacher can access this page.')
+
+    if is_head_teacher:
+        selected_class = request.GET.get('class_filter', 'all')
+        class_options = [{'value': 'all', 'label': 'All Classes'}] + [
+            {'value': value, 'label': f'Class {value}'} for value, _ in Student.CLASS_CHOICES
+        ]
+        students = Student.objects.all().order_by('current_class', 'class_roll')
+        if selected_class and selected_class != 'all':
+            students = students.filter(current_class=selected_class)
+    else:
+        selected_class = teacher.class_teacher_of or 'all'
+        class_options = [{'value': selected_class, 'label': f'Class {selected_class}'}] if selected_class else []
+        students = Student.objects.filter(current_class=selected_class).order_by('class_roll') if selected_class else Student.objects.none()
+
+    class_groups = []
+    if selected_class == 'all':
+        for class_level, group in groupby(students, key=lambda s: s.current_class):
+            class_groups.append({'class_level': class_level, 'students': list(group)})
+    else:
+        class_groups.append({'class_level': selected_class, 'students': list(students)})
+
+    selected_label = 'All Classes' if selected_class == 'all' else f'Class {selected_class}'
+
+    return render(request, 'myteacher/student_list_report.html', {
+        'school_name': 'খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়',
+        'logo_url': '/static/images/logo.png',
+        'class_groups': class_groups,
+        'generated_on': datetime.date.today(),
+        'selected_class': selected_class,
+        'selected_label': selected_label,
+        'class_options': class_options,
+    })

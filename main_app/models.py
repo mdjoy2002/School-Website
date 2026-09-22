@@ -1,0 +1,313 @@
+from django.db import models
+from core.compression import CompressedUploadMixin
+
+
+# ১. নোটিশ বোর্ড
+class Notice(CompressedUploadMixin, models.Model):
+    title = models.CharField(max_length=200, verbose_name="নোটিশের শিরোনাম")
+    description = models.TextField(verbose_name="বিস্তারিত", blank=True, null=True)
+    file = models.FileField(upload_to='notices/', verbose_name="পিডিএফ ফাইল (PDF)")
+    PDF_FIELDS = ['file']
+    
+    show_on_ticker = models.BooleanField(default=False, verbose_name="নিউজ টিকারে (সর্বশেষ) দেখাবে?")
+    show_on_dashboard = models.BooleanField(default=False, verbose_name="হোমপেজ নোটিশ বোর্ডে দেখাবে?")
+    is_active = models.BooleanField(default=True, verbose_name="অ্যাক্টিভ আছে?")
+    
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="প্রকাশের তারিখ")
+    
+    def __str__(self): return self.title
+    
+    class Meta:
+        verbose_name_plural = "১. নোটিশ বোর্ড"
+        ordering = ['-created_at']
+
+# ২. টিকার নিউজ
+class TickerNews(models.Model):
+    title = models.CharField(max_length=255, verbose_name="খবরের শিরোনাম")
+    is_active = models.BooleanField(default=True, verbose_name="সক্রিয় কি না")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self): return self.title
+
+    class Meta:
+        verbose_name_plural = "টিকার নিউজ"
+
+# ৩. স্লাইডার
+class Slider(CompressedUploadMixin, models.Model):
+    title = models.CharField(max_length=200, verbose_name="স্লাইডার শিরোনাম")
+    image = models.ImageField(upload_to='sliders/', verbose_name="স্লাইডার ইমেজ")
+    IMAGE_FIELDS = ['image']
+    is_active = models.BooleanField(default=True, verbose_name="অ্যাক্টিভ আছে?")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self): return self.title
+    class Meta: 
+        verbose_name_plural = "৫. হোমপেজ স্লাইডার"
+
+# ৩. ইভেন্ট ভিত্তিক ফটোগ্যালারি
+class GalleryCategory(CompressedUploadMixin, models.Model):
+    name = models.CharField(max_length=100, verbose_name="ইভেন্টের নাম (ফোল্ডার)")
+    cover_image = models.ImageField(upload_to='gallery/covers/', verbose_name="কভার ফটো")
+    IMAGE_FIELDS = ['cover_image']
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # কভার ইমেজ না থাকলে এরর এড়াতে এই প্রপার্টিটি ব্যবহার করুন
+    @property
+    def get_cover_url(self):
+        if self.cover_image and hasattr(self.cover_image, 'url'):
+            return self.cover_image.url
+        return None
+
+    def __str__(self): return self.name
+    class Meta: 
+        verbose_name_plural = "৬. গ্যালারি ইভেন্ট/ফোল্ডার"
+
+class GalleryImage(CompressedUploadMixin, models.Model):
+    category = models.ForeignKey(GalleryCategory, related_name='images', on_delete=models.CASCADE, verbose_name="ইভেন্ট নির্বাচন করুন")
+    image = models.ImageField(upload_to='gallery/photos/', verbose_name="ছবি")
+    IMAGE_FIELDS = ['image']
+    caption = models.CharField(max_length=100, blank=True, verbose_name="ছবির ক্যাপশন (ঐচ্ছিক)")
+
+    def __str__(self): return f"Image for {self.category.name if self.category else 'Uncategorized'}"
+    class Meta: 
+        verbose_name_plural = "গ্যালারি ছবিসমূহ"
+
+# ৪. আমাদের সম্পর্কে ও বিদ্যালয়ের তথ্য
+class SchoolInfo(models.Model):
+    title = models.CharField(max_length=200, default="আমাদের সম্পর্কে", verbose_name="শিরোনাম")
+    description = models.TextField(verbose_name="স্কুলের বর্ণনা/ইতিহাস")
+    address = models.CharField(max_length=255, default="বয়রা, খুলনা, বাংলাদেশ", verbose_name="ঠিকানা")
+    phone_main = models.CharField(max_length=20, default="+৮৮০", verbose_name="প্রধান ফোন নম্বর")
+    phone_alt = models.CharField(max_length=20, blank=True, null=True, verbose_name="বিকল্প ফোন নম্বর")
+    email = models.EmailField(default="info@example.com", verbose_name="অফিসিয়াল ইমেইল")
+    map_url = models.TextField(blank=True, null=True, verbose_name="গুগল ম্যাপ এমবেড লিঙ্ক (iframe code)")
+    facebook_url = models.URLField(blank=True, null=True, verbose_name="ফেসবুক পেজ লিঙ্ক")
+    youtube_url = models.URLField(blank=True, null=True, verbose_name="ইউটিউব চ্যানেল লিঙ্ক")
+    
+    def __str__(self): return self.title
+    class Meta: 
+        verbose_name_plural = "৭. বিদ্যালয় পরিচিতি ও তথ্য"
+
+
+class LeadershipProfile(CompressedUploadMixin, models.Model):
+    PROFILE_TYPES = (
+        ('HEADMASTER', 'প্রধান শিক্ষক'),
+        ('COMMITTEE', 'ম্যানেজিং কমিটি'),
+    )
+
+    profile_type = models.CharField(
+        max_length=20,
+        choices=PROFILE_TYPES,
+        unique=True,
+        verbose_name="প্রোফাইলের ধরন",
+    )
+    name = models.CharField(max_length=150, verbose_name="নাম")
+    designation = models.CharField(max_length=150, verbose_name="পদবি")
+    caption = models.TextField(blank=True, verbose_name="ক্যাপশন/বার্তা")
+    image = models.ImageField(upload_to='leadership/', verbose_name="ছবি")
+    IMAGE_FIELDS = ['image']
+
+    def __str__(self):
+        return self.get_profile_type_display()
+
+    class Meta:
+        verbose_name = "প্রধান শিক্ষক ও ম্যানেজিং কমিটি"
+        verbose_name_plural = "প্রধান শিক্ষক ও ম্যানেজিং কমিটি"
+
+class AboutImage(CompressedUploadMixin, models.Model):
+    school_info = models.ForeignKey(SchoolInfo, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='about_slider/', verbose_name="স্লাইডার ছবি")
+    IMAGE_FIELDS = ['image']
+
+# ৫. মূল শিক্ষক ও কর্মচারী মডেল
+class Teacher(CompressedUploadMixin, models.Model):
+    TYPE_CHOICES = (
+        ('HEAD', 'প্রতিষ্ঠান প্রধান'),
+        ('TEACHER', 'সহকারী শিক্ষক'),
+        ('STAFF', 'কর্মচারী'),
+    )
+    DESIGNATION_CHOICES = [
+        ('Headmaster', 'প্রতিষ্ঠান প্রধান'),
+        ('Assistant Headmaster', 'সহকারী প্রধান শিক্ষক'),
+        ('Senior Teacher', 'সিনিয়র শিক্ষক'),
+        ('Assistant Teacher', 'সহকারী শিক্ষক'),
+        ('Office Staff', 'অফিস স্টাফ'),
+        ('Clerk', 'ক্লার্ক'),
+        ('Accountant', 'হিসাবরক্ষক'),
+        ('Night Guard', 'নৈশ প্রহরী'),
+        ('Cleaner', 'পরিচ্ছন্ন কর্মী'),
+        ('Aya', 'আয়া'),
+    ]
+    teacher_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='TEACHER', verbose_name="ধরণ")
+    name = models.CharField(max_length=100, verbose_name="নাম")
+    designation = models.CharField(max_length=50, choices=DESIGNATION_CHOICES, blank=True, verbose_name="পদবী")
+    subject = models.CharField(max_length=200, blank=True, null=True, verbose_name="বিষয়")
+    image = models.ImageField(upload_to='teachers/', verbose_name="ছবি")
+    IMAGE_FIELDS = ['image']
+    phone = models.CharField(max_length=15, blank=True, null=True, verbose_name="ফোন নম্বর")
+    email = models.EmailField(blank=True, null=True, verbose_name="ইমেইল")
+    order = models.PositiveIntegerField(default=0, verbose_name="ক্রমিক নং (সিরিয়াল)")
+
+    def __str__(self): return self.name
+    class Meta:
+        verbose_name_plural = "৫. সকল তালিকা"
+        ordering = ['order']
+
+# ৬. পরীক্ষার রুটিন
+class ExamRoutine(CompressedUploadMixin, models.Model):
+    CLASS_CHOICES = (
+        ('6', 'ষষ্ঠ শ্রেণী'),
+        ('7', 'সপ্তম শ্রেণী'),
+        ('8', 'অষ্টম শ্রেণী'),
+        ('9', 'নবম শ্রেণী'),
+        ('10', 'দশম শ্রেণী'),
+    )
+    title = models.CharField(max_length=200, verbose_name="পরীক্ষার শিরোনাম (উদা: বার্ষিক পরীক্ষা ২০২৬)")
+    target_class = models.CharField(max_length=2, choices=CLASS_CHOICES, verbose_name="শ্রেণী নির্বাচন করুন")
+    pdf_file = models.FileField(upload_to='exam_routines/', verbose_name="রুটিন পিডিএফ (PDF)")
+    PDF_FIELDS = ['pdf_file']
+    
+    show_on_ticker = models.BooleanField(default=True, verbose_name="নিউজ টিকারে দেখাবে?")
+    show_on_notice = models.BooleanField(default=True, verbose_name="নোটিশ বোর্ডে দেখাবে?")
+    
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="আপলোডের তারিখ")
+
+    def __str__(self): return f"Class {self.target_class} - {self.title}"
+    class Meta:
+        verbose_name_plural = "৬. পরীক্ষার রুটিন"
+        ordering = ['-created_at']
+
+# ৭. শিক্ষার্থী কর্নার তথ্য
+class StudentCornerData(CompressedUploadMixin, models.Model):
+    CATEGORY_CHOICES = [
+        ('INFO', 'শ্রেণী ও লিঙ্গভিত্তিক শিক্ষার্থী তথ্য'),
+        ('SEAT', 'শ্রেণী ভিত্তিক আসন সংখ্যা'),
+        ('DRESS', 'স্কুল-কলেজের ড্রেস সম্পর্কিত তথ্য'),
+        ('CLASS_ROUTINE', 'ক্লাস রুটিন'),
+        ('SYLLABUS', 'সিলেবাস'),
+        ('EXAM_ROUTINE', 'পরীক্ষার রুটিন'),
+        ('HOLIDAY', 'ছুটির তালিকা'),
+    ]
+    
+    title = models.CharField(max_length=255, verbose_name="ফাইলের শিরোনাম")
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, verbose_name="ক্যাটাগরি নির্বাচন করুন")
+    pdf_file = models.FileField(upload_to='student_corner/pdfs/', verbose_name="PDF ফাইল আপলোড করুন")
+    PDF_FIELDS = ['pdf_file']
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="আপলোডের তারিখ")
+
+    def __str__(self):
+        return f"{self.get_category_display()} - {self.title}"
+
+    class Meta:
+        verbose_name_plural = "১০. শিক্ষার্থী কর্নার তথ্য (সিলেবাস, রুটিন ইত্যাদি)"
+        ordering = ['-created_at']
+
+# ৮. ভর্তি তথ্য (Admission Info)
+class AdmissionInfo(CompressedUploadMixin, models.Model):
+    CATEGORY_CHOICES = [
+        ('form', 'ভর্তি আবেদন ফরম'),
+        ('guide', 'ভর্তি নির্দেশিকা'),
+        ('result', 'ভর্তি পরীক্ষার ফলাফল'),
+        ('fees', 'বেতন ও ফি সমূহ'),
+    ]
+
+    title = models.CharField(max_length=255, verbose_name="ফাইলের শিরোনাম")
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, verbose_name="ক্যাটাগরি")
+    pdf_file = models.FileField(upload_to='admission/pdfs/', verbose_name="পিডিএফ ফাইল")
+    PDF_FIELDS = ['pdf_file']
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="আপলোড তারিখ")
+
+    def __str__(self):
+        return f"{self.title} - {self.get_category_display()}"
+
+    class Meta:
+        verbose_name_plural = "৮. ভর্তি সংক্রান্ত তথ্য (ফরম, ফলাফল ইত্যাদি)"
+        ordering = ['-created_at']
+
+# ৯. ফলাফল তথ্য (Result Data)
+class ResultData(CompressedUploadMixin, models.Model):
+    CATEGORY_CHOICES = [
+        ('public', 'পাবলিক পরীক্ষার ফলাফল'),
+        ('internal', 'স্কুল ও কলেজের ফলাফল'),
+    ]
+
+    title = models.CharField(max_length=255, verbose_name="ফলাফলের শিরোনাম (উদা: এসএসসি ফলাফল ২০২৫)")
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, verbose_name="ফলাফলের ধরন")
+    file = models.FileField(upload_to='results/pdfs/', verbose_name="ফলাফল পিডিএফ (PDF)")
+    PDF_FIELDS = ['file']
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="প্রকাশের তারিখ")
+
+    def __str__(self):
+        return f"{self.get_category_display()} - {self.title}"
+
+    class Meta:
+        verbose_name_plural = "১১. সকল পরীক্ষার ফলাফল (পাবলিক ও অভ্যন্তরীণ)"
+        ordering = ['-created_at']
+
+# ১০. প্রাপ্ত অভিযোগ বা যোগাযোগ বার্তা
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=100, verbose_name="নাম")
+    phone = models.CharField(max_length=15, verbose_name="মোবাইল নম্বর")
+    subject = models.CharField(max_length=200, verbose_name="বিষয়")
+    message = models.TextField(verbose_name="বার্তা/অভিযোগ")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="জমার সময়")
+
+    def __str__(self): return f"{self.name} - {self.subject}"
+    class Meta:
+        verbose_name_plural = "৪. প্রাপ্ত অভিযোগ ও বার্তা"
+        ordering = ['-created_at']
+
+# --- প্রক্সি মডেলসমূহ ---
+class Headmaster(Teacher):
+    class Meta:
+        proxy = True
+        verbose_name = "প্রতিষ্ঠান প্রধান"
+        verbose_name_plural = "৯. প্রতিষ্ঠান প্রধান"
+
+class GeneralTeacher(Teacher):
+    class Meta:
+        proxy = True
+        verbose_name = "সহকারী শিক্ষক"
+        verbose_name_plural = "২. সহকারী শিক্ষকবৃন্দ"
+
+class Staff(Teacher):
+    class Meta:
+        proxy = True
+        verbose_name = "কর্মচারী"
+        verbose_name_plural = "৩. কর্মচারীবৃন্দ"
+
+
+class VisitorProfile(models.Model):
+    visitor_uuid = models.CharField(max_length=64, unique=True, db_index=True, verbose_name='ভিজিটর ইউইডি')
+    ip_address = models.CharField(max_length=45, verbose_name='আইপি ঠিকানা')
+    first_visit = models.DateTimeField(auto_now_add=True, verbose_name='প্রথম ভিজিট')
+    last_visit = models.DateTimeField(auto_now=True, verbose_name='সর্বশেষ ভিজিট')
+
+    def __str__(self):
+        return self.visitor_uuid
+
+    class Meta:
+        verbose_name_plural = 'ভিজিটর প্রোফাইল'
+
+
+class DailyVisitor(models.Model):
+    date = models.DateField(verbose_name='তারিখ')
+    ip_address = models.CharField(max_length=45, verbose_name='আইপি ঠিকানা')
+    session_key = models.CharField(max_length=40, verbose_name='সেশন কী')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='সৃষ্টি সময়')
+    visitor_profile = models.ForeignKey(
+        VisitorProfile,
+        on_delete=models.CASCADE,
+        related_name='daily_visits',
+    )
+
+    def __str__(self):
+        return f"{self.date} - {self.ip_address}"
+
+    class Meta:
+        verbose_name_plural = 'দৈনিক ভিজিটর'
+        indexes = [
+            models.Index(fields=['date'], name='main_app_daily_date_idx'),
+            models.Index(fields=['ip_address', 'session_key'], name='main_app_daily_vis_idx'),
+        ]
+        unique_together = (('date', 'ip_address', 'session_key'),)

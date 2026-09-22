@@ -1,0 +1,115 @@
+{% block content %}
+<style>
+    body { margin: 0; padding: 0; background: #f4f4f9; font-family: var(--global-font); }
+    
+    .page { 
+        width: 210mm; 
+        height: 297mm; 
+        padding: 5mm; 
+        margin: 5mm auto; 
+        background: #fff; 
+        display: grid; 
+        grid-template-columns: repeat(2, 1fr); 
+        grid-template-rows: repeat(4, 1fr); 
+        gap: 2mm; 
+        box-sizing: border-box; 
+    }
+    
+    .seat-card { 
+        border: 1.5px solid #000; 
+        padding: 6px; 
+        position: relative; 
+        background: #fff; 
+        display: flex; 
+        flex-direction: column; 
+        justify-content: space-between; 
+        box-sizing: border-box; 
+        border-radius: 5px;
+    }
+    
+    .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; opacity: 0.05; z-index: 0; }
+    
+    .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 2px; position: relative; z-index: 1; }
+    .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1px; }
+    
+    .main-logo { width: 35px; height: auto; }
+    .student-photo { width: 40px; height: 50px; border: 1px solid #000; object-fit: cover; }
+    
+    .school-name { font-size: 11px; font-weight: 900; margin: 0; text-transform: uppercase; }
+    .school-addr { font-size: 8px; margin: 0; font-weight: 600; }
+    .exam-tag { font-size: 10px; font-weight: bold; background: #eee; border: 1px solid #000; padding: 1px 6px; margin-top: 2px; display: inline-block; }
+    
+    .content { margin-top: 2px; z-index: 1; }
+    .info-table { width: 100%; border-collapse: collapse; }
+    .info-table td { font-size: 12px; padding: 0 0; vertical-align: top; font-weight: 600; }
+    .info-table td.label { width: 75px; font-weight: bold; }
+    .info-table td.val { text-transform: uppercase; }
+    
+    .footer { display: flex; justify-content: space-between; align-items: flex-end; z-index: 1; margin-top: 2px; }
+    .seat-no { font-size: 10px; font-weight: bold; align-self: flex-end; }
+    
+    .sign-container { display: flex; flex-direction: column; align-items: center; }
+    .sign-img { width: 70px; height: auto; margin-bottom: 0px; }
+    .sign-box { width: 70px; text-align: center; font-size: 9px; font-weight: bold; border-top: 1px solid #000; }
+
+    .no-print { text-align: center; padding: 20px; }
+    
+    @media print {
+        @page { size: A4; margin: 5mm; }
+        body { background: #fff; }
+        .no-print { display: none; }
+        .page { margin: 0; page-break-after: always; }
+    }
+</style>
+
+<div class="no-print">
+    <button onclick="window.print()">Print Seat Plan</button>
+    <a href="{% url 'myteacher:student_list' %}">Back to List</a>
+</div>
+
+{% for student in students %}
+    {% if forloop.counter0|divisibleby:8 %}
+        <div class="page">
+    {% endif %}
+
+    <div class="seat-card">
+        <img src="{{ logo_url }}" class="watermark">
+        <div class="header">
+            <div class="header-top">
+                <img src="{{ logo_url }}" class="main-logo">
+                <div>
+                    <h2 class="school-name">Khondoker Naser Uddin High School</h2>
+                    <p class="school-addr">Hazi Foyez Uddin Cross Road, Boyra, GPO-9000, Khulna</p>
+                </div>
+                <img src="{{ student.photo.url|default:logo_url }}" class="student-photo">
+            </div>
+            <div class="exam-tag">{{ exam_name }} - {{ exam_year }}</div>
+        </div>
+
+        <div class="content">
+            <table class="info-table">
+                <tr><td class="label">Student ID</td><td class="val">: {{ student.student_id }}</td></tr>
+                <tr><td class="label">Name</td><td class="val">: {{ student.full_name }}</td></tr>
+                <tr><td class="label">Class</td><td class="val">: {{ student.current_class }}</td></tr>
+                <tr><td class="label">Roll No</td><td class="val">: {{ student.class_roll }}</td></tr>
+                <tr><td class="label">Section</td><td class="val">: {{ student.section|default:'N/A' }}</td></tr>
+                <tr><td class="label">Session</td><td class="val">: {{ student.session|default:exam_year }}</td></tr>
+                <tr><td class="label">Group</td><td class="val">: {{ student.group|default:'General' }}</td></tr>
+            </table>
+        </div>
+
+        <div class="footer">
+            <div class="seat-no">SL: {{ forloop.counter|stringformat:"03d" }}</div>
+            
+            <div class="sign-container">
+                <img src="/static/images/sign.png" alt="Signature" class="sign-img">
+                <div class="sign-box">Headmaster</div>
+            </div>
+        </div>
+    </div>
+
+    {% if forloop.counter|divisibleby:8 or forloop.last %}
+        </div>
+    {% endif %}
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,386 @@
+:root {
+    --primary-color: #004a99;
+    --accent-color: #ffc107;
+    --bg-light: #f8fafc;
+    --text-dark: #1f2937;
+    --text-muted: #64748b;
+}
+
+html {
+    scroll-behavior: smooth;
+    min-width: 0;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    min-width: 0 !important;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+    width: 100%;
+    background: var(--bg-light);
+    color: var(--text-dark);
+    font-family: 'Hind Siliguri', 'Nikosh', 'Times New Roman', sans-serif;
+}
+
+html, body, .row, .navbar, .container, .container-fluid, .page-container, .main-content, .main-wrapper,
+article, section, header, footer, nav, aside, table, thead, tbody, tr, th, td {
+    min-width: 0 !important;
+}
+
+iframe, embed, object, .carousel-item img, .auto-gallery-slider .carousel-item img, .about-slider img, .gallery-item img {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+img, svg, video, canvas, iframe {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+iframe {
+    width: 100%;
+}
+
+button, input, select, textarea {
+    max-width: 100%;
+    min-width: 0;
+}
+
+.container, .container-fluid, .page-container, .main-content, .main-wrapper {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+header, footer, nav, section, main {
+    width: 100%;
+}
+
+.row, .d-flex, .flex-row, .grid {
+    flex-wrap: wrap !important;
+}
+
+.navbar, .navbar-expand-lg, .navbar-collapse {
+    flex-wrap: wrap !important;
+}
+
+.navbar-nav {
+    width: 100%;
+    justify-content: center;
+}
+
+.navbar .nav-link,
+.navbar-nav .nav-link {
+    white-space: normal !important;
+    text-align: center;
+}
+
+.navbar-toggler {
+    display: block !important;
+}
+
+.dropdown-menu {
+    min-width: unset !important;
+    width: auto !important;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.table {
+    width: 100%;
+    table-layout: auto;
+    border-collapse: collapse;
+    min-width: 0;
+}
+
+.table th, .table td {
+    white-space: normal !important;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.card, .card-body, .toolbar-card, .table-card, .notice-board, .teacher-card,
+.main-content, .content-card, .page-header, .banner, .footer {
+    width: 100%;
+    min-width: 0;
+}
+
+.text-truncate {
+    white-space: normal !important;
+}
+
+@media (max-width: 1024px) {
+    .container, .container-fluid, .page-container, .main-content, .main-wrapper {
+        padding: 0 14px;
+    }
+
+    .navbar-brand, .header-logo, .school-name-bn, .school-name-en {
+        text-align: center;
+        justify-content: center;
+    }
+
+    .navbar-nav {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .navbar-collapse {
+        width: 100%;
+    }
+
+    .table th, .table td {
+        padding: 12px 10px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .container, .container-fluid, .page-container, .main-content, .main-wrapper {
+        padding: 0 12px;
+    }
+
+    .header-logo {
+        width: 80px !important;
+        height: auto !important;
+    }
+
+    .school-name-bn {
+        font-size: 24px !important;
+        line-height: 1.2;
+    }
+
+    .school-name-en {
+        font-size: 16px !important;
+    }
+
+    .navbar-nav {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .nav-link {
+        padding: 12px 10px !important;
+        text-align: left;
+    }
+
+    .toolbar-card, .student-card, .notice-item, .gallery-item {
+        padding: 16px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .container, .container-fluid, .page-container, .main-content, .main-wrapper {
+        padding: 0 10px;
+    }
+
+    .navbar .nav-link {
+        font-size: 14px !important;
+        padding: 10px 8px !important;
+    }
+
+    .header-logo {
+        width: 70px !important;
+        height: auto !important;
+    }
+
+    .school-name-bn {
+        font-size: 20px !important;
+    }
+
+    .section-title {
+        font-size: 1.5rem !important;
+    }
+}
+
+@media print {
+    .no-print, .toolbar-card, .navbar, .footer, .download-action, .control-panel {
+        display: none !important;
+    }
+
+    body {
+        background: #fff !important;
+    }
+
+    .container, .page-container {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+}
+
+html, body {
+    min-width: 0 !important;
+}
+
+.table-responsive {
+    overflow-x: auto !important;
+    width: 100% !important;
+}
+
+.table {
+    min-width: 0 !important;
+}
+
+.table th,
+.table td,
+.navbar .nav-link,
+.navbar-nav .nav-link,
+.dropdown-item,
+.notice-title,
+.contact-box p,
+.teacher-card,
+.gallery-item,
+.page-header,
+.section-title {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+}
+
+.navbar-nav .nav-item {
+    width: auto !important;
+}
+
+.dropdown-menu {
+    min-width: unset !important;
+    width: 100% !important;
+}
+
+@media (max-width: 992px) {
+    .navbar-nav {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .navbar .nav-link,
+    .navbar-nav .nav-link,
+    .dropdown-item {
+        text-align: left !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        white-space: normal !important;
+    }
+
+    .table th,
+    .table td {
+        white-space: normal !important;
+        padding: 12px 10px !important;
+    }
+
+    .contact-box p,
+    .notice-title {
+        white-space: normal !important;
+    }
+}
+
+.text-truncate {
+    white-space: normal !important;
+}
+
+@media (max-width: 1024px) {
+    .container, .container-fluid, .page-container, .main-content {
+        padding: 0 14px;
+    }
+
+    .navbar-brand, .header-logo, .school-name-bn, .school-name-en {
+        text-align: center;
+        justify-content: center;
+    }
+
+    .navbar-toggler {
+        display: block !important;
+    }
+
+    .navbar-collapse {
+        width: 100%;
+    }
+
+    .table th, .table td {
+        white-space: normal !important;
+        padding: 12px 10px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .container, .container-fluid, .page-container, .main-content {
+        padding: 0 12px;
+    }
+
+    .header-logo {
+        width: 80px !important;
+        height: auto !important;
+    }
+
+    .school-name-bn {
+        font-size: 24px !important;
+        line-height: 1.2;
+    }
+
+    .school-name-en {
+        font-size: 16px !important;
+    }
+
+    .navbar-nav {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .nav-link {
+        padding: 12px 10px !important;
+        text-align: left;
+    }
+
+    .toolbar-card, .student-card, .notice-item, .gallery-item {
+        padding: 16px !important;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 576px) {
+    .container, .container-fluid, .page-container, .main-content {
+        padding: 0 10px;
+    }
+
+    .navbar .nav-link {
+        font-size: 14px !important;
+        padding: 10px 8px !important;
+    }
+
+    .header-logo {
+        width: 70px !important;
+    }
+
+    .school-name-bn {
+        font-size: 20px !important;
+    }
+
+    .section-title {
+        font-size: 1.5rem !important;
+    }
+}
+
+@media print {
+    .no-print, .toolbar-card, .navbar, .footer, .download-action, .control-panel {
+        display: none !important;
+    }
+
+    body {
+        background: #fff !important;
+    }
+
+    .container, .page-container {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+}

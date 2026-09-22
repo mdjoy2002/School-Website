@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+@font-face {
+    font-family: 'Nikosh';
+    src: local('Nikosh'), url('../fonts/Nikosh.ttf') format('truetype');
+    font-display: swap;
+    font-weight: 400;
+    font-style: normal;
+}
+
+:root {
+    --global-font: 'Nikosh', 'Hind Siliguri', 'Times New Roman', serif;
+    --primary-font: 'Playfair Display', serif;
+    --bangla-font: 'Hind Siliguri', sans-serif;
+}
+
+html {
+    font-family: var(--global-font);
+}
+
+body {
+    font-family: var(--global-font);
+}
+
+.en-font,
+.times-font,
+.title-serif,
+.card-title,
+.table th,
+.table td {
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.bangla-font,
+.font-bangla,
+.navbar-brand small,
+.badge,
+.text-bangla {
+    font-family: 'Nikosh', 'Hind Siliguri', sans-serif;
+}

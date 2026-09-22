@@ -1,0 +1,67 @@
+{% load static %}
+<div class="admit-card-preview">
+    <div class="preview-header d-flex flex-column flex-md-row align-items-center gap-3 mb-3">
+        <div class="preview-logo" style="width: 70px; flex-shrink: 0;">
+            <img src="{% static 'images/logo.png' %}" alt="Logo" style="width: 100%; height: auto; display: block;" onerror="this.src='https://via.placeholder.com/70'">
+        </div>
+        <div class="preview-school text-center text-md-start flex-grow-1">
+            <div class="fw-bold" style="font-size: 1rem; text-transform: uppercase;">KHONDOKER NASER UDDIN HIGH SCHOOL</div>
+            <div class="text-secondary" style="font-size: 0.85rem;">Hazi Foyez Uddin Cross Road, Boyra, GPO-9000, Khulna</div>
+            <div class="badge bg-secondary text-uppercase mt-2">Admit Card</div>
+            <div class="mt-2" style="font-size: 0.85rem; font-weight: 700;">{{ admit.exam_title|upper }}</div>
+        </div>
+    </div>
+
+    <div class="preview-student-info row gx-3 gy-2 mb-3" style="font-size: 0.9rem;">
+        <div class="col-6"><strong>Name:</strong> {{ student.full_name }}</div>
+        <div class="col-6"><strong>Student ID:</strong> {{ student.student_id }}</div>
+        <div class="col-6"><strong>Father's Name:</strong> {{ student.father_name }}</div>
+        <div class="col-6"><strong>Mother's Name:</strong> {{ student.mother_name }}</div>
+        <div class="col-6"><strong>Roll No:</strong> {{ student.class_roll }}</div>
+        <div class="col-6"><strong>Religion:</strong> {{ student.religion|default:'N/A' }}</div>
+        <div class="col-6"><strong>Class:</strong> {{ student.current_class|default:'N/A' }}</div>
+        <div class="col-6"><strong>Group:</strong> {{ student.group|default:'General' }}</div>
+    </div>
+
+    <div class="preview-table-wrapper mb-3">
+        <table class="table table-bordered table-sm mb-0" style="font-size: 0.88rem;">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Sl</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Day</th>
+                    <th scope="col">Code</th>
+                    <th scope="col">Subject</th>
+                    <th scope="col">Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rt in student.get_routines %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ rt.exam_date|date:'d-m-Y' }}</td>
+                        <td>{{ rt.exam_date|date:'D' }}</td>
+                        <td>{{ rt.subject_code|default:'-' }}</td>
+                        <td>{{ rt.subject_name }}</td>
+                        <td>{{ rt.exam_time }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">No exam routine available.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="preview-notes text-secondary" style="font-size: 0.85rem;">
+        <p class="mb-1">• Students must bring this admit card to the exam hall daily.</p>
+        <p class="mb-1">• Candidates must enter the exam hall at least 30 minutes before the start time.</p>
+        <p class="mb-0">• Mobile phones or any electronic devices are strictly prohibited.</p>
+    </div>
+
+    <div class="preview-footer d-flex justify-content-between mt-3" style="font-size: 0.85rem;">
+        <div>Class Teacher</div>
+        <div>Headmaster</div>
+    </div>
+</div>

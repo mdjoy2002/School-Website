@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+  
+    <meta name="google-site-verification" content="4zE5OiY1ZbwSS1Kz1PKnfJHl2UlJl8aw2ElSPge_mPY" />
+    <title>খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয় | Khondoker Naser High School, Khulna</title>
+    <meta name="description" content="খন্দকার নাসের উদ্দিন মাধ্যমিক বিদ্যালয়, বয়রা, খুলনা-এর অফিসিয়াল ওয়েবসাইট। স্কুলের তথ্য, নোটিশ, ভর্তি এবং ফলাফল সংক্রান্ত সকল তথ্য এখানে পাওয়া যাবে। স্থাপিত: ১৯৯৪।">
+    <meta name="keywords" content="Khandaker Naser Uddin High School, Knu High School, Khulna School, বয়রা স্কুল, খন্দকার নাসের উদ্দিন মাধ্যমিক বিদ্যালয়, খুলনা শিক্ষা বোর্ড">
+    <meta name="author" content="Md Imtiaz Sarder Joy">
+    
+    <meta property="og:title" content="খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়">
+    <meta property="og:description" content="মানসম্মত শিক্ষা ও সুন্দর ভবিষ্যতের প্রতিশ্রুতি।">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://knuhighschool.pythonanywhere.com/">
+
+    {% load static %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    
+    <!-- Google Site Name Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Knu High School",
+      "alternateName": "খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়",
+      "url": "https://knuhighschool.pythonanywhere.com/"
+    }
+    </script>
+    <style>
+        body { 
+            font-family: 'Times New Roman', 'Nikosh', 'Hind Siliguri', serif; 
+            background-color: #f8f9fa; 
+            color: #333;
+            overflow-x: visible; 
+            margin: 0;
+            padding: 0;
+        }
+
+        [lang="bn"] { font-family: 'Nikosh', 'Hind Siliguri', sans-serif; }
+
+        html { scroll-behavior: smooth; }
+
+        /* --- Header Top Styling (Updated with Background) --- */
+        .header-top-main {
+            /* পুরো সেকশনে একটি আকর্ষণীয় গ্রেডিয়েন্ট ব্যাকগ্রাউন্ড */
+            background: linear-gradient(135deg, #e0f2fe 0%, #ffffff 50%, #e0f2fe 100%);
+            border-bottom: 2px solid #004a99;
+            position: relative;
+            z-index: 1100; /* ড্রপডাউন যাতে সবার উপরে থাকে */
+            padding: 25px 0;
+        }
+
+        .header-logo {
+            width: 110px;
+            height: 110px;
+            object-fit: contain;
+            transition: 0.4s;
+            cursor: pointer;
+            border: 4px solid #fff;
+        }
+
+        .header-logo:hover {
+            transform: scale(1.05) rotate(5deg);
+        }
+
+        .header-clock {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 150px;
+            padding: 14px 18px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #f8fbff 0%, #e8efff 100%);
+            color: #0f3d91;
+            font-weight: 700;
+            box-shadow: 0 18px 45px rgba(15, 61, 145, 0.16);
+            border: 1px solid rgba(15, 61, 145, 0.14);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            text-align: center;
+        }
+        .header-clock:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 24px 60px rgba(15, 61, 145, 0.18);
+        }
+        .header-clock .clock-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(15, 61, 145, 0.1);
+            color: #0f3d91;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+        .header-clock .clock-time {
+            font-size: 1.05rem;
+            letter-spacing: 0.03em;
+            line-height: 1.2;
+        }
+        .header-clock .clock-label {
+            font-size: 0.75rem;
+            color: #1b3c72;
+            margin-top: 4px;
+        }
+
+        .school-name-bn {
+            color: #004a99;
+            font-size: 36px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            margin-bottom: 5px;
+        }
+
+        .school-name-en {
+            font-size: 22px;
+            letter-spacing: 0.5px;
+            color: #555;
+        }
+
+        /* --- Login Dropdown & Button Fix --- */
+        .login-btn {
+            background: #004a99;
+            border: none;
+            transition: 0.3s;
+            z-index: 1101;
+        }
+        .login-btn:hover {
+            background: #003366;
+            transform: translateY(-2px);
+        }
+
+        /* লগইন ড্রপডাউন মেনু ফিক্স */
+        .header-top-main .dropdown-menu {
+            z-index: 2000 !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        }
+
+        /* --- Navbar Styling --- */
+        .navbar { 
+            background-color: #004a99 !important; 
+            border-bottom: 4px solid #ffc107; 
+            padding: 0 !important; 
+            z-index: 1030; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
+            position: sticky;
+            top: 0; 
+        }
+
+        .nav-link { 
+            font-weight: 600; 
+            transition: 0.3s; 
+            color: #fff !important; 
+            padding: 15px 12px !important;
+            font-size: 15px;
+            white-space: normal;
+        }
+
+        .nav-link i { margin-right: 5px; color: #ffc107; }
+        .nav-link:hover, .nav-link.active { 
+            background: rgba(255,255,255,0.1);
+            color: #ffc107 !important; 
+        }
+
+        /* Dropdown Styling */
+        .dropdown-menu {
+            background-color: #003366;
+            border: none;
+            border-top: 3px solid #ffc107;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            padding: 10px 0;
+        }
+        .dropdown-item {
+            color: #fff !important;
+            padding: 10px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transition: 0.3s;
+        }
+        .dropdown-item i { margin-right: 8px; color: #ffc107; }
+        .dropdown-item:hover {
+            background-color: #ffc107 !important;
+            color: #004a99 !important;
+            padding-left: 25px;
+        }
+        
+        /* --- Responsive Adjustments --- */
+        @media (max-width: 991px) {
+            .school-name-bn { font-size: 28px; }
+            .school-name-en { font-size: 18px; }
+            .header-logo { width: 90px; height: 90px; }
+        }
+
+        @media (max-width: 768px) {
+            .header-top-main { padding: 15px 0; }
+            .school-name-bn { font-size: 22px; }
+            .school-name-en { font-size: 15px; }
+            .header-logo { width: 75px; height: 75px; }
+            .nav-link { padding: 10px 15px !important; border-bottom: 1px solid rgba(255,255,255,0.1); }
+            .auto-gallery-slider .carousel-item img { max-height: 40vh; }
+            .section-title { font-size: 1.8rem; }
+            .display-5 { font-size: 2rem; }
+        }
+
+        @media (max-width: 576px) {
+            .school-name-bn { font-size: 18px; }
+            .school-name-en { font-size: 13px; }
+            .brand-info p { font-size: 12px; }
+            .login-btn { width: 100%; margin-top: 10px; }
+            .ticker-wrap { white-space: normal; flex-wrap: wrap; }
+            .ticker-content { display: block; animation: none; }
+        }
+
+        @media (min-width: 992px) {
+            .dropdown:hover .dropdown-menu { display: block; margin-top: 0; }
+        }
+
+        /* Slider & Notice Styles */
+        /* Slider images: show the full image without making the slider overly tall */
+        .auto-gallery-slider .carousel-item img {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+            max-height: 60vh; /* keep slider from growing too large */
+            object-fit: contain; /* show full image without cropping */
+            border-radius: 20px;
+            background: #000; /* helps with letterboxing for non-full-width images */
+        }
+        .gallery-overlay-title { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0, 45, 90, 0.9)); color: white; padding: 40px 15px; text-align: center; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
+        .about-slider img { width: 100%; height: 450px; object-fit: cover; border-radius: 15px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); border: 8px solid #fff; }
+        .section-title { font-weight: 700; color: #004a99; position: relative; padding-bottom: 15px; margin-bottom: 50px; text-align: center; font-size: 2.5rem; }
+        .section-title::after { content: ''; width: 80px; height: 4px; background: #ffc107; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); border-radius: 2px; }
+        .notice-board { background: #fff; border-radius: 20px; border-top: 6px solid #004a99; box-shadow: 0 15px 35px rgba(0,0,0,0.08); overflow: hidden; }
+        .notice-list { max-height: 450px; overflow-y: auto; }
+        .notice-item { border-bottom: 1px solid #eee; padding: 20px; transition: 0.3s; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: inherit; }
+        .notice-item:hover { background: #f0f7ff; color: #004a99; padding-left: 30px; }
+        .notice-date { background: #f0f0f0; padding: 5px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; }
+        .teacher-card { transition: 0.4s; border-radius: 20px; overflow: hidden; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.05); background: #fff; }
+        .teacher-card:hover { transform: translateY(-15px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .teacher-img { width: 140px; height: 140px; object-fit: cover; border: 5px solid #ffc107; padding: 5px; transition: 0.4s; }
+        footer { background: #002d5a; color: #fff; padding: 80px 0 30px; }
+        .footer-logo { font-size: 28px; font-weight: 700; color: #ffc107; }
+        .social-links a { display: inline-block; width: 45px; height: 45px; background: rgba(255,255,255,0.1); line-height: 45px; text-align: center; border-radius: 50%; color: #fff; font-size: 20px; margin-right: 10px; transition: 0.3s; }
+        /* সোশ্যাল আইকন এবং ফুটার পজিশন ফিক্স */
+.social-links a {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+footer {
+    margin-top: auto; /* এটিই ফুটারকে নিচে ঠেলে দিবে */
+    width: 100%;
+}
+        .social-links a:hover { background: #ffc107; color: #002d5a; transform: rotate(360deg); }
+        .footer-emergency-img {
+            width: 100%;
+            max-width: 420px;
+            height: auto;
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.22);
+            box-shadow: 0 24px 50px rgba(0, 0, 0, 0.18);
+            transition: transform 0.3s ease;
+        }
+        .footer-emergency-img:hover {
+            transform: translateY(-4px);
+        }
+        .footer-emergency-area {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .footer-emergency-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #ffc107;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .footer-copy p {
+            margin: 0;
+        }
+        @media (max-width: 768px) {
+            .footer-emergency-img {
+                max-width: 100%;
+            }
+        }
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #004a99; border-radius: 5px; }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    <div class="flex-grow-1"> 
+        <header class="header-top-main">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-9 col-md-8 d-flex align-items-center text-center text-md-start flex-column flex-md-row">
+                    <img src="{% static 'images/logo.png' %}" alt="Logo" class="header-logo rounded-circle shadow mb-3 mb-md-0 me-md-4">
+                    <div class="brand-info">
+                        <h1 class="school-name-bn fw-bold">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</h1>
+                        <h2 class="school-name-en fw-semibold">Khondoker Naser Uddin High School</h2>
+                        <p class="mb-0 text-primary fw-bold mt-1"><i class="fas fa-map-marker-alt"></i> বয়রা, খুলনা | স্থাপিত: ১৯৯৪ | EIIN: ১১৭৪০৭</p>
+                        <p class="mb-0 text-primary fw-bold mt-1"><i class="fas fa-location-dot"></i> হাজী ফয়েজ উদ্দিন ক্রস রোড, পোস্টঃ জিপিও-৯০০০, থানাঃ সোনাডাঙ্গা, জেলাঃ খুলনা।</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-4 text-center text-md-end mt-3 mt-md-0">
+                    <div class="d-inline-flex align-items-center justify-content-center justify-content-md-end gap-3 flex-wrap">
+                    <div class="header-clock" id="headerClock">
+                        <span class="clock-icon"><i class="fas fa-clock"></i></span>
+                        <span class="clock-time">Loading...</span>
+                        <span class="clock-label">তারিখ দেখুন</span>
+                    </div>
+                    <div class="dropdown d-inline-block">
+                        <button class="btn login-btn btn-primary dropdown-toggle px-4 py-2 fw-bold rounded-pill shadow-sm" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-lock me-2"></i> লগইন পোর্টাল
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                            <li><a class="dropdown-item" href="{% url 'student_login' %}"><i class="fas fa-user-graduate"></i> শিক্ষার্থী লগইন</a></li>
+                            <li><a class="dropdown-item" href="{% url 'login' %}"><i class="fas fa-user-tie"></i> শিক্ষক লগইন</a></li>
+                            <li><hr class="dropdown-divider bg-white opacity-25"></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-user-shield"></i> এডমিন প্যানেল</a></li>
+                        </ul>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="navbar navbar-expand-lg navbar-dark shadow">
+        <div class="container">
+            <button class="navbar-toggler my-2 mx-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span> মেনু
+            </button>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav w-100 justify-content-between">
+                    <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}"><i class="fas fa-home"></i> হোম</a></li>
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="studentCornerDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-graduate"></i> শিক্ষার্থী কর্নার
+                        </a>
+                        <ul class="dropdown-menu shadow">
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'info' %}"><i class="fas fa-info-circle"></i> তথ্য</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'seats' %}"><i class="fas fa-chair"></i> আসন সংখ্যা</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'dress' %}"><i class="fas fa-tshirt"></i> ড্রেস</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'class-routine' %}"><i class="fas fa-calendar-alt"></i> ক্লাস রুটিন</a></li>
+                            <li><a class="dropdown-item" href="{% url 'exam_routine' %}"><i class="fas fa-file-invoice"></i> পরীক্ষার রুটিন</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'syllabus' %}"><i class="fas fa-book"></i> সিলেবাস</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'holiday' %}"><i class="fas fa-umbrella-beach"></i> ছুটির তালিকা</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="admissionDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-plus"></i> ভর্তি তথ্য
+                        </a>
+                        <ul class="dropdown-menu shadow">
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'form' %}"><i class="fas fa-file-signature"></i> ভর্তি আবেদন ফরম</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'guide' %}"><i class="fas fa-clipboard-check"></i> ভর্তি নির্দেশিকা</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'result' %}"><i class="fas fa-list-ol"></i> ভর্তি পরীক্ষার ফলাফল</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'fees' %}"><i class="fas fa-tags"></i> বেতন ও ফি সমূহ</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item"><a class="nav-link" href="{% url 'all_notices' %}"><i class="fas fa-file-alt"></i> নোটিশ</a></li>
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="resultDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-poll"></i> ফলাফল
+                        </a>
+                        <ul class="dropdown-menu shadow">
+                            <li><a class="dropdown-item" href="{% url 'result_category' 'public' %}"><i class="fas fa-graduation-cap"></i> পাবলিক ফলাফল</a></li>
+                            <li><a class="dropdown-item" href="{% url 'result_category' 'internal' %}"><i class="fas fa-file-alt"></i> স্কুলের ফলাফল</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users-cog"></i> শিক্ষক</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'gallery' %}"><i class="fas fa-images"></i> গ্যালারি</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}"><i class="fas fa-envelope-open-text"></i> যোগাযোগ</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    {% include 'includes/news_ticker.html' %}
+
+    <div class="container-fluid px-lg-5 my-4" data-aos="zoom-in">
+        <div id="homepageSlider" class="carousel slide auto-gallery-slider shadow-lg rounded-4" data-bs-ride="carousel" data-bs-interval="4000">
+            <div class="carousel-inner">
+                {% for slider in sliders %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <img src="{{ slider.image.url }}" class="d-block w-100" alt="{{ slider.title }}">
+                    {% if slider.title %}
+                    <div class="gallery-overlay-title">
+                        <h2 class="mb-0 fw-bold display-6">{{ slider.title }}</h2>
+                    </div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="carousel-item active">
+                    <img src="https://via.placeholder.com/1500x700" class="d-block w-100" alt="Default">
+                </div>
+                {% endfor %}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#homepageSlider" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon p-3 bg-dark rounded-circle" aria-hidden="true"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#homepageSlider" data-bs-slide="next">
+                <span class="carousel-control-next-icon p-3 bg-dark rounded-circle" aria-hidden="true"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="container my-5 py-5" id="notice-section">
+        <div class="row g-4">
+            <div class="col-lg-8" data-aos="fade-up-right">
+                <div class="notice-board h-100">
+                    <div class="p-4 bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0 fw-bold"><i class="fas fa-clipboard-list me-2"></i> সাম্প্রতিক নোটিশ ও রুটিন</h4>
+                        <a href="{% url 'all_notices' %}" class="btn btn-warning btn-sm fw-bold px-3">সব দেখুন</a>
+                    </div>
+                    <div class="notice-list">
+                        {% for routine in featured_routines %}
+                        <a href="{{ routine.pdf_file.url }}" target="_blank" class="notice-item" style="border-left: 5px solid #ffc107;">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-calendar-check text-warning fs-3 me-3"></i>
+                                <div>
+                                    <span class="d-block fw-bold fs-5 text-primary">{{ routine.title }} (Class: {{ routine.target_class }})</span>
+                                    <span class="notice-date">প্রকাশিত: {{ routine.created_at|date:"d M, Y" }}</span>
+                                </div>
+                            </div>
+                            <span class="badge bg-danger">রুটিন</span>
+                        </a>
+                        {% endfor %}
+
+                        {% for notice in featured_notices %}
+                        <a href="{{ notice.file.url }}" target="_blank" class="notice-item">
+                            <div class="d-flex align-items-center">
+                                <i class="far fa-file-pdf text-danger fs-3 me-3"></i>
+                                <div>
+                                    <span class="d-block fw-bold fs-5">{{ notice.title }}</span>
+                                    <span class="notice-date">{{ notice.created_at|date:"d M, Y" }}</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-arrow-circle-down fs-4 text-primary opacity-50"></i>
+                        </a>
+                        {% empty %}
+                            {% if not featured_routines %}
+                            <div class="p-5 text-center text-muted">কোনো গুরুত্বপূর্ণ নোটিশ এই মুহূর্তে নেই।</div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+        <div class="col-lg-4" data-aos="fade-up-left">
+    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="bg-warning p-4 fw-bold text-center fs-5 text-dark">
+            
+        </div>
+        
+            <div class="mt-2 text-center p-3 rounded-4 bg-light shadow-sm">
+                <div class="position-relative d-inline-block">
+                    <img src="{% if headmaster_profile and headmaster_profile.image %}{{ headmaster_profile.image.url }}{% else %}{% static 'images/Headmaster.jpg' %}{% endif %}" 
+                         class="img-fluid rounded-4 shadow-sm border border-3 border-white mb-3" 
+                         style="width: 200px; height: 220px; object-fit: cover;" 
+                         alt="Head Teacher">
+                </div>
+                
+                <h5 class="fw-bold text-primary mb-1">{% if headmaster_profile %}{{ headmaster_profile.name }}{% else %}মোঃ সেলিম সরদার{% endif %}</h5>
+                <p class="text-muted small mb-1">{% if headmaster_profile %}{{ headmaster_profile.designation }}{% else %}প্রধান শিক্ষক{% endif %}</p>
+                <p class="fw-bold small text-dark mb-3">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</p>
+                
+                <hr class="w-25 mx-auto">
+                
+                <div class="mt-3">
+                    <i class="fas fa-quote-left text-warning opacity-50 fs-4"></i>
+                    <p class="fst-italic text-muted px-2" style="font-size: 14px; line-height: 1.6;">
+                        {% if headmaster_profile and headmaster_profile.caption %}{{ headmaster_profile.caption }}{% else %}"শিক্ষাই হলো সভ্যতার মূল ভিত্তি। আমরা আমাদের শিক্ষার্থীদের সুশিক্ষায় শিক্ষিত করে একজন সুনাগরিক হিসেবে গড়ে তুলতে প্রতিশ্রুতিবদ্ধ।"{% endif %}
+                    </p>
+                </div>
+                
+                <a href="#" class="btn btn-outline-primary btn-sm rounded-pill px-4 mt-2">প্রধান শিক্ষকের বার্তা</a>
+            </div>
+
+            <div class="mt-4 text-center p-3 rounded-4 bg-light shadow-sm">
+                <div class="position-relative d-inline-block">
+                    <img src="{% if committee_profile and committee_profile.image %}{{ committee_profile.image.url }}{% else %}{% static 'images/ManagingCommittee.jpg' %}{% endif %}"
+                         class="img-fluid rounded-4 shadow-sm border border-3 border-white mb-3"
+                         style="width: 200px; height: 220px; object-fit: cover;"
+                         alt="Managing Committee">
+                </div>
+
+                <h5 class="fw-bold text-primary mb-1">{% if committee_profile %}{{ committee_profile.name }}{% else %}ম্যানেজিং কমিটির সভাপতি{% endif %}</h5>
+                <p class="text-muted small mb-1">{% if committee_profile %}{{ committee_profile.designation }}{% else %}সভাপতি{% endif %}</p>
+                <p class="fw-bold small text-dark mb-3">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</p>
+
+                <hr class="w-25 mx-auto">
+
+                <div class="mt-3">
+                    <i class="fas fa-users text-warning opacity-50 fs-4"></i>
+                    <p class="fst-italic text-muted px-2" style="font-size: 14px; line-height: 1.6;">
+                        {% if committee_profile and committee_profile.caption %}{{ committee_profile.caption }}{% else %}বিদ্যালয়ের উন্নয়ন ও শিক্ষার্থীদের কল্যাণে ম্যানেজিং কমিটি নিরলসভাবে কাজ করে যাচ্ছে।{% endif %}
+                    </p>
+                </div>
+
+                <a href="#" class="btn btn-outline-primary btn-sm rounded-pill px-4 mt-2">ম্যানেজিং কমিটির তথ্য</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div class="container my-5 py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0" data-aos="fade-right">
+                <div id="aboutSlider" class="carousel slide about-slider shadow-lg" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% if school_info.images.all %}
+                            {% for about_img in school_info.images.all %}
+                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                <img src="{{ about_img.image.url }}" class="d-block w-100" alt="School View">
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="carousel-item active">
+                                <img src="https://via.placeholder.com/600x450" class="d-block w-100" alt="Default">
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 px-lg-5" data-aos="fade-left">
+                <h2 class="display-5 fw-bold text-primary mb-4">আমাদের সম্পর্কে</h2>
+                <p class="text-muted fs-5" style="line-height: 1.9; text-align: justify;">
+                    {% if school_info.description %}
+                        {{ school_info.description }}
+                    {% else %}
+                        খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয় অত্র অঞ্চলের অন্যতম সেরা বিদ্যাপীঠ। ১৯৯৪ সাল থেকে আমরা অত্যন্ত সুনামের সাথে মানসম্মত শিক্ষা প্রদান করে আসছি।
+                    {% endif %}
+                </p>
+                <div class="mt-4 row g-3">
+                    <div class="col-md-6"><i class="fas fa-check-circle text-success me-2"></i> অভিজ্ঞ শিক্ষক মন্ডলী</div>
+                    <div class="col-md-6"><i class="fas fa-check-circle text-success me-2"></i> সুশোভিত নিরাপদ ক্যাম্পাস</div>
+                    <div class="col-md-6"><i class="fas fa-check-circle text-success me-2"></i> মানসম্মত শিক্ষা ব্যবস্থা</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container my-5 py-5">
+        <h2 class="section-title" data-aos="zoom-in">আমাদের শিক্ষক ও কর্মচারীবৃন্দ</h2>
+        <div class="row g-4 justify-content-center">
+            {% for teacher in teachers %}
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter }}00">
+                <div class="card h-100 teacher-card p-4 text-center">
+                    {% if teacher.image %}
+                        <img src="{{ teacher.image.url }}" alt="{{ teacher.name }}" class="teacher-img rounded-circle mx-auto mb-4">
+                    {% endif %}
+                    <h5 class="fw-bold text-primary mb-2">{{ teacher.name }}</h5>
+                    <p class="text-muted mb-0">{{ teacher.designation }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-5">
+            <a href="{% url 'teachers_page' %}" class="btn btn-primary btn-lg px-5 shadow rounded-pill">সকল শিক্ষক ও কর্মচারী দেখুন</a>
+        </div>
+        </div>
+    </div> 
+
+    <footer data-aos="fade-up">
+        <div class="container">
+            <div class="row g-5">
+                <div class="col-lg-4">
+                    <h5 class="footer-logo mb-4">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</h5>
+                    <p class="opacity-75 fs-5">আমাদের লক্ষ্য সুশিক্ষা ও সুন্দর ভবিষ্যৎ।</p>
+                    <div class="social-links mt-4">
+                       <div class="social-links mt-4">
+    <a href="https://www.facebook.com/profile.php?id=61555308809098" target="_blank">
+        <i class="fab fa-facebook-f"></i>
+    </a>
+    
+    <a href="{{ school_info.youtube_url|default:'#' }}" target="_blank">
+        <i class="fab fa-youtube"></i>
+    </a>
+    
+    <a href="#"><i class="fab fa-twitter"></i></a>
+</div>
+                       
+                    </div>
+                </div>
+                <div class="col-lg-4 ps-lg-5">
+                    <h5 class="mb-4 text-warning fw-bold">প্রয়োজনীয় লিঙ্ক</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'admission_detail' 'form' %}" class="text-white text-decoration-none">ভর্তি আবেদন</a></li>
+                        <li class="mb-2"><a href="{% url 'all_notices' %}" class="text-white text-decoration-none">নোটিশ বোর্ড</a></li>
+                        <li class="mb-2"><a href="{% url 'gallery' %}" class="text-white text-decoration-none">ফটো গ্যালারি</a></li>
+                    </ul>
+                </div>
+               <div class="col-lg-4">
+    <h5 class="mb-4 text-warning fw-bold">যোগাযোগ করুন</h5>
+    <p><i class="fas fa-map-marker-alt me-2 text-warning"></i> বয়রা, খুলনা</p>
+    <p><i class="fas fa-phone-alt me-2 text-warning"></i> +৮৮০ ১৩০৬ ১১৭৪০৭</p>
+    <p><i class="fas fa-envelope me-2 text-warning"></i> knuhighschool1994@gmail.com</p>
+</div>
+            <hr class="my-5 opacity-25">
+            <div class="footer-emergency-area text-center mb-4">
+                <div class="footer-emergency-title mb-3">জরুরী হটলাইন নাম্বার</div>
+                <img src="{% static 'images/emergency.png' %}" alt="Emergency" class="footer-emergency-img">
+                {% include 'includes/visitor_footer_stats.html' %}
+            </div>
+            <div class="footer-copy text-center">
+                <p class="small opacity-75 mb-1">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</p>
+                <p class="mb-0">Designed & Developed by <a href="https://www.facebook.com/mdimtiaz.joy.50" target="_blank" class="text-warning fw-bold text-decoration-none">Md Imtiaz Sarder Joy</a></p>
+            </div>
+       </div> 
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ duration: 800, once: true });
+
+        document.querySelector('.header-logo').addEventListener('click', function() {
+            const name = "খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়";
+            alert("স্বাগতম: " + name); 
+        });
+
+        function updateHeaderClock() {
+            const clock = document.getElementById('headerClock');
+            if (!clock) return;
+            const timeElement = clock.querySelector('.clock-time');
+            const labelElement = clock.querySelector('.clock-label');
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = now.toLocaleString('bn-BD', { month: 'short' });
+            const year = now.getFullYear();
+            if (timeElement) {
+                timeElement.textContent = `${hours}:${minutes}:${seconds}`;
+            }
+            if (labelElement) {
+                labelElement.textContent = `${day} ${month} ${year}`;
+            }
+        }
+
+        updateHeaderClock();
+        setInterval(updateHeaderClock, 1000);
+    </script>
+</body>
+</html>

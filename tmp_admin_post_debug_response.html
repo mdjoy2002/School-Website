@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+
+<html lang="en-us" dir="ltr">
+<head>
+<title>Error: Add gallery category | Django site admin</title>
+<link rel="stylesheet" href="/static/admin/css/base.css">
+
+  <link rel="stylesheet" href="/static/admin/css/dark_mode.css">
+  <script src="/static/admin/js/theme.js"></script>
+
+
+  <link rel="stylesheet" href="/static/admin/css/nav_sidebar.css">
+  <script src="/static/admin/js/nav_sidebar.js" defer></script>
+
+<link rel="stylesheet" href="/static/admin/css/forms.css">
+
+
+<script src="/knu2026/jsi18n/"></script>
+<script src="/static/admin/js/vendor/jquery/jquery.min.js"></script>
+<script src="/static/admin/js/jquery.init.js"></script>
+<script src="/static/admin/js/core.js"></script>
+<script src="/static/admin/js/admin/RelatedObjectLookups.js"></script>
+<script src="/static/admin/js/actions.js"></script>
+<script src="/static/admin/js/urlify.js"></script>
+<script src="/static/admin/js/prepopulate.js"></script>
+<script src="/static/admin/js/vendor/xregexp/xregexp.min.js"></script>
+
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/admin/css/responsive.css">
+    
+
+<meta name="robots" content="NONE,NOARCHIVE">
+</head>
+
+<body class=" app-main_app model-gallerycategory change-form"
+  data-admin-utc-offset="21600">
+<a href="#content-start" class="skip-to-content-link">Skip to main content</a>
+<!-- Container -->
+<div id="container">
+
+    
+    <!-- Header -->
+    
+      <header id="header">
+        <div id="branding">
+        
+<div id="site-name"><a href="/knu2026/">Django administration</a></div>
+
+
+        </div>
+        
+        
+        <div id="user-tools">
+            
+                Welcome,
+                <strong>gallery_admin_debug</strong>.
+            
+            
+                
+                    <a href="/">View site</a> /
+                
+                
+                    
+                    
+                
+                
+                <a href="/knu2026/password_change/">Change password</a> /
+                
+                <form id="logout-form" method="post" action="/knu2026/logout/">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="9vWpIAsBOKztdkuzIL4s1woqiSadB6FOFZEnwxQ10FMsrCjnfAQHut0HC4UclLP7">
+                    <button type="submit">Log out</button>
+                </form>
+                
+<button class="theme-toggle">
+  <span class="visually-hidden theme-label-when-auto">Toggle theme (current theme: auto)</span>
+  <span class="visually-hidden theme-label-when-light">Toggle theme (current theme: light)</span>
+  <span class="visually-hidden theme-label-when-dark">Toggle theme (current theme: dark)</span>
+  <svg aria-hidden="true" class="theme-icon-when-auto">
+    <use xlink:href="#icon-auto" />
+  </svg>
+  <svg aria-hidden="true" class="theme-icon-when-dark">
+    <use xlink:href="#icon-moon" />
+  </svg>
+  <svg aria-hidden="true" class="theme-icon-when-light">
+    <use xlink:href="#icon-sun" />
+  </svg>
+</button>
+
+            
+        </div>
+        
+        
+        
+      </header>
+    
+    <!-- END Header -->
+    
+      <nav aria-label="Breadcrumbs">
+        
+<div class="breadcrumbs">
+<a href="/knu2026/">Home</a>
+&rsaquo; <a href="/knu2026/main_app/">Main_App</a>
+&rsaquo; <a href="/knu2026/main_app/gallerycategory/">৬. গ্যালারি ইভেন্ট/ফোল্ডার</a>
+&rsaquo; Add gallery category
+</div>
+
+      </nav>
+    
+    
+
+    <div class="main" id="main">
+      
+        
+          
+<button class="sticky toggle-nav-sidebar" id="toggle-nav-sidebar" aria-label="Toggle navigation"></button>
+<nav class="sticky" id="nav-sidebar" aria-label="Sidebar">
+  <input type="search" id="nav-filter"
+         placeholder="Start typing to filter…"
+         aria-label="Filter navigation items">
+  
+
+
+  
+    <div class="app-auth module">
+      <table>
+        <caption>
+          <a href="/knu2026/auth/" class="section" title="Models in the Authentication and Authorization application">Authentication and Authorization</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Model name</th>
+            <th scope="col">Add link</th>
+            <th scope="col">Change or view list link</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-group">
+              <th scope="row" id="auth-group">
+                
+                  <a href="/knu2026/auth/group/">Groups</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/auth/group/add/" class="addlink" aria-describedby="auth-group">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-user">
+              <th scope="row" id="auth-user">
+                
+                  <a href="/knu2026/auth/user/">Users</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/auth/user/add/" class="addlink" aria-describedby="auth-user">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+    <div class="app-main_app module current-app">
+      <table>
+        <caption>
+          <a href="/knu2026/main_app/" class="section" title="Models in the Main_App application">Main_App</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Model name</th>
+            <th scope="col">Add link</th>
+            <th scope="col">Change or view list link</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-galleryimage">
+              <th scope="row" id="main_app-galleryimage">
+                
+                  <a href="/knu2026/main_app/galleryimage/">গ্যালারি ছবিসমূহ</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/main_app/galleryimage/add/" class="addlink" aria-describedby="main_app-galleryimage">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-tickernews">
+              <th scope="row" id="main_app-tickernews">
+                
+                  <a href="/knu2026/main_app/tickernews/">টিকার নিউজ</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/main_app/tickernews/add/" class="addlink" aria-describedby="main_app-tickernews">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-notice">
+              <th scope="row" id="main_app-notice">
+                
+                  <a href="/knu2026/main_app/notice/">১. নোটিশ বোর্ড</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/main_app/notice/add/" class="addlink" aria-describedby="main_app-notice">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-studentcornerdata">
+              <th scope="row" id="main_app-studentcornerdata">
+                
+                  <a href="/knu2026/main_app/studentcornerdata/">১০. শিক্ষার্থী কর্নার তথ্য (সিলেবাস, রুটিন ইত্যাদি)</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/main_app/studentcornerdata/add/" class="addlink" aria-describedby="main_app-studentcornerdata">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-resultdata">
+              <th scope="row" id="main_app-resultdata">
+                
+                  <a href="/knu2026/main_app/resultdata/">১১. সকল পরীক্ষার ফলাফল (পাবলিক ও অভ্যন্তরীণ)</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/main_app/resultdata/add/" class="addlink" aria-describedby="main_app-resultdata">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-generalteacher">
+              <th scope="row" id="main_app-generalteacher">
+                
+                  <a href="/knu2026/main_app/generalteacher/">২. সহকারী শিক্ষকবৃন্দ</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/main_app/generalteacher/add/" class="addlink" aria-describedby="main_app-generalteacher">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-staff">
+              <th scope="row" id="main_app-staff">
+                
+                  <a href="/knu2026/main_app/staff/">৩. কর্মচারীবৃন্দ</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/main_app/staff/add/" class="addlink" aria-describedby="main_app-staff">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-contactmessage">
+              <th scope="row" id="main_app-contactmessage">
+                
+                  <a href="/knu2026/main_app/contactmessage/">৪. প্রাপ্ত অভিযোগ ও বার্তা</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/main_app/contactmessage/add/" class="addlink" aria-describedby="main_app-contactmessage">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-slider">
+              <th scope="row" id="main_app-slider">
+                
+                  <a href="/knu2026/main_app/slider/">৫. হোমপেজ স্লাইডার</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/main_app/slider/add/" class="addlink" aria-describedby="main_app-slider">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-gallerycategory current-model">
+              <th scope="row" id="main_app-gallerycategory">
+                
+                  <a href="/knu2026/main_app/gallerycategory/" aria-current="page">৬. গ্যালারি ইভেন্ট/ফোল্ডার</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/main_app/gallerycategory/add/" class="addlink" aria-describedby="main_app-gallerycategory">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-examroutine">
+              <th scope="row" id="main_app-examroutine">
+                
+                  <a href="/knu2026/main_app/examroutine/">৬. পরীক্ষার রুটিন</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/main_app/examroutine/add/" class="addlink" aria-describedby="main_app-examroutine">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-schoolinfo">
+              <th scope="row" id="main_app-schoolinfo">
+                
+                  <a href="/knu2026/main_app/schoolinfo/">৭. বিদ্যালয় পরিচিতি ও তথ্য</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/main_app/schoolinfo/add/" class="addlink" aria-describedby="main_app-schoolinfo">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-admissioninfo">
+              <th scope="row" id="main_app-admissioninfo">
+                
+                  <a href="/knu2026/main_app/admissioninfo/">৮. ভর্তি সংক্রান্ত তথ্য (ফরম, ফলাফল ইত্যাদি)</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/main_app/admissioninfo/add/" class="addlink" aria-describedby="main_app-admissioninfo">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-headmaster">
+              <th scope="row" id="main_app-headmaster">
+                
+                  <a href="/knu2026/main_app/headmaster/">৯. প্রতিষ্ঠান প্রধান</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/main_app/headmaster/add/" class="addlink" aria-describedby="main_app-headmaster">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+    <div class="app-myteacher module">
+      <table>
+        <caption>
+          <a href="/knu2026/myteacher/" class="section" title="Models in the Myteacher application">Myteacher</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Model name</th>
+            <th scope="col">Add link</th>
+            <th scope="col">Change or view list link</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-examroutine">
+              <th scope="row" id="myteacher-examroutine">
+                
+                  <a href="/knu2026/myteacher/examroutine/">Exam routines</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/myteacher/examroutine/add/" class="addlink" aria-describedby="myteacher-examroutine">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-mark">
+              <th scope="row" id="myteacher-mark">
+                
+                  <a href="/knu2026/myteacher/mark/">Student Marks</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/myteacher/mark/add/" class="addlink" aria-describedby="myteacher-mark">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-teachersubjectassignment">
+              <th scope="row" id="myteacher-teachersubjectassignment">
+                
+                  <a href="/knu2026/myteacher/teachersubjectassignment/">Subject Assignments</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/myteacher/teachersubjectassignment/add/" class="addlink" aria-describedby="myteacher-teachersubjectassignment">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-subject">
+              <th scope="row" id="myteacher-subject">
+                
+                  <a href="/knu2026/myteacher/subject/">Subjects</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/myteacher/subject/add/" class="addlink" aria-describedby="myteacher-subject">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+          
+            <tr class="model-teacher">
+              <th scope="row" id="myteacher-teacher">
+                
+                  <a href="/knu2026/myteacher/teacher/">Teachers</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/myteacher/teacher/add/" class="addlink" aria-describedby="myteacher-teacher">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+    <div class="app-sites module">
+      <table>
+        <caption>
+          <a href="/knu2026/sites/" class="section" title="Models in the Sites application">Sites</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Model name</th>
+            <th scope="col">Add link</th>
+            <th scope="col">Change or view list link</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-site">
+              <th scope="row" id="sites-site">
+                
+                  <a href="/knu2026/sites/site/">Sites</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/sites/site/add/" class="addlink" aria-describedby="sites-site">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+    <div class="app-students module">
+      <table>
+        <caption>
+          <a href="/knu2026/students/" class="section" title="Models in the Students application">Students</a>
+        </caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Model name</th>
+            <th scope="col">Add link</th>
+            <th scope="col">Change or view list link</th>
+          </tr>
+        </thead>
+        
+          
+            <tr class="model-student">
+              <th scope="row" id="students-student">
+                
+                  <a href="/knu2026/students/student/">Students</a>
+                
+              </th>
+
+              
+                <td><a href="/knu2026/students/student/add/" class="addlink" aria-describedby="students-student">Add</a></td>
+              
+
+              
+            </tr>
+          
+        
+      </table>
+    </div>
+  
+
+
+</nav>
+
+        
+      
+      <main id="content-start" class="content" tabindex="-1">
+        
+          
+        
+        <!-- Content -->
+        <div id="content" class="colM">
+          
+          <h1>Add gallery category</h1>
+          
+          <div id="content-main">
+
+
+
+<form enctype="multipart/form-data" method="post" id="gallerycategory_form" novalidate><input type="hidden" name="csrfmiddlewaretoken" value="9vWpIAsBOKztdkuzIL4s1woqiSadB6FOFZEnwxQ10FMsrCjnfAQHut0HC4UclLP7">
+<div>
+
+
+
+
+    <p class="errornote">
+    Please correct the error below.
+    </p>
+    
+
+
+
+
+  <fieldset class="module aligned ">
+    
+    
+    
+        <div class="form-row field-name">
+            
+            
+                
+                <div>
+                    
+                        <div class="flex-container">
+                            
+                                <label class="required" for="id_name">ইভেন্টের নাম (ফোল্ডার):</label>
+                                
+                                    <input type="text" name="name" value="Summer Fair" class="vTextField" maxlength="100" required id="id_name">
+                                
+                            
+                        </div>
+                    
+                </div>
+                
+            
+            
+        </div>
+    
+        <div class="form-row errors field-cover_image">
+            <ul class="errorlist" id="id_cover_image_error"><li>This field is required.</li></ul>
+            
+                <fieldset><legend class="required" for="id_cover_image">কভার ফটো:</legend>
+                <div>
+                    
+                        <div class="flex-container">
+                            
+                                
+                                
+                                    <input type="file" name="cover_image" accept="image/*" required aria-invalid="true" id="id_cover_image">
+                                
+                            
+                        </div>
+                    
+                </div>
+                </fieldset>
+            
+            
+        </div>
+    
+        <div class="form-row field-gallery_images">
+            
+            
+                
+                <div>
+                    
+                        <div class="flex-container">
+                            
+                                <label for="id_gallery_images">Gallery images:</label>
+                                
+                                    <input type="file" name="gallery_images" aria-describedby="id_gallery_images_helptext" id="id_gallery_images">
+                                
+                            
+                        </div>
+                    
+                        <div class="help" id="id_gallery_images_helptext">
+                            <div>এক বা একাধিক ছবি নির্বাচন করুন।</div>
+                        </div>
+                    
+                </div>
+                
+            
+            
+        </div>
+    
+    
+</fieldset>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="submit-row">
+
+<input type="submit" value="Save" class="default" name="_save">
+
+<input type="submit" value="Save and add another" name="_addanother">
+<input type="submit" value="Save and continue editing" name="_continue">
+
+
+
+</div>
+
+
+
+    <script id="django-admin-form-add-constants"
+            src="/static/admin/js/change_form.js"
+            
+                data-model-name="gallerycategory"
+            
+            async>
+    </script>
+
+
+
+
+<script id="django-admin-prepopulated-fields-constants"
+        src="/static/admin/js/prepopulate_init.js"
+        data-prepopulated-fields="[]">
+</script>
+
+
+</div>
+</form></div>
+
+          
+          <br class="clear">
+        </div>
+        <!-- END Content -->
+      </main>
+    </div>
+    <footer id="footer"></footer>
+</div>
+<!-- END Container -->
+
+<!-- SVGs -->
+<svg xmlns="http://www.w3.org/2000/svg" class="base-svgs">
+  <symbol viewBox="0 0 24 24" id="icon-auto"><path d="M0 0h24v24H0z" fill="currentColor"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2V4a8 8 0 1 0 0 16z"/></symbol>
+  <symbol viewBox="0 0 24 24" id="icon-moon"><path d="M0 0h24v24H0z" fill="currentColor"/><path d="M10 7a7 7 0 0 0 12 4.9v.1c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2h.1A6.979 6.979 0 0 0 10 7zm-6 5a8 8 0 0 0 15.062 3.762A9 9 0 0 1 8.238 4.938 7.999 7.999 0 0 0 4 12z"/></symbol>
+  <symbol viewBox="0 0 24 24" id="icon-sun"><path d="M0 0h24v24H0z" fill="currentColor"/><path d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.414-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"/></symbol>
+</svg>
+<!-- END SVGs -->
+
+</body>
+</html>
