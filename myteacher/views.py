@@ -1,5 +1,6 @@
 from itertools import groupby
 from django.contrib.auth.decorators import login_required
+<<<<<<< HEAD
 from django.conf import settings
 from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
 from django.contrib import messages
@@ -20,6 +21,19 @@ import tempfile
 import threading
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+=======
+from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Student, TeacherSubjectAssignment, Mark, Subject, ExamRoutine, TeacherClassAssignment, Teacher
+from students.models import StudentAdmitCard, StudentResultPublication
+from django.http import HttpResponse, HttpResponseForbidden
+from django.template.loader import get_template
+from django.urls import reverse
+from django.db.models import Q
+from decimal import Decimal, InvalidOperation
+from io import BytesIO
+import datetime
+>>>>>>> 7806ec946d8f6663dad1e65accab3da711aeebab
 
 try:
     from xhtml2pdf import pisa
@@ -358,6 +372,7 @@ def mark_entry_history_view(request):
 
 # mark show view and print button
 
+<<<<<<< HEAD
 @login_required
 def testimonial_view(request):
     teacher = getattr(request.user, 'teacher', None)
@@ -610,6 +625,9 @@ def testimonial_pdf_page(request, token):
         },
     }
     return render(request, 'myteacher/testimonial.html', context)
+=======
+# testimonial template view
+>>>>>>> 7806ec946d8f6663dad1e65accab3da711aeebab
 
 # class update view 
 

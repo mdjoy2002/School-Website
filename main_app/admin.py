@@ -1,6 +1,10 @@
 from django.contrib import admin
 from .models import (
+<<<<<<< HEAD
     Notice, TickerNews, Slider, SchoolInfo, LeadershipProfile, AboutImage, Teacher, 
+=======
+    Notice, TickerNews, Slider, SchoolInfo, AboutImage, Teacher, 
+>>>>>>> 7806ec946d8f6663dad1e65accab3da711aeebab
     Headmaster, GeneralTeacher, Staff, GalleryCategory, GalleryImage,
     ContactMessage, ExamRoutine, StudentCornerData, AdmissionInfo, ResultData
 )
@@ -95,12 +99,15 @@ class SchoolInfoAdmin(admin.ModelAdmin):
         obj.map_url = FIXED_MAP_IFRAME
         super().save_model(request, obj, form, change)
 
+<<<<<<< HEAD
 @admin.register(LeadershipProfile)
 class LeadershipProfileAdmin(admin.ModelAdmin):
     list_display = ('profile_type', 'name', 'designation', 'image')
     list_filter = ('profile_type',)
     search_fields = ('name', 'designation')
 
+=======
+>>>>>>> 7806ec946d8f6663dad1e65accab3da711aeebab
 # ১. প্রতিষ্ঠান প্রধান সেকশন
 @admin.register(Headmaster)
 class HeadmasterAdmin(admin.ModelAdmin):
