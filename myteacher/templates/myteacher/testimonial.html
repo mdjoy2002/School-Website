@@ -4,15 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Testimonial Generator</title>
+    <title>Testimonial Generator - Khondoker Naser Uddin High School</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Great+Vibes&display=swap" rel="stylesheet">
     <style>
         body { background: #eef1f5; color: #111; font-family: Arial, sans-serif; }
         .generator-shell { max-width: 1180px; margin: 24px auto; }
         .control-panel { background: #fff; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
         
-        /* Premium Classic Double Border Style */
+        /* --- Premium Certificate Design with Dot Pattern Background --- */
         .certificate { 
             position: relative; 
             box-sizing: border-box;
@@ -20,80 +21,169 @@
             height: auto;
             aspect-ratio: 297 / 210;
             margin: 24px auto; 
-            padding: clamp(16px, 2.7vw, 32px) clamp(20px, 4vw, 48px);
+            padding: clamp(20px, 3vw, 40px) clamp(25px, 4.5vw, 55px);
             overflow: hidden; 
-            background:
-                radial-gradient(circle at 50% 48%, rgba(255, 255, 255, .96) 0 26%, rgba(255, 255, 255, .35) 58%, transparent 82%),
-                radial-gradient(circle at 8% 10%, rgba(216, 155, 43, .14) 0 1.5px, transparent 2px),
-                radial-gradient(circle at 92% 90%, rgba(60, 155, 136, .12) 0 1.5px, transparent 2px),
-                linear-gradient(135deg, rgba(11, 71, 116, .06), transparent 32%, rgba(217, 79, 112, .045) 68%, rgba(216, 155, 43, .07)),
-                #fffdf7;
-            background-size: auto, 24px 24px, 24px 24px, auto, auto;
-            font-family: "Times New Roman", Times, serif; 
-            border: 8px solid #0b4774;
-            outline: 2px solid #d89b2b;
-            outline-offset: -12px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.15);
+            background: 
+                radial-gradient(circle, rgba(11, 71, 116, 0.08) 1.5px, transparent 1.5px),
+                radial-gradient(circle, rgba(216, 155, 43, 0.08) 1.5px, transparent 1.5px),
+                radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.82) 70%, rgba(248, 244, 235, 0.7) 100%),
+                linear-gradient(135deg, #fffdfa 0%, #f4eee1 100%);
+            background-size: 24px 24px, 24px 24px, 100% 100%, 100% 100%;
+            background-position: 0 0, 12px 12px, 0 0, 0 0;
+            font-family: "Playfair Display", "Times New Roman", Times, serif; 
+            border: 12px solid #0b4774;
+            outline: 3px solid #d89b2b;
+            outline-offset: -16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             print-color-adjust: exact;
             -webkit-print-color-adjust: exact;
         }
 
-        .certificate::before,
-        .certificate::after {
+        /* Decorative Inner Border Line */
+        .certificate::before {
             content: "";
             position: absolute;
-            inset: 2px;
-            padding: 5px;
+            inset: 14px;
+            border: 1.5px solid #d89b2b;
             pointer-events: none;
-            background:
-                radial-gradient(circle at 6px 6px, #d94f70 0 2.8px, transparent 3px),
-                radial-gradient(circle at 14px 6px, #e2a72e 0 2.8px, transparent 3px),
-                radial-gradient(circle at 10px 13px, #3c9b88 0 2.8px, transparent 3px),
-                radial-gradient(circle at 10px 7px, #fff 0 1.5px, transparent 1.8px);
-            background-size: 20px 20px;
-            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            print-color-adjust: exact;
-            -webkit-print-color-adjust: exact;
         }
 
-        .certificate::after {
-            inset: 10px;
-            padding: 2px;
-            background:
-                radial-gradient(circle, #0b4774 0 1.5px, transparent 1.8px),
-                radial-gradient(circle, #d89b2b 0 1.5px, transparent 1.8px);
-            background-position: 0 0, 5px 5px;
-            background-size: 10px 10px;
-            print-color-adjust: exact;
-            -webkit-print-color-adjust: exact;
+        .certificate-inner { 
+            position: relative; 
+            z-index: 1; 
+            height: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
         }
 
-        .certificate-inner { position: relative; z-index: 1; height: 100%; padding: 0; display: flex; flex-direction: column; justify-content: space-between; }
-        .certificate-watermark { position: absolute; z-index: -1; width: 34%; height: 56%; object-fit: contain; opacity: .08; left: 50%; top: 55%; transform: translate(-50%, -50%); }
-        .serial { font: bold clamp(9px, 1.2vw, 13px) Arial, sans-serif; margin: 0; }
-        
-        /* Curved School Title Container */
-        .school-title-container { width: 100%; height: clamp(28px, 4.5vw, 48px); display: flex; justify-content: center; margin-top: -2px; }
-        .school-title-svg { width: 100%; height: clamp(32px, 5vw, 52px); overflow: visible; }
-        .school-title-text { font-family: 'Times New Roman', Times, serif; font-size: clamp(20px, 3.5vw, 39px); font-weight: 900; fill: #111; letter-spacing: 2px; stroke: #111; stroke-width: 0.5px; }
+        /* Watermark */
+        .certificate-watermark { 
+            position: absolute; 
+            z-index: -1; 
+            width: 40%; 
+            height: 60%; 
+            object-fit: contain; 
+            opacity: 0.05; 
+            left: 50%; 
+            top: 52%; 
+            transform: translate(-50%, -50%); 
+        }
 
-        .school-address { text-align: center; font-size: clamp(9px, 1.35vw, 14.5px); font-weight: bold; margin-top: -2px; color: #333; }
-        .school-logo { display: block; width: clamp(34px, 6vw, 84px); height: clamp(34px, 6vw, 84px); object-fit: contain; margin: 1.5mm auto; }
+        .serial-and-date {
+            display: flex;
+            justify-content: space-between;
+            font-size: clamp(10px, 1.3vw, 14px);
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 1mm;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Curved School Title Container - Increased height and viewBox to make school name bigger without overlap */
+        .school-title-container { 
+            width: 100%; 
+            height: clamp(48px, 7vw, 75px); 
+            display: flex; 
+            justify-content: center; 
+            margin-top: 0px; 
+            overflow: visible;
+        }
+        .school-title-svg { 
+            width: 100%; 
+            height: 100%; 
+            overflow: visible; 
+        }
+        .school-title-text { 
+            font-family: 'Cinzel', serif; 
+            font-size: 38px; /* Increased font size for a bigger title */
+            font-weight: 900; 
+            fill: #0b4774; 
+            letter-spacing: 2.5px; 
+        }
+
+        .school-address { text-align: center; font-size: clamp(10px, 1.4vw, 15px); font-weight: 600; margin-top: 0px; color: #444; font-family: Arial, sans-serif; }
         
-        .document-heading { width: fit-content; margin: 0 auto 2.5mm; padding: 2px 14px; color: #0b4774; border-top: 3px solid #d89b2b; border-bottom: 3px solid #d89b2b; font-size: clamp(15px, 2.2vw, 24px); font-weight: 900; letter-spacing: 2px; }
-        .document-heading::before, .document-heading::after { content: "❖"; margin: 0 8px; font-size: 12px; vertical-align: middle; }
+        /* Fixed print clarity and rendering for school logo */
+        .school-logo { 
+            display: block; 
+            width: clamp(42px, 7vw, 80px); 
+            height: clamp(42px, 7vw, 80px); 
+            object-fit: contain; 
+            margin: 1.5mm auto; 
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.1)); 
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
         
-        .document-body { width: 92%; max-width: 980px; margin: 0 auto; color: #172b3a; font-size: clamp(11px, 1.9vw, 20px); font-style: italic; font-weight: 700; line-height: 1.48; text-align: justify; text-justify: inter-word; }
-        .document-body strong { color: #073b63; font-weight: 900; font-style: normal; }
-        .document-body p { margin: 0 0 2.5mm; text-align: justify; }
+        .document-heading { 
+            width: fit-content; 
+            margin: 0 auto 2.5mm; 
+            padding: 3px 22px; 
+            color: #fff; 
+            background: linear-gradient(90deg, #0b4774, #135d96, #0b4774);
+            border-top: 2px solid #d89b2b; 
+            border-bottom: 2px solid #d89b2b; 
+            font-family: 'Cinzel', serif;
+            font-size: clamp(16px, 2.4vw, 25px); 
+            font-weight: 800; 
+            letter-spacing: 3px; 
+            border-radius: 4px;
+        }
+        
+        .document-body { 
+            width: 94%; 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            color: #222; 
+            font-size: clamp(12px, 1.95vw, 19.5px); 
+            font-style: italic; 
+            font-weight: 600; 
+            line-height: 1.55; 
+            text-align: justify; 
+            text-justify: inter-word; 
+        }
+        
+        /* Input Data Underline Styling */
+        .document-body strong { 
+            color: #0b4774; 
+            font-weight: 800; 
+            font-style: normal; 
+            border-bottom: 1.5px dotted #0b4774;
+            padding-bottom: 0.5px;
+            display: inline-block;
+        }
+        .document-body p { margin: 0 0 2mm; text-align: justify; }
         
         /* Footer & Headmaster Info */
-        .certificate-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; color: #173b55; font-size: clamp(9px, 1.4vw, 15px); font-weight: 800; padding: 1mm 2mm 0; }
-        .signature { text-align: center; min-width: 25%; font-size: clamp(10px, 1.5vw, 17px); line-height: 1.2; }
-        .signature-name { color: #9b3d54; font-style: italic; font-weight: 900; font-size: clamp(12px, 1.7vw, 19px); border-bottom: 1px dotted #441; display: inline-block; padding-bottom: 1px; margin-bottom: 1px; }
+        .certificate-footer { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-end; 
+            margin-top: auto; 
+            color: #173b55; 
+            font-size: clamp(10px, 1.4vw, 15px); 
+            font-weight: 700; 
+            padding-top: 1mm; 
+            font-family: Arial, sans-serif;
+        }
+        
+        .signature-box {
+            text-align: center;
+            min-width: 28%;
+        }
+        .signature-name { 
+            color: #0b4774; 
+            font-family: 'Great Vibes', cursive;
+            font-weight: 700; 
+            font-size: clamp(24px, 3vw, 34px); 
+            line-height: 0.9;
+            margin-bottom: 2px;
+        }
+        .signature-line {
+            border-top: 1.5px solid #0b4774;
+            margin-bottom: 4px;
+        }
         
         .screen-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
         .search-results a { text-decoration: none; }
@@ -101,10 +191,11 @@
 
         @media (max-width: 600px) {
             .generator-shell { margin: 12px auto; }
-            .certificate { width: calc(100vw - 16px); margin: 12px auto; border-width: 5px; outline-offset: -8px; }
-            .certificate-footer { padding-inline: 1mm; }
-            .document-body { width: 94%; line-height: 1.35; }
+            .certificate { width: calc(100vw - 16px); margin: 12px auto; border-width: 6px; outline-offset: -9px; }
+            .certificate::before { inset: 8px; }
+            .document-body { width: 96%; line-height: 1.4; }
         }
+
         @media print {
             @page { size: A4 landscape; margin: 0; }
             body { background: #fff !important; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -116,32 +207,37 @@
                 height: 210mm; 
                 max-width: none; 
                 margin: 0; 
-                padding: 8mm 12mm 8mm; 
+                padding: 10mm 15mm; 
                 overflow: hidden; 
                 box-shadow: none; 
                 page-break-after: avoid; 
-                border: 8px solid #0b4774 !important; 
-                outline: 2px solid #d89b2b !important; 
-                outline-offset: -12px; 
-                background-color: #fffdf7 !important;
-                background-image:
-                    radial-gradient(circle at 50% 48%, rgba(255, 255, 255, .96) 0 26%, rgba(255, 255, 255, .35) 58%, transparent 82%),
-                    radial-gradient(circle at 8% 10%, rgba(216, 155, 43, .14) 0 1.5px, transparent 2px),
-                    radial-gradient(circle at 92% 90%, rgba(60, 155, 136, .12) 0 1.5px, transparent 2px),
-                    linear-gradient(135deg, rgba(11, 71, 116, .06), transparent 32%, rgba(217, 79, 112, .045) 68%, rgba(216, 155, 43, .07)),
-                    #fffdf7 !important;
-                background-size: auto, 24px 24px, 24px 24px, auto, auto !important;
+                border: 12px solid #0b4774 !important; 
+                outline: 3px solid #d89b2b !important; 
+                outline-offset: -16px; 
+                background: 
+                    radial-gradient(circle, rgba(11, 71, 116, 0.08) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, rgba(216, 155, 43, 0.08) 1.5px, transparent 1.5px),
+                    #fffdfa !important;
+                background-size: 24px 24px, 24px 24px, 100% 100% !important;
+                background-position: 0 0, 12px 12px, 0 0 !important;
                 print-color-adjust: exact !important; 
                 -webkit-print-color-adjust: exact !important; 
             }
-            .certificate::before,
-            .certificate::after {
-                display: block !important;
+            .certificate::before {
+                border: 1.5px solid #d89b2b !important;
                 print-color-adjust: exact !important;
-                -webkit-print-color-adjust: exact !important;
             }
-            .certificate-inner { padding: 2mm 4mm; }
-            .print-blue-border { display: block !important; border: 2.5px solid #0b4774 !important; }
+            .document-heading {
+                background: #0b4774 !important;
+                color: #fff !important;
+                print-color-adjust: exact !important;
+            }
+            /* Ensures high resolution logo sharpness when printed/saved as PDF */
+            .school-logo, .certificate-watermark {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                image-rendering: -webkit-optimize-contrast;
+            }
         }
     </style>
 </head>
@@ -216,13 +312,17 @@
     <div class="certificate-inner">
         <div>
             <img src="{% static 'images/logo.png' %}" class="certificate-watermark" alt="">
-            <div class="serial">Serial no: <strong>{{ values.serial_number|default:'.........' }}</strong></div>
             
-            <!-- Curved School Title -->
+            <div class="serial-and-date">
+                <div>Serial No: <strong>{{ values.serial_number|default:'.........' }}</strong></div>
+                <div>Issue Date: <strong>{{ values.generated_date|default:'....................' }}</strong></div>
+            </div>
+            
+            <!-- Curved School Title with expanded viewBox and adjusted path to prevent text clipping while larger -->
             <div class="school-title-container">
-                <svg class="school-title-svg" viewBox="0 0 1000 60">
-                    <path id="curve" d="M 40,48 Q 500,-18 960,48" fill="transparent" />
-                    <text width="1000" text-anchor="middle">
+                <svg class="school-title-svg" viewBox="0 0 1150 85">
+                    <path id="curve" d="M 40,68 Q 575,-12 1110,68" fill="transparent" />
+                    <text width="1150" text-anchor="middle">
                         <textPath href="#curve" startOffset="50%" text-anchor="middle" class="school-title-text">
                             KHONDOKER NASER UDDIN HIGH SCHOOL
                         </textPath>
@@ -230,7 +330,7 @@
                 </svg>
             </div>
 
-            <div class="school-address">Hazi Foyez Uddin Cross Road, Boyra, Khulna, Bangladesh</div>
+            <div class="school-address">Hazi Foyez Uddin Cross Road, Boyra, GPO-9000,Sonadanga, Khulna, Bangladesh</div>
             <img src="{% static 'images/logo.png' %}" class="school-logo" alt="School logo">
             <div class="document-heading">TESTIMONIAL</div>
 
@@ -240,7 +340,7 @@
                 <p>According to the Admission Register{% if values.status == 'ssc_passed' %} &amp; Registration Record{% endif %}, {% if values.gender == 'Female' %}her{% else %}his{% endif %} date of birth is <strong>{{ values.date_of_birth|default:'................' }}</strong>.</p>
 
                 {% if values.status == 'ssc_passed' %}
-                <p>{% if values.gender == 'Female' %}She{% else %}He{% endif %} appeared at the S.S.C. Examination in the year <strong>{{ values.ssc_year }}</strong> under the Board of Intermediate and Secondary Education, <strong>{{ values.ssc_board }}</strong>, Bangladesh, as a <strong>{{ values.candidate_type }}</strong> candidate and obtained a Grade Point Average (GPA) of  <strong> {{ values.gpa }}</strong>.</p>
+                <p>{% if values.gender == 'Female' %}She{% else %}He{% endif %} appeared at the S.S.C. Examination in the year <strong>{{ values.ssc_year }}</strong> under the Board of Intermediate and Secondary Education, <strong>{{ values.ssc_board }}</strong>, Bangladesh, as a <strong>{{ values.candidate_type }}</strong> candidate and obtained a Grade Point Average (GPA) of <strong>{{ values.gpa }}</strong>.</p>
                 {% else %}
                 <p>{% if values.gender == 'Female' %}She{% else %}He{% endif %} is a regular student of this institution and has demonstrated good conduct, discipline, sincerity, and respect for the values and rules of the institution throughout {% if values.gender == 'Female' %}her{% else %}his{% endif %} period of study.</p>
                 {% endif %}
@@ -248,10 +348,14 @@
                 <p>To the best of my knowledge, {% if values.gender == 'Female' %}she{% else %}he{% endif %} has always maintained good character and has never been involved in any activity subversive of the state or contrary to the rules and discipline of the institution. I wish {% if values.gender == 'Female' %}her{% else %}him{% endif %} every success, happiness, and prosperity in life.</p>
             </div>
         </div>
+
         <div class="certificate-footer">
-            <div>Issue Date: <strong>{{ values.generated_date|default:'....................' }}</strong><br></div>
-            <div class="signature">
-                <div class="signature-name">Md. Salim Sarder</div><br>
+            <div>
+                <!-- Extra footer note if needed -->
+            </div>
+            <div class="signature-box">
+                <div class="signature-name">Md. Salim Sarder</div>
+                <div class="signature-line"></div>
                 <strong>Headmaster</strong><br>
                 Khondoker Naser Uddin High School<br>
                 Boyra, Khulna
