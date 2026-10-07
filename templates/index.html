@@ -205,6 +205,9 @@
             .header-logo { width: 75px; height: 75px; }
             .nav-link { padding: 10px 15px !important; border-bottom: 1px solid rgba(255,255,255,0.1); }
             .auto-gallery-slider .carousel-item img { max-height: 40vh; }
+            .about-section { margin-top: 1rem !important; margin-bottom: 1rem !important; padding-top: 2rem !important; padding-bottom: 2rem !important; }
+            .about-slider .carousel-item { height: clamp(260px, 68vw, 380px); }
+            .about-section p { font-size: 1rem !important; text-align: left !important; }
             .section-title { font-size: 1.8rem; }
             .display-5 { font-size: 2rem; }
         }
@@ -233,7 +236,26 @@
             background: #e7edf4;
         }
         .gallery-overlay-title { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0, 45, 90, 0.9)); color: white; padding: 40px 15px; text-align: center; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
-        .about-slider img { width: 100%; height: 450px; object-fit: cover; border-radius: 15px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); border: 8px solid #fff; }
+        .about-slider {
+            width: 100%;
+            overflow: hidden;
+            border: 8px solid #fff;
+            border-radius: 15px;
+            background: #e7edf4;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .about-slider .carousel-item {
+            height: clamp(280px, 38vw, 450px);
+            background: #e7edf4;
+        }
+        .about-slider .carousel-item img {
+            display: block;
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 100% !important;
+            object-fit: contain !important;
+            object-position: center;
+        }
         .section-title { font-weight: 700; color: #004a99; position: relative; padding-bottom: 15px; margin-bottom: 50px; text-align: center; font-size: 2.5rem; }
         .section-title::after { content: ''; width: 80px; height: 4px; background: #ffc107; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); border-radius: 2px; }
         .notice-board { background: #fff; border: 1px solid rgba(0,74,153,0.1); border-top: 6px solid #004a99; border-radius: 20px; box-shadow: 0 18px 42px rgba(0,45,90,0.1); overflow: hidden; }
@@ -1245,20 +1267,20 @@ footer {
     </div>
 </div>
 
-    <div class="container my-5 py-5">
+    <div class="container about-section my-5 py-5">
         <div class="row align-items-center">
-            <div class="col-lg-6 mb-5 mb-lg-0" data-aos="fade-right">
+            <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-right">
                 <div id="aboutSlider" class="carousel slide about-slider shadow-lg" data-bs-ride="carousel">
                     <div class="carousel-inner">
                         {% if school_info.images.all %}
                             {% for about_img in school_info.images.all %}
                             <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                                <img src="{{ about_img.image.url }}" class="d-block w-100" alt="School View">
+                                <img src="{{ about_img.image.url }}" class="d-block w-100" alt="খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়ের ছবি">
                             </div>
                             {% endfor %}
                         {% else %}
                             <div class="carousel-item active">
-                                <img src="https://via.placeholder.com/600x450" class="d-block w-100" alt="Default">
+                                <img src="{% static 'images/logo.png' %}" class="d-block w-100" alt="খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়ের লোগো">
                             </div>
                         {% endif %}
                     </div>
