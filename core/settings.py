@@ -12,7 +12,7 @@ SECRET_KEY = os.environ.get(
     'django-insecure-%^ogsv0b)0os@d)mlpi3&@#z@y-m$jnd2u4vr*2u$wxn)^=lgf'
 )
 
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'true').lower() in ('true', '1', 'yes')
 ALLOWED_HOSTS = ['*']
 
 LOGIN_URL = 'login'
@@ -24,7 +24,6 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.sitemaps',
@@ -36,7 +35,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
 
     # Temporarily disabled for testing
@@ -48,6 +46,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if not DEBUG:
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 ROOT_URLCONF = 'core.urls'
 
@@ -65,6 +66,7 @@ TEMPLATES = [
                 'django.template.context_processors.media',
 
                 'main_app.context_processors.ticker_context',
+                'main_app.context_processors.site_status_context',
 
                 # Temporarily disabled for testing
                 # 'main_app.context_processors.visitor_counts',

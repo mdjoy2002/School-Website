@@ -1,0 +1,19 @@
+{% load static %}
+{% if entry_popup_images %}
+    {{ entry_popup_images|json_script:"welcome-slider-images" }}
+    <div class="welcome-slider" id="welcomeSlider" role="dialog" aria-modal="true" aria-label="Welcome images">
+        <div class="welcome-slider__panel">
+            <div class="welcome-slider__toolbar">
+                <span class="welcome-slider__counter" id="welcomeSliderCounter" aria-live="polite"></span>
+                <button class="welcome-slider__close" id="welcomeSliderClose" type="button" aria-label="Close popup" title="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="welcome-slider__image-wrap">
+                <img class="welcome-slider__image" id="welcomeSliderImage" alt="" fetchpriority="high">
+            </div>
+            <p class="welcome-slider__title" id="welcomeSliderTitle" hidden></p>
+        </div>
+    </div>
+    <script src="{% static 'js/welcome-slider.js' %}" defer></script>
+{% endif %}

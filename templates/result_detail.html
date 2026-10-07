@@ -13,12 +13,6 @@
     
     <style>
         /* Font Setup */
-        @font-face {
-            font-family: 'Nikosh';
-            src: url('{% static "fonts/Nikosh.ttf" %}') format('truetype');
-            font-display: swap;
-        }
-
         :root {
             --primary-blue: #004a99;
             --secondary-blue: #002d5a;
@@ -38,7 +32,7 @@
             background-color: #f4f7f9; 
             color: #333;
             overflow-x: visible;
-            font-family: var(--global-font) !important;
+            font-family: var(--global-font);
         }
 
         /* কন্টেন্ট এরিয়া যা বাকি জায়গা দখল করবে */
@@ -47,8 +41,8 @@
         }
 
         /* গ্লোবাল ফন্ট সেটআপ */
-        h1, h2, h3, h4, h5, h6, .nav-link, .dropdown-item, .btn-download, p, span { 
-            font-family: var(--global-font) !important; 
+        h1, h2, h3, h4, h5, h6, .nav-link, .dropdown-item, .btn-download, p, span {
+            font-family: var(--global-font);
         }
 
         /* ইংরেজি এবং সংখ্যার জন্য টাইমস নিউ রোমান */
@@ -61,7 +55,7 @@
         td:nth-child(1), 
         td:nth-child(3), 
         .footer-en strong {
-            font-family: 'Times New Roman', serif !important;
+            font-family: 'Times New Roman', 'Kalpurush', serif;
         }
 
         /* --- Navbar --- */
@@ -151,6 +145,7 @@
         .social-links a { color: #fff; margin-right: 15px; font-size: 18px; opacity: 0.8; }
         .social-links a:hover { color: var(--accent-yellow); opacity: 1; }
     </style>
+    <link rel="stylesheet" href="{% static 'css/global-fonts.css' %}">
 </head>
 <body>
 
@@ -280,6 +275,7 @@
                 </div>
             </div>
             {% include 'includes/visitor_footer_stats.html' %}
+            {% include 'includes/footer_last_updated.html' %}
             <hr class="opacity-25 bg-light">
             <div class="text-center pt-2">
                 <p class="mb-0 small opacity-75 footer-en">© 2026 All Rights Reserved | Developed by <strong>Md Imtiaz Sarder Joy</strong></p>

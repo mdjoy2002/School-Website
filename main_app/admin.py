@@ -1,7 +1,8 @@
+from django import forms
 from django.contrib import admin
 from .models import (
 
-    Notice, TickerNews, Slider, SchoolInfo, LeadershipProfile, AboutImage, Teacher, 
+    Notice, TickerNews, Slider, EntryPopupImage, SchoolInfo, LeadershipProfile, CommitteeMember, AboutImage, Teacher,
 
     Notice, TickerNews, Slider, SchoolInfo, AboutImage, Teacher, 
 
@@ -9,12 +10,50 @@ from .models import (
     ContactMessage, ExamRoutine, StudentCornerData, AdmissionInfo, ResultData
 )
 
+LEADERSHIP_PROFILE_DESIGNATIONS = {
+    'FOUNDER': 'প্রতিষ্ঠাতা',
+    'HEADMASTER': 'প্রধান শিক্ষক',
+    'PRESIDENT': 'সভাপতি',
+    'COMMITTEE': 'ম্যানেজিং কমিটি',
+}
+
+
+class LeadershipProfileForm(forms.ModelForm):
+    designation = forms.CharField(required=False, max_length=150, label='পদবি')
+
+    class Meta:
+        model = LeadershipProfile
+        fields = '__all__'
+
+    @staticmethod
+    def get_default_designation(profile_type):
+        return LEADERSHIP_PROFILE_DESIGNATIONS.get(profile_type, '')
+
+    def clean_designation(self):
+        designation = (self.cleaned_data.get('designation') or '').strip()
+        if designation:
+            return designation
+
+        profile_type = self.cleaned_data.get('profile_type')
+        if profile_type:
+            return self.get_default_designation(profile_type)
+
+        return designation
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        initial_profile_type = self.initial.get('profile_type') or getattr(self.instance, 'profile_type', '')
+        if initial_profile_type and not self.initial.get('designation') and not self.instance.designation:
+            self.fields['designation'].initial = self.get_default_designation(initial_profile_type)
+
+
+
 
 # --- নোটিশ বোর্ড (Notice Management) সেকশন ---
 @admin.register(Notice)
 class NoticeAdmin(admin.ModelAdmin):
-    list_display = ('title', 'show_on_ticker', 'show_on_dashboard', 'is_active', 'created_at')
-    list_editable = ('show_on_ticker', 'show_on_dashboard', 'is_active')
+    list_display = ('title', 'show_on_ticker', 'show_on_dashboard', 'is_new', 'is_active', 'created_at')
+    list_editable = ('show_on_ticker', 'show_on_dashboard', 'is_new', 'is_active')
     list_filter = ('show_on_ticker', 'show_on_dashboard', 'is_active', 'created_at')
     search_fields = ('title',)
 
@@ -26,6 +65,35 @@ class TickerNewsAdmin(admin.ModelAdmin):
     search_fields = ('title',)
 
 admin.site.register(Slider)
+
+
+@admin.register(EntryPopupImage)
+class EntryPopupImageAdmin(admin.ModelAdmin):
+    list_display = ('thumbnail', 'image_name', 'title', 'is_active', 'order', 'created_at')
+    list_editable = ('is_active', 'order')
+    list_filter = ('is_active', 'created_at')
+    search_fields = ('title', 'image')
+    readonly_fields = ('thumbnail', 'created_at', 'updated_at')
+    ordering = ('order', 'pk')
+
+    @admin.display(description='প্রিভিউ')
+    def thumbnail(self, obj):
+        if not obj or not obj.image:
+            return 'ছবি নেই'
+        if not obj.image.storage.exists(obj.image.name):
+            return 'ছবি পাওয়া যায়নি'
+        from django.utils.html import format_html
+
+        return format_html(
+            '<img src="{}" alt="{}" style="max-width: 120px; max-height: 80px; object-fit: contain;">',
+            obj.image.url,
+            obj.title or obj.image.name,
+        )
+
+    @admin.display(description='ছবির নাম', ordering='image')
+    def image_name(self, obj):
+        return obj.image.name.rsplit('/', 1)[-1] if obj.image else 'ছবি নেই'
+
 
 # --- পরীক্ষার রুটিন (Exam Routine) সেকশন ---
 @admin.register(ExamRoutine)
@@ -102,9 +170,20 @@ class SchoolInfoAdmin(admin.ModelAdmin):
 
 @admin.register(LeadershipProfile)
 class LeadershipProfileAdmin(admin.ModelAdmin):
+    form = LeadershipProfileForm
     list_display = ('profile_type', 'name', 'designation', 'image')
     list_filter = ('profile_type',)
     search_fields = ('name', 'designation')
+
+    class Media:
+        js = ('js/leadership-profile-autofill.js',)
+
+@admin.register(CommitteeMember)
+class CommitteeMemberAdmin(admin.ModelAdmin):
+    list_display = ('name', 'category', 'designation', 'phone', 'order')
+    list_editable = ('order',)
+    list_filter = ('category',)
+    search_fields = ('name', 'designation', 'phone')
 
 
 # ১. প্রতিষ্ঠান প্রধান সেকশন

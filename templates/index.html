@@ -18,7 +18,6 @@
 
     {% load static %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
@@ -35,7 +34,7 @@
     </script>
     <style>
         body { 
-            font-family: 'Times New Roman', 'Nikosh', 'Hind Siliguri', serif; 
+            font-family: 'Times New Roman', 'Kalpurush', serif;
             background-color: #f8f9fa; 
             color: #333;
             overflow-x: visible; 
@@ -43,7 +42,7 @@
             padding: 0;
         }
 
-        [lang="bn"] { font-family: 'Nikosh', 'Hind Siliguri', sans-serif; }
+        [lang="bn"] { font-family: 'Times New Roman', 'Kalpurush', serif; }
 
         html { scroll-behavior: smooth; }
 
@@ -233,17 +232,177 @@
             max-height: 60vh; /* keep slider from growing too large */
             object-fit: contain; /* show full image without cropping */
             border-radius: 20px;
-            background: #000; /* helps with letterboxing for non-full-width images */
+            background: #e7edf4;
         }
         .gallery-overlay-title { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0, 45, 90, 0.9)); color: white; padding: 40px 15px; text-align: center; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
         .about-slider img { width: 100%; height: 450px; object-fit: cover; border-radius: 15px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); border: 8px solid #fff; }
         .section-title { font-weight: 700; color: #004a99; position: relative; padding-bottom: 15px; margin-bottom: 50px; text-align: center; font-size: 2.5rem; }
         .section-title::after { content: ''; width: 80px; height: 4px; background: #ffc107; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); border-radius: 2px; }
-        .notice-board { background: #fff; border-radius: 20px; border-top: 6px solid #004a99; box-shadow: 0 15px 35px rgba(0,0,0,0.08); overflow: hidden; }
-        .notice-list { max-height: 450px; overflow-y: auto; }
-        .notice-item { border-bottom: 1px solid #eee; padding: 20px; transition: 0.3s; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: inherit; }
-        .notice-item:hover { background: #f0f7ff; color: #004a99; padding-left: 30px; }
-        .notice-date { background: #f0f0f0; padding: 5px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; }
+        .notice-board { background: #fff; border: 1px solid rgba(0,74,153,0.1); border-top: 6px solid #004a99; border-radius: 20px; box-shadow: 0 18px 42px rgba(0,45,90,0.1); overflow: hidden; }
+        .notice-board-header { background: linear-gradient(120deg, #004a99, #003366); padding: 20px 24px; }
+        .notice-board-title { display: flex; align-items: center; gap: 12px; }
+        .notice-board-title-icon { display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; border-radius: 14px; background: rgba(255,255,255,0.14); color: #ffc107; font-size: 20px; }
+        .notice-board-title h4 { font-size: 1.15rem; }
+        .notice-board-title small { display: block; margin-top: 2px; color: rgba(255,255,255,0.72); font-size: 0.8rem; }
+        .notice-board-header .btn { border: 0; border-radius: 999px; box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+        .notice-list { background: linear-gradient(180deg, #fff 0%, #f8fbff 100%); }
+        .notice-rows-viewport { overflow: hidden; }
+        .notice-rows-viewport.is-scrolling { height: 440px; }
+        .notice-scroll-content { animation: notice-scroll-up 48s linear infinite; }
+        .notice-rows-viewport:hover .notice-scroll-content,
+        .notice-rows-viewport:focus-within .notice-scroll-content { animation-play-state: paused; }
+        @keyframes notice-scroll-up {
+            from { transform: translateY(0); }
+            to { transform: translateY(-50%); }
+        }
+        .notice-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            table-layout: fixed;
+        }
+        .notice-table .notice-number-column { width: 72px; }
+        .notice-table .notice-download-column { width: 84px; }
+        .notice-table thead th {
+            background: #f1f5f9;
+            color: #536a82;
+            font-size: 0.82rem;
+            font-weight: 800;
+            padding: 13px 16px;
+            border-bottom: 1px solid #dfeaf7;
+            text-align: left;
+        }
+        .notice-table thead th:first-child,
+        .notice-table thead th:last-child { text-align: center; }
+        .notice-table thead th:nth-child(2) { text-align: center; }
+        .notice-table tbody td {
+            padding: 13px 16px;
+            border-bottom: 1px solid #edf1f6;
+            vertical-align: middle;
+        }
+        .notice-row:hover td {
+            background: #f4f9ff;
+        }
+        .notice-sl {
+            width: 60px;
+            text-align: center;
+            font-weight: 700;
+            color: #0d3b7a;
+        }
+        .notice-title-cell {
+            width: auto;
+        }
+        .notice-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #1f3158;
+            text-decoration: none;
+        }
+        .notice-link:hover {
+            color: #004a99;
+            text-decoration: none;
+        }
+        .notice-icon {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            flex-shrink: 0;
+        }
+        .routine-icon {
+            background: #fff6d7;
+            color: #d69a00;
+        }
+        .notice-icon-pdf {
+            background: #ffe7e7;
+            color: #e53935;
+        }
+        .notice-label {
+            display: inline-block;
+            margin-bottom: 4px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+            padding: 4px 8px;
+            width: fit-content;
+        }
+        .badge-routine {
+            background: #ffc107;
+            color: #1d1d1d;
+        }
+        .notice-text-wrap {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        .notice-text {
+            display: block;
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: inherit;
+            line-height: 1.4;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .notice-date-cell {
+            color: #526883;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .notice-action-cell {
+            width: 70px;
+            text-align: center;
+        }
+        .notice-download {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border: 1px solid #d7e5f5;
+            border-radius: 11px;
+            background: #edf4fc;
+            color: #123f70;
+            transition: all 0.25s ease;
+            text-decoration: none;
+        }
+        .notice-download:hover {
+            border-color: #123f70;
+            background: #123f70;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(18, 63, 112, 0.18);
+        }
+        .new-notice-badge {
+            position: absolute;
+            top: -8px;
+            right: -12px;
+            z-index: 1;
+            padding: 3px 6px;
+            border: 2px solid #fff;
+            border-radius: 999px;
+            background: #ffc107;
+            color: #212529;
+            font-size: 9px;
+            font-weight: 800;
+            line-height: 1;
+            animation: new-notice-blink 1s steps(2, start) infinite;
+        }
+        @keyframes new-notice-blink {
+            to { visibility: hidden; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .new-notice-badge,
+            .notice-scroll-content { animation: none; }
+        }
         .teacher-card { transition: 0.4s; border-radius: 20px; overflow: hidden; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.05); background: #fff; }
         .teacher-card:hover { transform: translateY(-15px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
         .teacher-img { width: 140px; height: 140px; object-fit: cover; border: 5px solid #ffc107; padding: 5px; transition: 0.4s; }
@@ -299,7 +458,558 @@ footer {
         ::-webkit-scrollbar { width: 10px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #004a99; border-radius: 5px; }
+
+        :root {
+            --home-ink: #18324f;
+            --home-muted: #61748b;
+            --home-primary: #123f70;
+            --home-accent: #d6a32a;
+            --home-border: #e2eaf2;
+            --home-surface: #fff;
+            --home-page: #f3f6fa;
+            --home-radius: 18px;
+            --home-shadow: 0 12px 34px rgba(24, 50, 79, 0.08);
+        }
+
+        html { scroll-padding-top: 76px; }
+        body {
+            overflow-x: hidden;
+            background: var(--home-page);
+            color: var(--home-ink);
+            line-height: 1.6;
+        }
+        body > .flex-grow-1 { background: var(--home-page); }
+
+        .header-top-main {
+            padding: 14px 0;
+            background: var(--home-surface);
+            border-bottom: 1px solid var(--home-border);
+            box-shadow: 0 2px 12px rgba(24, 50, 79, 0.04);
+        }
+        .header-top-main .container { max-width: 1320px; }
+        .header-top-main .row { row-gap: 14px; }
+        .header-logo {
+            width: 100px;
+            height: 100px;
+            padding: 4px;
+            border: 1px solid var(--home-border);
+            box-shadow: 0 5px 14px rgba(24, 50, 79, 0.1) !important;
+        }
+        .header-logo:hover { transform: none; }
+        .school-name-bn {
+            margin: 0 0 2px;
+            color: var(--home-primary);
+            font-size: clamp(1.8rem, 2.8vw, 2.5rem);
+            line-height: 1.35;
+            text-shadow: none;
+        }
+        .school-name-en {
+            margin: 0 0 5px;
+            color: #52667c;
+            font-size: clamp(1.15rem, 1.65vw, 1.4rem);
+            letter-spacing: 0.01em;
+        }
+        .brand-info p {
+            color: var(--home-muted) !important;
+            font-size: 0.98rem;
+            font-weight: 500 !important;
+            line-height: 1.5;
+        }
+        .brand-info p i { color: var(--home-accent); }
+        .header-clock {
+            min-width: 120px;
+            padding: 9px 12px;
+            border: 1px solid var(--home-border);
+            border-radius: 12px;
+            background: #f7f9fc;
+            box-shadow: none;
+            color: var(--home-primary);
+        }
+        .header-clock:hover { transform: none; box-shadow: none; }
+        .header-clock .clock-icon { width: 24px; height: 24px; margin-bottom: 3px; }
+        .header-clock .clock-time { font-size: 0.95rem; }
+        .header-clock .clock-label { font-size: 0.68rem; }
+        .login-btn {
+            border-radius: 10px !important;
+            background: var(--home-primary);
+            box-shadow: none !important;
+            font-size: 0.88rem;
+        }
+        .login-btn:hover { background: #0c3159; transform: none; }
+
+        .navbar {
+            min-height: 54px;
+            border-bottom: 2px solid var(--home-accent);
+            background: #123958 !important;
+            box-shadow: 0 5px 16px rgba(18, 57, 88, 0.12) !important;
+        }
+        .navbar > .container { max-width: 1320px; }
+        .navbar-nav { gap: 3px; }
+        .navbar .nav-link {
+            padding: 11px 9px !important;
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-size: 0.82rem;
+            font-weight: 600;
+            line-height: 1.35;
+            white-space: nowrap;
+        }
+        .navbar .nav-link i { color: #e7bd5a; }
+        .navbar .nav-link:hover,
+        .navbar .nav-link.active {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff !important;
+        }
+        .navbar-toggler {
+            width: auto;
+            padding: 7px 12px;
+            border-color: rgba(255, 255, 255, 0.35);
+            color: #fff;
+        }
+        .navbar .dropdown-menu {
+            background: #fff;
+            border: 1px solid var(--home-border);
+            border-top: 2px solid var(--home-accent);
+            border-radius: 10px;
+            box-shadow: var(--home-shadow);
+        }
+        .navbar .dropdown-item {
+            color: var(--home-ink) !important;
+            border-bottom: 1px solid #eef2f6;
+            font-size: 0.9rem;
+        }
+        .navbar .dropdown-item:hover {
+            padding-left: 20px;
+            background: #f2f6fb !important;
+            color: var(--home-primary) !important;
+        }
+        .navbar .dropdown-item i { color: var(--home-accent); }
+
+        body .news-ticker {
+            padding: 8px 0;
+            background: linear-gradient(100deg, #b5121b 0%, #dc2626 55%, #b91c1c 100%);
+            color: #fff;
+            border-bottom: 1px solid #991b1b;
+            box-shadow: 0 4px 14px rgba(153, 27, 27, 0.22);
+            font-size: 0.9rem;
+        }
+        .news-ticker .container { gap: 8px; }
+        body .news-ticker .ticker-title {
+            background: #fff;
+            color: #a30f18;
+            padding: 5px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            border-radius: 999px;
+            font-size: 0.9rem;
+            font-weight: 800;
+        }
+
+        .container-fluid.px-lg-5.my-4[data-aos="zoom-in"] {
+            width: 100%;
+            max-width: 1480px !important;
+            margin: 20px auto 0 !important;
+            padding: 0 28px !important;
+        }
+        .auto-gallery-slider {
+            overflow: hidden;
+            border: 1px solid rgba(18, 57, 88, 0.08);
+            border-radius: var(--home-radius) !important;
+            background: #e7edf4;
+            box-shadow: 0 18px 42px rgba(18, 57, 88, 0.14) !important;
+        }
+        .auto-gallery-slider .carousel-inner,
+        .auto-gallery-slider .carousel-item {
+            background: #e7edf4;
+        }
+        .auto-gallery-slider .carousel-item img {
+            display: block;
+            width: 100% !important;
+            height: clamp(300px, 39vw, 510px) !important;
+            max-width: 100% !important;
+            max-height: none !important;
+            object-fit: contain !important;
+            border-radius: 0;
+            background: transparent !important;
+        }
+        .gallery-overlay-title {
+            padding: 72px 24px 28px;
+            background: linear-gradient(transparent, rgba(13, 35, 58, 0.78));
+            text-align: left;
+        }
+        .gallery-overlay-title h2 {
+            width: min(100%, 1200px);
+            margin: 0 auto !important;
+            font-size: clamp(1.35rem, 3vw, 2.4rem);
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+        }
+        .auto-gallery-slider .carousel-control-prev,
+        .auto-gallery-slider .carousel-control-next { width: 8%; }
+        .auto-gallery-slider .carousel-control-prev-icon,
+        .auto-gallery-slider .carousel-control-next-icon {
+            padding: 14px !important;
+            background-color: rgba(18, 57, 88, 0.72) !important;
+        }
+
+        #notice-section {
+            max-width: 1320px;
+            margin: 30px auto 18px !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+        }
+        #notice-section > .row { align-items: stretch; }
+        .notice-board,
+        #notice-section .col-lg-4 > .card {
+            height: 100%;
+            border: 1px solid var(--home-border);
+            border-radius: var(--home-radius);
+            background: var(--home-surface);
+            box-shadow: var(--home-shadow);
+        }
+        .notice-board { border-top: 3px solid var(--home-primary); }
+        .notice-board-header {
+            min-height: 82px;
+            padding: 15px 20px;
+            background: var(--home-primary);
+        }
+        .notice-board-title-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.12);
+            color: #edc35f;
+        }
+        .notice-board-header .btn {
+            background: #f0c75e;
+            color: #233b55;
+            box-shadow: none;
+        }
+        .notice-table thead th { background: #f1f5f9; color: #536a82; }
+        .notice-table tbody td { padding: 10px 12px; }
+        .notice-list { background: var(--home-surface); }
+        #notice-section .col-lg-4 > .card { padding: 14px; }
+        #notice-section .col-lg-4 > .card > .bg-warning { display: none; }
+        #notice-section .col-lg-4 .bg-light {
+            margin-top: 0 !important;
+            padding: 16px !important;
+            border: 1px solid var(--home-border);
+            background: #f8fafc !important;
+            box-shadow: none !important;
+        }
+        #notice-section .col-lg-4 img {
+            width: 116px !important;
+            height: 130px !important;
+            border-radius: 14px !important;
+            object-fit: cover;
+        }
+        #notice-section .col-lg-4 .bg-light h5 { font-size: 0.92rem; }
+        #notice-section .col-lg-4 .bg-light p { font-size: 0.78rem !important; }
+        #notice-section .col-lg-4 .bg-light .btn { font-size: 0.74rem; }
+        #notice-section .col-lg-4 .btn-outline-primary {
+            border-color: var(--home-primary);
+            color: var(--home-primary);
+        }
+
+        .leadership-profile-stack {
+            display: grid;
+            gap: 18px;
+        }
+        .leadership-card {
+            padding: 18px 16px;
+            border: 1px solid var(--home-border);
+            border-radius: 20px;
+            background: #f8fafc;
+            box-shadow: 0 8px 18px rgba(17, 43, 67, 0.08);
+            text-align: center;
+        }
+        .leadership-card.featured {
+            padding: 22px 18px;
+            border: 1px solid rgba(0, 74, 153, 0.16);
+            background: linear-gradient(180deg, #ffffff 0%, #edf5ff 100%);
+        }
+        .leadership-card img {
+            width: min(100%, 220px);
+            height: 240px;
+            object-fit: cover;
+            border-radius: 18px;
+            border: 3px solid #ffffff;
+            box-shadow: 0 12px 24px rgba(17, 43, 67, 0.12);
+            margin: 0 auto 14px;
+        }
+        .leadership-card h5 {
+            margin-bottom: 4px;
+            font-size: 1.05rem;
+            font-weight: 800;
+        }
+        .leadership-card .leadership-role {
+            margin-bottom: 12px;
+            color: #5a6d82;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .leadership-card .leadership-school {
+            margin-bottom: 12px;
+            color: #1b2d3d;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+        .leadership-card hr {
+            width: 30%;
+            border-top: 2px solid rgba(0, 74, 153, 0.2);
+            margin: 0 auto 12px;
+        }
+        .leadership-card .leadership-caption {
+            margin: 0;
+            color: #4e5f72;
+            font-size: 0.86rem;
+            line-height: 1.7;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .container.my-5.py-5 {
+            max-width: 1320px;
+            margin-top: 22px !important;
+            margin-bottom: 22px !important;
+            padding: 34px !important;
+            border: 1px solid var(--home-border);
+            border-radius: var(--home-radius);
+            background: var(--home-surface);
+            box-shadow: var(--home-shadow);
+        }
+        .about-slider img {
+            height: clamp(280px, 34vw, 420px) !important;
+            border: 5px solid #fff;
+            border-radius: var(--home-radius);
+            box-shadow: var(--home-shadow);
+        }
+        .container.my-5.py-5 .display-5 {
+            margin-bottom: 16px !important;
+            color: var(--home-primary) !important;
+            font-size: clamp(1.65rem, 3vw, 2.35rem);
+        }
+        .container.my-5.py-5 p.fs-5 {
+            color: #53677e !important;
+            font-size: 1rem !important;
+            line-height: 1.85 !important;
+        }
+        .container.my-5.py-5 .mt-4.row.g-3 > div {
+            padding: 9px 10px;
+            border: 1px solid var(--home-border);
+            border-radius: 10px;
+            background: #fff;
+            color: #425970;
+            font-size: 0.9rem;
+        }
+        .section-title {
+            margin-bottom: 28px;
+            padding-bottom: 12px;
+            color: var(--home-primary);
+            font-size: clamp(1.6rem, 3vw, 2.15rem);
+        }
+        .section-title::after { width: 54px; height: 3px; background: var(--home-accent); }
+        .teacher-card {
+            border: 1px solid var(--home-border);
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(24, 50, 79, 0.06);
+        }
+        .teacher-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 30px rgba(24, 50, 79, 0.11);
+        }
+        .teacher-img {
+            width: 116px;
+            height: 116px;
+            border: 3px solid #e5edf5;
+            padding: 3px;
+        }
+        .teacher-card .text-primary { color: var(--home-primary) !important; }
+        #notice-section + .container.my-5.py-5 .teacher-card { padding: 22px !important; }
+        .container.my-5.py-5 .btn-primary {
+            border-color: var(--home-primary);
+            background: var(--home-primary);
+            box-shadow: none !important;
+        }
+
+        footer {
+            margin-top: 20px;
+            padding: 46px 0 22px;
+            background: #123958;
+        }
+        footer .container { max-width: 1320px; }
+        footer .row { row-gap: 24px !important; }
+        footer .footer-logo { font-size: 1.15rem; line-height: 1.55; }
+        footer h5 { margin-bottom: 14px !important; }
+        footer .social-links a {
+            width: 38px;
+            height: 38px;
+            margin-right: 6px;
+            background: rgba(255, 255, 255, 0.12);
+            font-size: 0.95rem;
+        }
+        .footer-emergency-img {
+            max-width: 340px;
+            border-radius: 12px;
+            box-shadow: none;
+        }
+        footer hr { margin: 28px 0 !important; }
+
+        @media (max-width: 1199px) {
+            .navbar .nav-link { padding: 10px 6px !important; font-size: 0.76rem; }
+            .navbar-nav { gap: 0; }
+        }
+        @media (min-width: 992px) {
+            #notice-section .col-lg-4 > .card {
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                gap: 10px;
+                padding: 12px;
+            }
+            #notice-section .col-lg-4 > .card > .bg-light {
+                display: grid;
+                grid-template-columns: 76px minmax(0, 1fr);
+                align-content: start;
+                align-items: center;
+                column-gap: 12px;
+                margin: 0 !important;
+                padding: 12px !important;
+                border-radius: 12px !important;
+                text-align: left !important;
+            }
+            #notice-section .col-lg-4 .bg-light > .position-relative {
+                grid-column: 1;
+                grid-row: 1 / span 5;
+                align-self: start;
+            }
+            #notice-section .col-lg-4 .bg-light > .position-relative img {
+                width: 76px !important;
+                height: 88px !important;
+                margin-bottom: 0 !important;
+                border-width: 2px !important;
+                border-radius: 10px !important;
+            }
+            #notice-section .col-lg-4 .bg-light > h5,
+            #notice-section .col-lg-4 .bg-light > p {
+                grid-column: 2;
+                margin: 0 0 3px !important;
+                text-align: left !important;
+            }
+            #notice-section .col-lg-4 .bg-light > h5 { font-size: 0.84rem; }
+            #notice-section .col-lg-4 .bg-light > p { font-size: 0.7rem !important; }
+            #notice-section .col-lg-4 .bg-light > hr { display: none; }
+            #notice-section .col-lg-4 .bg-light > .mt-3 {
+                grid-column: 1 / -1;
+                display: grid;
+                grid-template-columns: 20px minmax(0, 1fr);
+                align-items: start;
+                column-gap: 8px;
+                margin-top: 5px !important;
+            }
+            #notice-section .col-lg-4 .bg-light > .mt-3 > .fa-quote-left,
+            #notice-section .col-lg-4 .bg-light > .mt-3 > .fa-users {
+                grid-column: 1;
+                font-size: 0.95rem !important;
+            }
+            #notice-section .col-lg-4 .bg-light > .mt-3 > p {
+                grid-column: 2;
+                margin: 0 !important;
+                padding: 0 !important;
+                font-size: 0.69rem !important;
+                line-height: 1.5 !important;
+            }
+            #notice-section .col-lg-4 .bg-light > .btn {
+                grid-column: 2;
+                justify-self: start;
+                margin-top: 5px !important;
+                padding: 5px 10px !important;
+                font-size: 0.68rem;
+                white-space: nowrap;
+            }
+        }
+        @media (max-width: 991px) {
+            .header-top-main .col-lg-3 { margin-top: 0 !important; }
+            .header-top-main .d-inline-flex { justify-content: center !important; }
+            .navbar .navbar-collapse { padding: 8px 0 12px; }
+            .navbar .navbar-nav { align-items: stretch; }
+            .navbar .nav-link { padding: 10px 12px !important; font-size: 0.9rem; text-align: left; }
+            #notice-section .col-lg-4 > .card { margin-top: 0; }
+            .container.my-5.py-5 { padding: 24px 14px !important; }
+        }
+        @media (max-width: 767px) {
+            .header-top-main { padding: 12px 0; }
+            .header-top-main .col-lg-9 {
+                align-items: center;
+                text-align: center !important;
+            }
+            .header-logo { width: 82px; height: 82px; margin-right: 0 !important; }
+            .brand-info p { font-size: 0.76rem; }
+            .header-clock { min-width: 104px; }
+            .notice-rows-viewport.is-scrolling { height: 390px; }
+            .container-fluid.px-lg-5.my-4[data-aos="zoom-in"] {
+                margin-top: 14px !important;
+                padding: 0 14px !important;
+            }
+            .auto-gallery-slider .carousel-item img { height: 300px !important; }
+            .gallery-overlay-title { padding: 54px 16px 18px; }
+            #notice-section { margin-top: 18px !important; }
+            #notice-section .col-lg-4 { margin-top: 0; }
+            .notice-board-header { padding: 12px 14px; }
+            .notice-board-title { gap: 9px; }
+            .notice-board-title-icon { width: 34px; height: 34px; font-size: 16px; }
+            .notice-board-title h4 { font-size: 0.95rem; }
+            .notice-board-title small { font-size: 0.7rem; }
+            .notice-table thead th { padding: 10px 8px; font-size: 0.72rem; }
+            .notice-table tbody td { padding: 9px 8px; }
+            .notice-sl { width: 48px; font-size: 0.78rem; }
+            .notice-action-cell { width: 58px; }
+            .notice-icon { width: 34px; height: 34px; font-size: 0.9rem; }
+            .notice-link { gap: 8px; }
+            .notice-text { font-size: 0.82rem; }
+            .notice-download { width: 32px; height: 32px; border-radius: 9px; }
+            .notice-label { font-size: 8px; }
+            .container.my-5.py-5 { margin: 12px auto !important; }
+            .container.my-5.py-5 .col-lg-6.mb-5 { margin-bottom: 18px !important; }
+            .about-slider img { height: 280px !important; }
+            .section-title { margin-bottom: 22px; }
+            .teacher-card { padding: 20px !important; }
+            footer { padding: 36px 0 18px; }
+        }
+        @media (max-width: 575px) {
+            .header-top-main .col-lg-9 { flex-direction: column !important; }
+            .school-name-bn { font-size: 1.45rem; }
+            .school-name-en { font-size: 1rem; }
+            .brand-info p { font-size: 0.86rem; }
+            .header-top-main .d-inline-flex { gap: 8px !important; }
+            .login-btn { width: auto; margin-top: 0; padding: 8px 12px !important; }
+            .container-fluid.px-lg-5.my-4[data-aos="zoom-in"] { padding: 0 10px !important; }
+            .auto-gallery-slider .carousel-item img { height: 230px !important; }
+            .auto-gallery-slider .carousel-control-prev,
+            .auto-gallery-slider .carousel-control-next { width: 12%; }
+            .gallery-overlay-title h2 { font-size: 1.15rem; }
+            .notice-board-header .btn { padding: 6px 10px !important; font-size: 0.75rem; }
+            .notice-table { table-layout: fixed; }
+            .notice-table thead th:first-child { width: 42px !important; }
+            .notice-table .notice-number-column { width: 50px; }
+            .notice-table .notice-download-column { width: 58px; }
+            .notice-table tbody td:first-child { width: 42px; }
+            .notice-table thead th:last-child,
+            .notice-table tbody td:last-child { width: 52px !important; }
+            .notice-icon { width: 30px; height: 30px; border-radius: 9px; }
+            .notice-text { font-size: 0.75rem; }
+            .teacher-card .teacher-img { width: 100px; height: 100px; }
+            .footer-emergency-img { max-width: 100%; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                scroll-behavior: auto !important;
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     </style>
+    <link rel="stylesheet" href="{% static 'css/global-fonts.css' %}">
+    <link rel="stylesheet" href="{% static 'css/welcome-slider.css' %}">
 </head>
 <body class="d-flex flex-column min-vh-100">
 
@@ -388,7 +1098,8 @@ footer {
                         </ul>
                     </li>
 
-                    <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users-cog"></i> শিক্ষক</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users-cog"></i> শিক্ষক ও কর্মচারীবৃন্দ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'committee_page' %}"><i class="fas fa-user-friends"></i> কমিটিবৃন্দ</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'gallery' %}"><i class="fas fa-images"></i> গ্যালারি</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}"><i class="fas fa-envelope-open-text"></i> যোগাযোগ</a></li>
                 </ul>
@@ -425,100 +1136,112 @@ footer {
         </div>
     </div>
 
-    <div class="container my-5 py-5" id="notice-section">
+    <div class="container my-5 pb-0" id="notice-section">
         <div class="row g-4">
             <div class="col-lg-8" data-aos="fade-up-right">
-                <div class="notice-board h-100">
-                    <div class="p-4 bg-primary text-white d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0 fw-bold"><i class="fas fa-clipboard-list me-2"></i> সাম্প্রতিক নোটিশ ও রুটিন</h4>
+                <div class="notice-board">
+                    <div class="notice-board-header text-white d-flex justify-content-between align-items-center">
+                        <div class="notice-board-title">
+                            <span class="notice-board-title-icon"><i class="fas fa-clipboard-list"></i></span>
+                            <div>
+                                <h4 class="mb-0 fw-bold">সাম্প্রতিক নোটিশ ও রুটিন</h4>
+                                <small>সর্বশেষ প্রকাশিত তথ্য</small>
+                            </div>
+                        </div>
                         <a href="{% url 'all_notices' %}" class="btn btn-warning btn-sm fw-bold px-3">সব দেখুন</a>
                     </div>
-                    <div class="notice-list">
-                        {% for routine in featured_routines %}
-                        <a href="{{ routine.pdf_file.url }}" target="_blank" class="notice-item" style="border-left: 5px solid #ffc107;">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-calendar-check text-warning fs-3 me-3"></i>
-                                <div>
-                                    <span class="d-block fw-bold fs-5 text-primary">{{ routine.title }} (Class: {{ routine.target_class }})</span>
-                                    <span class="notice-date">প্রকাশিত: {{ routine.created_at|date:"d M, Y" }}</span>
-                                </div>
+                    <div class="notice-list" aria-label="সাম্প্রতিক নোটিশ ও রুটিন">
+                        <table class="notice-table">
+                            <colgroup>
+                                <col class="notice-number-column">
+                                <col>
+                                <col class="notice-download-column">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>ক্রমিক</th>
+                                    <th>নোটিশ</th>
+                                    <th>ডাউনলোড</th>
+                                </tr>
+                            </thead>
+                        </table>
+                        <div class="notice-rows-viewport{% if notice_board_item_count > 7 %} is-scrolling{% endif %}" aria-label="নোটিশ তালিকা">
+                            {% if notice_board_item_count > 7 %}
+                            <div class="notice-scroll-content">
+                                <table class="notice-table">
+                                    <colgroup>
+                                        <col class="notice-number-column">
+                                        <col>
+                                        <col class="notice-download-column">
+                                    </colgroup>
+                                    <tbody>
+                                        {% include 'includes/home_notice_items.html' %}
+                                    </tbody>
+                                </table>
+                                <table class="notice-table" aria-hidden="true">
+                                    <colgroup>
+                                        <col class="notice-number-column">
+                                        <col>
+                                        <col class="notice-download-column">
+                                    </colgroup>
+                                    <tbody>
+                                        {% include 'includes/home_notice_items.html' with is_duplicate=True %}
+                                    </tbody>
+                                </table>
                             </div>
-                            <span class="badge bg-danger">রুটিন</span>
-                        </a>
-                        {% endfor %}
-
-                        {% for notice in featured_notices %}
-                        <a href="{{ notice.file.url }}" target="_blank" class="notice-item">
-                            <div class="d-flex align-items-center">
-                                <i class="far fa-file-pdf text-danger fs-3 me-3"></i>
-                                <div>
-                                    <span class="d-block fw-bold fs-5">{{ notice.title }}</span>
-                                    <span class="notice-date">{{ notice.created_at|date:"d M, Y" }}</span>
-                                </div>
-                            </div>
-                            <i class="fas fa-arrow-circle-down fs-4 text-primary opacity-50"></i>
-                        </a>
-                        {% empty %}
-                            {% if not featured_routines %}
-                            <div class="p-5 text-center text-muted">কোনো গুরুত্বপূর্ণ নোটিশ এই মুহূর্তে নেই।</div>
+                            {% else %}
+                            <table class="notice-table">
+                                <colgroup>
+                                    <col class="notice-number-column">
+                                    <col>
+                                    <col class="notice-download-column">
+                                </colgroup>
+                                <tbody>
+                                    {% include 'includes/home_notice_items.html' %}
+                                </tbody>
+                            </table>
                             {% endif %}
-                        {% endfor %}
+                        </div>
                     </div>
                 </div>
             </div>
             
         <div class="col-lg-4" data-aos="fade-up-left">
-    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
-        <div class="bg-warning p-4 fw-bold text-center fs-5 text-dark">
-            
-        </div>
-        
-            <div class="mt-2 text-center p-3 rounded-4 bg-light shadow-sm">
-                <div class="position-relative d-inline-block">
-                    <img src="{% if headmaster_profile and headmaster_profile.image %}{{ headmaster_profile.image.url }}{% else %}{% static 'images/Headmaster.jpg' %}{% endif %}" 
-                         class="img-fluid rounded-4 shadow-sm border border-3 border-white mb-3" 
-                         style="width: 200px; height: 220px; object-fit: cover;" 
-                         alt="Head Teacher">
+            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="leadership-profile-stack p-3">
+                    <div class="leadership-card featured">
+                        <img src="{% if founder_profile and founder_profile.image %}{{ founder_profile.image.url }}{% else %}{% static 'images/Headmaster.jpg' %}{% endif %}" alt="প্রতিষ্ঠাতা">
+                        <h5 class="text-primary">{% if founder_profile %}{{ founder_profile.name }}{% else %}মোঃ সেলিম সরদার{% endif %}</h5>
+                        <p class="leadership-role">{% if founder_profile %}{{ founder_profile.designation }}{% else %}প্রতিষ্ঠাতা{% endif %}</p>
+                        <p class="leadership-school">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</p>
+                        <hr>
+                        <p class="leadership-caption">
+                            {% if founder_profile and founder_profile.caption %}{{ founder_profile.caption }}{% else %}"শিক্ষাই হলো সভ্যতার মূল ভিত্তি। আমরা আমাদের শিক্ষার্থীদের সুশিক্ষায় শিক্ষিত করে একজন সুনাগরিক হিসেবে গড়ে তুলতে প্রতিশ্রুতিবদ্ধ।"{% endif %}
+                        </p>
+                    </div>
+
+                    <div class="leadership-card">
+                        <img src="{% if headmaster_profile and headmaster_profile.image %}{{ headmaster_profile.image.url }}{% else %}{% static 'images/Headmaster.jpg' %}{% endif %}" alt="প্রধান শিক্ষক">
+                        <h5 class="text-primary">{% if headmaster_profile %}{{ headmaster_profile.name }}{% else %}মোঃ সেলিম সরদার{% endif %}</h5>
+                        <p class="leadership-role">{% if headmaster_profile %}{{ headmaster_profile.designation }}{% else %}প্রধান শিক্ষক{% endif %}</p>
+                        <p class="leadership-school">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</p>
+                        <hr>
+                        <p class="leadership-caption">
+                            {% if headmaster_profile and headmaster_profile.caption %}{{ headmaster_profile.caption }}{% else %}"শিক্ষাই হলো সভ্যতার মূল ভিত্তি। আমরা আমাদের শিক্ষার্থীদের সুশিক্ষায় শিক্ষিত করে একজন সুনাগরিক হিসেবে গড়ে তুলতে প্রতিশ্রুতিবদ্ধ।"{% endif %}
+                        </p>
+                    </div>
+
+                    <div class="leadership-card">
+                        <img src="{% if president_profile and president_profile.image %}{{ president_profile.image.url }}{% else %}{% static 'images/ManagingCommittee.jpg' %}{% endif %}" alt="সভাপতি">
+                        <h5 class="text-primary">{% if president_profile %}{{ president_profile.name }}{% else %}ম্যানেজিং কমিটির সভাপতি{% endif %}</h5>
+                        <p class="leadership-role">{% if president_profile %}{{ president_profile.designation }}{% else %}সভাপতি{% endif %}</p>
+                        <p class="leadership-school">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</p>
+                        <hr>
+                        <p class="leadership-caption">
+                            {% if president_profile and president_profile.caption %}{{ president_profile.caption }}{% else %}বিদ্যালয়ের উন্নয়ন ও শিক্ষার্থীদের কল্যাণে ম্যানেজিং কমিটি নিরলসভাবে কাজ করে যাচ্ছে।{% endif %}
+                        </p>
+                    </div>
                 </div>
-                
-                <h5 class="fw-bold text-primary mb-1">{% if headmaster_profile %}{{ headmaster_profile.name }}{% else %}মোঃ সেলিম সরদার{% endif %}</h5>
-                <p class="text-muted small mb-1">{% if headmaster_profile %}{{ headmaster_profile.designation }}{% else %}প্রধান শিক্ষক{% endif %}</p>
-                <p class="fw-bold small text-dark mb-3">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</p>
-                
-                <hr class="w-25 mx-auto">
-                
-                <div class="mt-3">
-                    <i class="fas fa-quote-left text-warning opacity-50 fs-4"></i>
-                    <p class="fst-italic text-muted px-2" style="font-size: 14px; line-height: 1.6;">
-                        {% if headmaster_profile and headmaster_profile.caption %}{{ headmaster_profile.caption }}{% else %}"শিক্ষাই হলো সভ্যতার মূল ভিত্তি। আমরা আমাদের শিক্ষার্থীদের সুশিক্ষায় শিক্ষিত করে একজন সুনাগরিক হিসেবে গড়ে তুলতে প্রতিশ্রুতিবদ্ধ।"{% endif %}
-                    </p>
-                </div>
-                
-                <a href="#" class="btn btn-outline-primary btn-sm rounded-pill px-4 mt-2">প্রধান শিক্ষকের বার্তা</a>
-            </div>
-
-            <div class="mt-4 text-center p-3 rounded-4 bg-light shadow-sm">
-                <div class="position-relative d-inline-block">
-                    <img src="{% if committee_profile and committee_profile.image %}{{ committee_profile.image.url }}{% else %}{% static 'images/ManagingCommittee.jpg' %}{% endif %}"
-                         class="img-fluid rounded-4 shadow-sm border border-3 border-white mb-3"
-                         style="width: 200px; height: 220px; object-fit: cover;"
-                         alt="Managing Committee">
-                </div>
-
-                <h5 class="fw-bold text-primary mb-1">{% if committee_profile %}{{ committee_profile.name }}{% else %}ম্যানেজিং কমিটির সভাপতি{% endif %}</h5>
-                <p class="text-muted small mb-1">{% if committee_profile %}{{ committee_profile.designation }}{% else %}সভাপতি{% endif %}</p>
-                <p class="fw-bold small text-dark mb-3">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</p>
-
-                <hr class="w-25 mx-auto">
-
-                <div class="mt-3">
-                    <i class="fas fa-users text-warning opacity-50 fs-4"></i>
-                    <p class="fst-italic text-muted px-2" style="font-size: 14px; line-height: 1.6;">
-                        {% if committee_profile and committee_profile.caption %}{{ committee_profile.caption }}{% else %}বিদ্যালয়ের উন্নয়ন ও শিক্ষার্থীদের কল্যাণে ম্যানেজিং কমিটি নিরলসভাবে কাজ করে যাচ্ছে।{% endif %}
-                    </p>
-                </div>
-
-                <a href="#" class="btn btn-outline-primary btn-sm rounded-pill px-4 mt-2">ম্যানেজিং কমিটির তথ্য</a>
             </div>
         </div>
     </div>
@@ -623,6 +1346,7 @@ footer {
                 <div class="footer-emergency-title mb-3">জরুরী হটলাইন নাম্বার</div>
                 <img src="{% static 'images/emergency.png' %}" alt="Emergency" class="footer-emergency-img">
                 {% include 'includes/visitor_footer_stats.html' %}
+                {% include 'includes/footer_last_updated.html' %}
             </div>
             <div class="footer-copy text-center">
                 <p class="small opacity-75 mb-1">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</p>
@@ -664,5 +1388,6 @@ footer {
         updateHeaderClock();
         setInterval(updateHeaderClock, 1000);
     </script>
+    {% include 'includes/welcome_slider.html' %}
 </body>
 </html>

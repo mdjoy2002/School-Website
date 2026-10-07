@@ -7,7 +7,6 @@
     <title>শিক্ষক ও কর্মচারীবৃন্দ | খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
@@ -161,6 +160,7 @@
             .navbar-brand span { font-size: 16px !important; }
         }
     </style>
+    <link rel="stylesheet" href="{% static 'css/global-fonts.css' %}">
 </head>
 <body>
 
@@ -214,6 +214,8 @@
                             <li><a class="dropdown-item" href="{% url 'result_category' 'internal' %}"><i class="fas fa-file-alt"></i> স্কুলের ফলাফল</a></li>
                         </ul>
                     </li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users-cog"></i> শিক্ষক ও কর্মচারীবৃন্দ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'committee_page' %}"><i class="fas fa-user-friends"></i> কমিটিবৃন্দ</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'gallery' %}"><i class="fas fa-images"></i> গ্যালারি</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}"><i class="fas fa-envelope-open-text"></i> যোগাযোগ</a></li>
                 </ul>
@@ -238,8 +240,16 @@
                             <p class="mb-2 text-secondary">বিষয়: {{ teacher.subject }}</p>
                             {% endif %}
                             <div class="contact-box text-start">
-                                {% if teacher.phone %}<p><i class="fas fa-phone-alt"></i> {{ teacher.phone }}</p>{% endif %}
-                                {% if teacher.email %}<p><i class="fas fa-envelope"></i> {{ teacher.email }}</p>{% endif %}
+                                {% if teacher.phone %}
+                                <button type="button" class="btn btn-link p-0 text-start text-decoration-none text-dark" data-bs-toggle="modal" data-bs-target="#teacherProfileModal{{ teacher.id }}">
+                                    <i class="fas fa-phone-alt"></i> {{ teacher.phone }}
+                                </button>
+                                {% endif %}
+                                {% if teacher.email %}
+                                <button type="button" class="btn btn-link p-0 text-start text-decoration-none text-dark d-block" data-bs-toggle="modal" data-bs-target="#teacherProfileModal{{ teacher.id }}">
+                                    <i class="fas fa-envelope"></i> {{ teacher.email }}
+                                </button>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -264,8 +274,16 @@
                             <p class="mb-2 text-secondary">বিষয়: {{ teacher.subject }}</p>
                             {% endif %}
                             <div class="contact-box text-start mt-auto">
-                                {% if teacher.phone %}<p><i class="fas fa-phone-alt"></i> {{ teacher.phone }}</p>{% endif %}
-                                {% if teacher.email %}<p class="small"><i class="fas fa-envelope"></i> {{ teacher.email }}</p>{% endif %}
+                                {% if teacher.phone %}
+                                <button type="button" class="btn btn-link p-0 text-start text-decoration-none text-dark" data-bs-toggle="modal" data-bs-target="#teacherProfileModal{{ teacher.id }}">
+                                    <i class="fas fa-phone-alt"></i> {{ teacher.phone }}
+                                </button>
+                                {% endif %}
+                                {% if teacher.email %}
+                                <button type="button" class="btn btn-link p-0 text-start text-decoration-none text-dark d-block" data-bs-toggle="modal" data-bs-target="#teacherProfileModal{{ teacher.id }}">
+                                    <i class="fas fa-envelope"></i> {{ teacher.email }}
+                                </button>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -287,8 +305,16 @@
                             <h5 class="fw-bold text-dark mb-2">{{ teacher.name }}</h5>
                             <span class="designation-badge mx-auto bg-light text-muted">{{ teacher.get_designation_display }}</span>
                             <div class="contact-box text-start mt-auto">
-                                {% if teacher.phone %}<p><i class="fas fa-phone-alt"></i> {{ teacher.phone }}</p>{% endif %}
-                                {% if teacher.email %}<p class="small"><i class="fas fa-envelope"></i> {{ teacher.email }}</p>{% endif %}
+                                {% if teacher.phone %}
+                                <button type="button" class="btn btn-link p-0 text-start text-decoration-none text-dark" data-bs-toggle="modal" data-bs-target="#teacherProfileModal{{ teacher.id }}">
+                                    <i class="fas fa-phone-alt"></i> {{ teacher.phone }}
+                                </button>
+                                {% endif %}
+                                {% if teacher.email %}
+                                <button type="button" class="btn btn-link p-0 text-start text-decoration-none text-dark d-block" data-bs-toggle="modal" data-bs-target="#teacherProfileModal{{ teacher.id }}">
+                                    <i class="fas fa-envelope"></i> {{ teacher.email }}
+                                </button>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -297,6 +323,32 @@
             {% endfor %}
         </div>
     </div>
+
+    {% for teacher in teachers %}
+    <div class="modal fade" id="teacherProfileModal{{ teacher.id }}" tabindex="-1" aria-labelledby="teacherProfileModalLabel{{ teacher.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header border-0 bg-primary text-white">
+                    <h5 class="modal-title" id="teacherProfileModalLabel{{ teacher.id }}">{{ teacher.name }}</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row align-items-center g-3">
+                        <div class="col-md-4 text-center">
+                            <img src="{{ teacher.image.url }}" alt="{{ teacher.name }}" class="rounded-circle border border-4 border-light shadow" style="width: 140px; height: 140px; object-fit: cover;">
+                        </div>
+                        <div class="col-md-8">
+                            <span class="designation-badge mb-3 d-inline-block">{{ teacher.get_designation_display }}</span>
+                            {% if teacher.subject %}<p class="mb-2 text-secondary"><strong>বিষয়:</strong> {{ teacher.subject }}</p>{% endif %}
+                            {% if teacher.phone %}<p class="mb-2"><i class="fas fa-phone-alt text-primary me-2"></i>{{ teacher.phone }}</p>{% endif %}
+                            {% if teacher.email %}<p class="mb-2"><i class="fas fa-envelope text-primary me-2"></i>{{ teacher.email }}</p>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
 
     <footer>
         <div class="container text-center">
@@ -308,6 +360,7 @@
                 <a href="#" class="btn btn-outline-light btn-sm rounded-circle mx-1"><i class="fab fa-whatsapp"></i></a>
             </div>
             <hr class="bg-light opacity-25">
+            {% include 'includes/footer_last_updated.html' %}
             <p class="small mb-0 opacity-75">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | ডিজাইন ও ডেভেলপমেন্ট: **Md. Imtiaz Sarder Joy**</p>
         </div>
     </footer>

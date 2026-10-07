@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ notice.title }} | নোটিশ | খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    <style>
+        :root {
+            --primary-color: #004a99;
+            --secondary-color: #ffc107;
+            --text-dark: #2c3e50;
+            --bg-light: #f8f9fa;
+        }
+        body {
+            font-family: 'Times New Roman', 'Kalpurush', serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: visible;
+        }
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #003366 100%) !important;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            padding: 10px 0;
+            border-bottom: 3px solid var(--secondary-color);
+        }
+        .nav-link {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff !important;
+            margin: 0 5px;
+        }
+        .nav-link i { margin-right: 5px; color: var(--secondary-color); }
+        .nav-link:hover { color: var(--secondary-color) !important; }
+        .notice-card {
+            border: 1px solid #e3e8ef;
+            border-radius: 16px;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.06);
+        }
+        .notice-title { color: var(--primary-color); }
+        .notice-file-preview {
+            width: 100%;
+            height: min(75vh, 900px);
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        footer {
+            background: #001d3d;
+            color: rgba(255,255,255,0.8);
+            padding: 50px 0 20px;
+            border-top: 4px solid var(--secondary-color);
+            margin-top: auto;
+        }
+        .footer-logo-img {
+            width: 60px;
+            height: 60px;
+            border: 2px solid var(--secondary-color);
+            padding: 2px;
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'css/global-fonts.css' %}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                <img src="{% static 'images/logo.png' %}" alt="Logo" class="me-2 rounded-circle border border-warning" style="width: 45px; height: 45px; object-fit: cover;">
+                <div class="lh-1">
+                    <span class="text-white fw-bold d-block" style="font-size: 18px;">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</span>
+                    <small style="font-size: 11px; color: var(--secondary-color);">বয়রা, খুলনা</small>
+                </div>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="মেনু খুলুন">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> হোম</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'all_notices' %}"><i class="fas fa-file-alt"></i> সকল নোটিশ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users-cog"></i> শিক্ষক</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'committee_page' %}"><i class="fas fa-user-friends"></i> কমিটিবৃন্দ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'gallery' %}"><i class="fas fa-images"></i> গ্যালারি</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}"><i class="fas fa-envelope-open-text"></i> যোগাযোগ</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    {% include 'includes/news_ticker.html' %}
+
+    <main class="container flex-grow-1 py-5">
+        <article class="card notice-card bg-white p-4 p-md-5" data-aos="fade-up">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3 mb-4">
+                <div>
+                    <p class="text-muted mb-2"><i class="far fa-calendar-alt me-2"></i>প্রকাশের তারিখ: {{ notice.created_at|date:"d/m/Y" }}</p>
+                    <h1 class="notice-title h2 fw-bold mb-0">{{ notice.title }}</h1>
+                </div>
+                <a href="{% url 'notice_download' notice.pk %}" class="btn btn-primary rounded-pill px-4 flex-shrink-0">
+                    <i class="fas fa-download me-2"></i>নোটিশ ডাউনলোড
+                </a>
+            </div>
+
+            {% if notice.description %}
+            <div class="border-top pt-4 mb-4">
+                <h2 class="h5 fw-bold mb-2">বিস্তারিত</h2>
+                <p class="mb-0" style="white-space: pre-line;">{{ notice.description }}</p>
+            </div>
+            {% endif %}
+
+            <div class="border-top pt-4">
+                <h2 class="h5 fw-bold mb-3">নোটিশ ফাইল</h2>
+                <iframe src="{{ notice.file.url }}" class="notice-file-preview" title="{{ notice.title }}"></iframe>
+                <p class="text-muted small mt-2 mb-0">ফাইলটি এখানে দেখা না গেলে “নোটিশ ডাউনলোড” বাটনে ক্লিক করুন।</p>
+            </div>
+
+            <div class="mt-4">
+                <a href="{% url 'all_notices' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                    <i class="fas fa-arrow-left me-2"></i>সকল নোটিশে ফিরে যান
+                </a>
+            </div>
+        </article>
+    </main>
+
+    <footer class="text-center">
+        <div class="container">
+            <img src="{% static 'images/logo.png' %}" alt="School Logo" class="footer-logo-img rounded-circle mb-3">
+            <h5 class="fw-bold mb-1" style="color: var(--secondary-color);">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</h5>
+            <p class="opacity-75 mb-4 small">বয়রা, খুলনা | স্থাপিত: ১৯৯৪</p>
+            {% include 'includes/visitor_footer_stats.html' %}
+            {% include 'includes/footer_last_updated.html' %}
+            <hr class="bg-light opacity-25">
+            <p class="small mb-0 opacity-75">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | ডিজাইন ও ডেভেলপমেন্ট: Md. Imtiaz Sarder Joy</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>AOS.init({ duration: 800, once: true, offset: 100 });</script>
+</body>
+</html>

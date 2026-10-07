@@ -14,6 +14,7 @@ class StaticViewSitemap(Sitemap):
             'all_notices', 
             'exam_routine', 
             'teachers_page', 
+            'committee_page',
             'gallery', 
             'contact'
         ]

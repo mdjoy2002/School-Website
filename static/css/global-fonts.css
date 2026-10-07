@@ -1,40 +1,37 @@
-@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
-
 @font-face {
-    font-family: 'Nikosh';
-    src: local('Nikosh'), url('../fonts/Nikosh.ttf') format('truetype');
-    font-display: swap;
-    font-weight: 400;
+    font-family: 'Kalpurush';
+    src: url('../fonts/Kalpurush-v0.258.ttf') format('truetype');
+    font-display: block;
     font-style: normal;
+    font-weight: 400;
 }
 
 :root {
-    --global-font: 'Nikosh', 'Hind Siliguri', 'Times New Roman', serif;
-    --primary-font: 'Playfair Display', serif;
-    --bangla-font: 'Hind Siliguri', sans-serif;
+    --global-font: 'Times New Roman', 'Kalpurush', serif;
+    --primary-font: 'Times New Roman', 'Kalpurush', serif;
+    --bangla-font: 'Kalpurush', 'Times New Roman', serif;
 }
 
-html {
-    font-family: var(--global-font);
-}
-
-body {
-    font-family: var(--global-font);
-}
-
-.en-font,
-.times-font,
-.title-serif,
-.card-title,
-.table th,
-.table td {
-    font-family: 'Times New Roman', Times, serif;
+html,
+body,
+body *:not(i):not(svg):not([class^="fa-"]):not([class*=" fa-"]):not([class~="fa"]):not([class~="fas"]):not([class~="far"]):not([class~="fab"]):not([class~="bi"]):not([class^="bi-"]):not([class*=" bi-"]) {
+    font-family: 'Times New Roman', 'Kalpurush', serif !important;
 }
 
 .bangla-font,
 .font-bangla,
-.navbar-brand small,
-.badge,
-.text-bangla {
-    font-family: 'Nikosh', 'Hind Siliguri', sans-serif;
+.text-bangla,
+.bangla-text {
+    font-family: 'Times New Roman', 'Kalpurush', serif !important;
+}
+
+.en-font,
+.times-font,
+.english-text,
+.title-serif,
+.footer-en,
+.footer-link,
+.footer-label,
+.footer-hotline {
+    font-family: 'Times New Roman', 'Kalpurush', serif !important;
 }

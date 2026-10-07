@@ -7,7 +7,6 @@
     <title>ফটো গ্যালারি | খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/glightbox/3.2.0/css/glightbox.min.css">
@@ -98,6 +97,7 @@
         footer { flex-shrink: 0; background: #001d3d; color: white; padding: 40px 0 30px; margin-top: 60px; }
         .footer-logo-img { width: 70px; height: 70px; border: 2px solid var(--secondary-color); padding: 2px; }
     </style>
+    <link rel="stylesheet" href="{% static 'css/global-fonts.css' %}">
 </head>
 <body>
 
@@ -147,6 +147,7 @@
                             </ul>
                         </li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users-cog"></i> শিক্ষক ও কর্মচারীবৃন্দ</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'committee_page' %}"><i class="fas fa-user-friends"></i> কমিটিবৃন্দ</a></li>
                         <li class="nav-item"><a class="nav-link active" href="{% url 'gallery' %}"><i class="fas fa-images"></i> গ্যালারি</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}"><i class="fas fa-envelope-open-text"></i> যোগাযোগ</a></li>
                     </ul>
@@ -208,6 +209,7 @@
             <p class="opacity-75 mb-4 small">বয়রা, খুলনা | স্থাপিত: ১৯৯৪</p>
             {% include 'includes/visitor_footer_stats.html' %}
             <hr class="bg-light opacity-25">
+            {% include 'includes/footer_last_updated.html' %}
             <p class="small mb-0 opacity-75">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | ডিজাইন ও ডেভেলপমেন্ট: **Md. Imtiaz Sarder Joy**</p>
         </div>
     </footer>

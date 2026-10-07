@@ -23,7 +23,7 @@ body {
     width: 100%;
     background: var(--bg-light);
     color: var(--text-dark);
-    font-family: 'Hind Siliguri', 'Nikosh', 'Times New Roman', sans-serif;
+    font-family: 'Times New Roman', 'Kalpurush', serif;
 }
 
 html, body, .row, .navbar, .container, .container-fluid, .page-container, .main-content, .main-wrapper,

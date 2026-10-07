@@ -1,0 +1,235 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>কমিটিবৃন্দ | খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    <style>
+        :root {
+            --primary-color: #004a99;
+            --secondary-color: #ffc107;
+            --text-dark: #2c3e50;
+            --bg-light: #f4f7f6;
+        }
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: visible;
+        }
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #003366 100%) !important;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            padding: 10px 0;
+            border-bottom: 3px solid var(--secondary-color);
+        }
+        .nav-link {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff !important;
+            margin: 0 5px;
+            transition: 0.3s;
+        }
+        .nav-link i { margin-right: 5px; color: var(--secondary-color); }
+        .nav-link:hover { color: var(--secondary-color) !important; }
+        .section-title {
+            margin: 50px 0 55px;
+            position: relative;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-align: center;
+        }
+        .section-title span {
+            background: var(--bg-light);
+            padding: 0 15px;
+            position: relative;
+            z-index: 1;
+        }
+        .section-title::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            width: 90%;
+            height: 2px;
+            background: #dee2e6;
+        }
+        .member-card {
+            border: 0;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+            transition: transform 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+        }
+        .member-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 18px 35px rgba(0,0,0,0.12);
+        }
+        .member-image, .member-placeholder {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 5px solid #fff;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+        }
+        .member-placeholder {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #e9f2fc;
+            color: var(--primary-color);
+            font-size: 42px;
+        }
+        .designation-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #f0f7ff;
+            color: var(--primary-color);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .member-about { white-space: pre-line; }
+        footer {
+            background: #001d3d;
+            color: rgba(255,255,255,0.8);
+            padding: 50px 0 20px;
+            border-top: 4px solid var(--secondary-color);
+            margin-top: auto;
+        }
+        .footer-logo-img {
+            width: 60px;
+            height: 60px;
+            border: 2px solid var(--secondary-color);
+            padding: 2px;
+        }
+        @media (max-width: 768px) {
+            .section-title { margin-bottom: 40px; font-size: 1.5rem; }
+            .navbar-brand span { font-size: 16px !important; }
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'css/global-fonts.css' %}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                <img src="{% static 'images/logo.png' %}" alt="Logo" class="me-2 rounded-circle border border-warning" style="width: 45px; height: 45px; object-fit: cover;">
+                <div class="lh-1">
+                    <span class="fw-bold d-block" style="font-size: 18px;">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</span>
+                    <small style="font-size: 11px; color: var(--secondary-color);">বয়রা, খুলনা</small>
+                </div>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="মেনু খুলুন">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> হোম</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="studentCornerDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-graduate"></i> শিক্ষার্থী কর্নার
+                        </a>
+                        <ul class="dropdown-menu shadow border-0">
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'info' %}"><i class="fas fa-info-circle"></i> তথ্য</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'seats' %}"><i class="fas fa-chair"></i> আসন সংখ্যা</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'dress' %}"><i class="fas fa-tshirt"></i> ড্রেস</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'class-routine' %}"><i class="fas fa-calendar-alt"></i> ক্লাস রুটিন</a></li>
+                            <li><a class="dropdown-item" href="{% url 'exam_routine' %}"><i class="fas fa-file-invoice"></i> পরীক্ষার রুটিন</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'syllabus' %}"><i class="fas fa-book"></i> সিলেবাস</a></li>
+                            <li><a class="dropdown-item" href="{% url 'corner_detail' 'holiday' %}"><i class="fas fa-umbrella-beach"></i> ছুটির তালিকা</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="admissionDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-plus"></i> ভর্তি তথ্য
+                        </a>
+                        <ul class="dropdown-menu shadow border-0">
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'form' %}"><i class="fas fa-file-signature"></i> ভর্তি আবেদন ফরম</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'guide' %}"><i class="fas fa-clipboard-check"></i> ভর্তি নির্দেশিকা</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'result' %}"><i class="fas fa-list-ol"></i> ভর্তি পরীক্ষার ফলাফল</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'fees' %}"><i class="fas fa-tags"></i> বেতন ও ফি সমূহ</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'all_notices' %}"><i class="fas fa-file-alt"></i> নোটিশ</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="resultDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-poll"></i> ফলাফল
+                        </a>
+                        <ul class="dropdown-menu shadow border-0">
+                            <li><a class="dropdown-item" href="{% url 'result_category' 'public' %}"><i class="fas fa-graduation-cap"></i> পাবলিক পরীক্ষার ফলাফল</a></li>
+                            <li><a class="dropdown-item" href="{% url 'result_category' 'internal' %}"><i class="fas fa-file-alt"></i> স্কুলের ফলাফল</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users-cog"></i> শিক্ষক</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'committee_page' %}"><i class="fas fa-user-friends"></i> কমিটিবৃন্দ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'gallery' %}"><i class="fas fa-images"></i> গ্যালারি</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}"><i class="fas fa-envelope-open-text"></i> যোগাযোগ</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    {% include 'includes/news_ticker.html' %}
+
+    <main class="container pb-5">
+        <h1 class="section-title" data-aos="fade-down"><span>কমিটিবৃন্দ</span></h1>
+        {% for category in members_by_category %}
+        <section class="mb-5" aria-label="{{ category.name }}">
+            <h2 class="section-title" data-aos="fade-up"><span>{{ category.name }}</span></h2>
+            <div class="row g-4{% if category.value == 'PRESIDENT' %} justify-content-center{% endif %}">
+                {% for member in category.members %}
+                <div class="col-xl-3 col-lg-4 col-sm-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter }}00">
+                    <article class="card member-card h-100 text-center p-4">
+                        {% if member.image %}
+                        <img src="{{ member.image.url }}" class="member-image mx-auto mb-3" alt="{{ member.name }}">
+                        {% else %}
+                        <div class="member-placeholder mx-auto mb-3" aria-hidden="true"><i class="fas fa-user"></i></div>
+                        {% endif %}
+                        <h3 class="h5 fw-bold text-dark mb-2">{{ member.name }}</h3>
+                        <p class="mb-3"><span class="designation-badge">{{ member.designation }}</span></p>
+                        {% if member.phone %}
+                        <p class="text-secondary mb-2"><i class="fas fa-phone-alt text-warning me-2"></i><a href="tel:{{ member.phone }}" class="text-decoration-none text-secondary">{{ member.phone }}</a></p>
+                        {% endif %}
+                        {% if member.about %}
+                        <p class="member-about text-muted small mb-0">{{ member.about }}</p>
+                        {% endif %}
+                    </article>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center text-muted py-2">এই বিভাগে এখনো কোনো তথ্য যোগ করা হয়নি।</div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+    </main>
+
+    <footer>
+        <div class="container text-center">
+            <img src="{% static 'images/logo.png' %}" alt="School Logo" class="footer-logo-img rounded-circle mb-3">
+            <h5 class="fw-bold mb-2" style="color: var(--secondary-color);">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</h5>
+            <p class="opacity-75 mb-4 small">বয়রা, খুলনা | স্থাপিত: ১৯৯৪</p>
+            <div class="mb-4">
+                <a href="#" class="btn btn-outline-light btn-sm rounded-circle mx-1" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="btn btn-outline-light btn-sm rounded-circle mx-1" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            </div>
+            <hr class="bg-light opacity-25">
+            {% include 'includes/footer_last_updated.html' %}
+            <p class="small mb-0 opacity-75">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | ডিজাইন ও ডেভেলপমেন্ট: Md. Imtiaz Sarder Joy</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>AOS.init({ duration: 800, once: true, offset: 100 });</script>
+</body>
+</html>

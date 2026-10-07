@@ -1,8 +1,11 @@
+import os
+
+from django.http import FileResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import (
 
-    Notice, Slider, SchoolInfo, LeadershipProfile, Teacher, GalleryCategory, 
+    Notice, Slider, EntryPopupImage, SchoolInfo, LeadershipProfile, CommitteeMember, Teacher, GalleryCategory,
 
     Notice, Slider, SchoolInfo, Teacher, GalleryCategory, 
 
@@ -16,9 +19,13 @@ def home(request):
     ticker_notices = Notice.objects.filter(is_active=True, show_on_ticker=True).order_by('-created_at')
     ticker_routines = ExamRoutine.objects.filter(show_on_ticker=True).order_by('-created_at')
     
-    # ২. হোমপেজ নোটিশ বোর্ডে দেখানোর জন্য ডাটা (show_on_dashboard=True, সর্বোচ্চ ৬টি)
-    featured_notices = Notice.objects.filter(is_active=True, show_on_dashboard=True).order_by('-created_at')[:6]
-    featured_routines = ExamRoutine.objects.filter(show_on_notice=True).order_by('-created_at')[:4]
+    # ২. হোমপেজ নোটিশ বোর্ডে সর্বোচ্চ ৭টি আইটেম দেখানো হবে যাতে বোর্ডে অতিরিক্ত ফাঁকা জায়গা না থাকে
+    featured_notices = list(
+        Notice.objects.filter(is_active=True, show_on_dashboard=True).order_by('-created_at')[:5]
+    )
+    featured_routines = list(
+        ExamRoutine.objects.filter(show_on_notice=True).order_by('-created_at')[:2]
+    )
     
     # নিউজ টিকারে হেডলাইন হিসেবে ব্যবহারের জন্য সাধারণ নোটিশ লিস্ট
     notices = Notice.objects.filter(is_active=True).order_by('-created_at')
@@ -34,24 +41,32 @@ def home(request):
 
     leadership_profiles = LeadershipProfile.objects.in_bulk(field_name='profile_type')
 
-    
+    president_profile = leadership_profiles.get('PRESIDENT') or leadership_profiles.get('COMMITTEE')
+
     # হোমপেজে দেখানোর জন্য প্রথম ৪ জন শিক্ষক (স্লাইস ব্যবহার করা হয়েছে)
     teachers = Teacher.objects.all().order_by('order')[:4]
-    
+
     context = {
         'ticker_notices': ticker_notices,
-        'ticker_routines': ticker_routines, 
+        'ticker_routines': ticker_routines,
         'featured_notices': featured_notices,
         'featured_routines': featured_routines,
+        'notice_board_item_count': len(featured_notices) + len(featured_routines),
         'notices': notices,
         'gallery_categories': gallery_categories,
         'sliders': sliders,
         'school_info': school_info,
 
+        'founder_profile': leadership_profiles.get('FOUNDER'),
         'headmaster_profile': leadership_profiles.get('HEADMASTER'),
-        'committee_profile': leadership_profiles.get('COMMITTEE'),
+        'president_profile': president_profile,
+        'committee_profile': president_profile,
 
         'teachers': teachers,
+        'entry_popup_images': [
+            {'url': image.image.url, 'title': image.title}
+            for image in EntryPopupImage.objects.filter(is_active=True).exclude(image='').order_by('order', 'pk')
+        ],
     }
     
     return render(request, 'index.html', context)
@@ -66,6 +81,20 @@ def all_notices_view(request):
     }
     
     return render(request, 'notices.html', context)
+
+
+def notice_detail_view(request, notice_id):
+    notice = get_object_or_404(Notice, id=notice_id, is_active=True)
+    return render(request, 'notice_detail.html', {'notice': notice})
+
+
+def notice_download_view(request, notice_id):
+    notice = get_object_or_404(Notice, id=notice_id, is_active=True)
+    return FileResponse(
+        notice.file.open('rb'),
+        as_attachment=True,
+        filename=os.path.basename(notice.file.name),
+    )
 
 
 # পরীক্ষার রুটিন টেবিল পেজের ভিউ (exam_routine.html)
@@ -195,6 +224,18 @@ def teachers_view(request):
     }
     
     return render(request, 'teachers.html', context)
+
+
+def committee_view(request):
+    members_by_category = [
+        {
+            'value': category_value,
+            'name': category_label,
+            'members': CommitteeMember.objects.filter(category=category_value),
+        }
+        for category_value, category_label in CommitteeMember.CATEGORY_CHOICES
+    ]
+    return render(request, 'committee.html', {'members_by_category': members_by_category})
 
 
 # গ্যালারি পেজের জন্য ভিউ (যেখানে সব ফোল্ডার/ইভেন্ট দেখা যাবে)

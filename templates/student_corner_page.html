@@ -7,12 +7,11 @@
     <title>{{ page_title }} | খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
     
     <style>
-        /* ফন্ট সেটিংস: বাংলার জন্য Nikosh/Hind Siliguri এবং ইংরেজির জন্য Times New Roman */
+        /* বাংলা লেখায় Kalpurush এবং ইংরেজিতে Times New Roman ব্যবহৃত হয়। */
         body { 
             overflow-x: visible;
         }
@@ -75,6 +74,7 @@
             .btn-sm { font-size: 12px; }
         }
     </style>
+    <link rel="stylesheet" href="{% static 'css/global-fonts.css' %}">
 </head>
 <body>
 
@@ -127,6 +127,8 @@
                     {% if request.resolver_match.url_name != 'teachers_page' %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'teachers_page' %}"><i class="fas fa-users"></i> শিক্ষক ও কর্মচারীবৃন্দ</a></li>
                     {% endif %}
+
+                    <li class="nav-item"><a class="nav-link" href="{% url 'committee_page' %}"><i class="fas fa-user-friends"></i> কমিটিবৃন্দ</a></li>
 
                     {% if request.resolver_match.url_name != 'gallery' %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'gallery' %}"><i class="fas fa-images"></i> গ্যালারি</a></li>
@@ -210,6 +212,7 @@
                 <a href="#"><i class="fas fa-envelope"></i></a>
             </div>
             <hr class="bg-light opacity-25">
+            {% include 'includes/footer_last_updated.html' %}
             <p class="small mb-0 opacity-75">© ২০২৬ সর্বস্বত্ব সংরক্ষিত | ডিজাইন ও ডেভেলপমেন্ট: **Md. Imtiaz Sarder Joy**</p>
         </div>
     </footer>

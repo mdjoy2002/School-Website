@@ -11,6 +11,7 @@ class Notice(CompressedUploadMixin, models.Model):
     
     show_on_ticker = models.BooleanField(default=False, verbose_name="নিউজ টিকারে (সর্বশেষ) দেখাবে?")
     show_on_dashboard = models.BooleanField(default=False, verbose_name="হোমপেজ নোটিশ বোর্ডে দেখাবে?")
+    is_new = models.BooleanField(default=False, verbose_name="নতুন নোটিশ?")
     is_active = models.BooleanField(default=True, verbose_name="অ্যাক্টিভ আছে?")
     
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="প্রকাশের তারিখ")
@@ -43,6 +44,29 @@ class Slider(CompressedUploadMixin, models.Model):
     def __str__(self): return self.title
     class Meta: 
         verbose_name_plural = "৫. হোমপেজ স্লাইডার"
+
+
+class EntryPopupImage(CompressedUploadMixin, models.Model):
+    title = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="ছবির শিরোনাম (ঐচ্ছিক)",
+    )
+    image = models.ImageField(upload_to='welcome_slider/', verbose_name="ছবি")
+    IMAGE_FIELDS = ['image']
+    is_active = models.BooleanField(default=True, verbose_name="অ্যাক্টিভ আছে?")
+    order = models.PositiveIntegerField(default=0, verbose_name="ক্রম")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="তৈরির তারিখ")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="সর্বশেষ আপডেট")
+
+    def __str__(self):
+        return self.title or self.image.name.rsplit('/', 1)[-1]
+
+    class Meta:
+        verbose_name = "Welcome Slider"
+        verbose_name_plural = "Welcome Slider"
+        ordering = ['order', 'pk']
+
 
 # ৩. ইভেন্ট ভিত্তিক ফটোগ্যালারি
 class GalleryCategory(CompressedUploadMixin, models.Model):
@@ -83,16 +107,19 @@ class SchoolInfo(models.Model):
     map_url = models.TextField(blank=True, null=True, verbose_name="গুগল ম্যাপ এমবেড লিঙ্ক (iframe code)")
     facebook_url = models.URLField(blank=True, null=True, verbose_name="ফেসবুক পেজ লিঙ্ক")
     youtube_url = models.URLField(blank=True, null=True, verbose_name="ইউটিউব চ্যানেল লিঙ্ক")
-    
+    last_updated = models.DateTimeField(auto_now=True, verbose_name="সর্বশেষ আপডেট")
+
     def __str__(self): return self.title
-    class Meta: 
+    class Meta:
         verbose_name_plural = "৭. বিদ্যালয় পরিচিতি ও তথ্য"
 
 
 
 class LeadershipProfile(CompressedUploadMixin, models.Model):
     PROFILE_TYPES = (
+        ('FOUNDER', 'প্রতিষ্ঠাতা'),
         ('HEADMASTER', 'প্রধান শিক্ষক'),
+        ('PRESIDENT', 'সভাপতি'),
         ('COMMITTEE', 'ম্যানেজিং কমিটি'),
     )
 
@@ -114,6 +141,40 @@ class LeadershipProfile(CompressedUploadMixin, models.Model):
     class Meta:
         verbose_name = "প্রধান শিক্ষক ও ম্যানেজিং কমিটি"
         verbose_name_plural = "প্রধান শিক্ষক ও ম্যানেজিং কমিটি"
+
+
+class CommitteeMember(CompressedUploadMixin, models.Model):
+    CATEGORY_CHOICES = (
+        ('PRESIDENT', 'সভাপতি'),
+        ('TEACHER_MEMBER', 'সাধারণ শিক্ষক সদস্য'),
+        ('GUARDIAN_MEMBER', 'অভিভাবক সদস্য'),
+        ('SECRETARY', 'সদস্য সচিব'),
+    )
+
+    category = models.CharField(
+        max_length=20,
+        choices=CATEGORY_CHOICES,
+        verbose_name="কমিটির বিভাগ",
+    )
+    name = models.CharField(max_length=150, verbose_name="নাম")
+    designation = models.CharField(max_length=150, verbose_name="পদবি")
+    phone = models.CharField(max_length=20, blank=True, verbose_name="ফোন নম্বর")
+    about = models.TextField(blank=True, verbose_name="সদস্য সম্পর্কে")
+    image = models.ImageField(
+        upload_to='committee_members/',
+        blank=True,
+        verbose_name="ছবি",
+    )
+    IMAGE_FIELDS = ['image']
+    order = models.PositiveIntegerField(default=0, verbose_name="ক্রমিক")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['order', 'name']
+        verbose_name = "কমিটির সদস্য"
+        verbose_name_plural = "কমিটিবৃন্দ"
 
 
 class AboutImage(CompressedUploadMixin, models.Model):

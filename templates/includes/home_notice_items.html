@@ -1,0 +1,47 @@
+{% for routine in featured_routines %}
+<tr class="notice-row routine-row">
+    <td class="notice-sl">{{ forloop.counter }}</td>
+    <td class="notice-title-cell">
+        <a href="{{ routine.pdf_file.url }}" target="_blank" class="notice-link" tabindex="{% if is_duplicate %}-1{% else %}0{% endif %}">
+            <span class="notice-icon routine-icon"><i class="fas fa-calendar-check"></i></span>
+            <span class="notice-text-wrap">
+                <span class="notice-label badge-routine">রুটিন</span>
+                <span class="notice-text">{{ routine.title }} (Class: {{ routine.target_class }})</span>
+            </span>
+        </a>
+    </td>
+    <td class="notice-action-cell">
+        <a href="{{ routine.pdf_file.url }}" class="notice-download" download aria-label="রুটিন ডাউনলোড" tabindex="{% if is_duplicate %}-1{% else %}0{% endif %}"><i class="fas fa-download"></i></a>
+    </td>
+</tr>
+{% endfor %}
+
+{% with routine_count=featured_routines|length %}
+{% for notice in featured_notices %}
+<tr class="notice-row notice-row-plain">
+    <td class="notice-sl">{{ forloop.counter|add:routine_count }}</td>
+    <td class="notice-title-cell">
+        <a href="{% url 'notice_detail' notice.pk %}" class="notice-link" tabindex="{% if is_duplicate %}-1{% else %}0{% endif %}">
+            <span class="notice-icon notice-icon-pdf">
+                <i class="far fa-file-pdf"></i>
+                {% if notice.is_new %}
+                <span class="new-notice-badge"><i class="fas fa-star" aria-hidden="true"></i> NEW</span>
+                {% endif %}
+            </span>
+            <span class="notice-text-wrap">
+                <span class="notice-text">{{ notice.title }}</span>
+            </span>
+        </a>
+    </td>
+    <td class="notice-action-cell">
+        <a href="{{ notice.file.url }}" class="notice-download" download aria-label="নোটিশ ডাউনলোড" tabindex="{% if is_duplicate %}-1{% else %}0{% endif %}"><i class="fas fa-download"></i></a>
+    </td>
+</tr>
+{% empty %}
+    {% if not featured_routines %}
+    <tr>
+        <td colspan="3" class="text-center text-muted py-4">কোনো গুরুত্বপূর্ণ নোটিশ এই মুহূর্তে নেই।</td>
+    </tr>
+    {% endif %}
+{% endfor %}
+{% endwith %}

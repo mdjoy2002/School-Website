@@ -13,6 +13,15 @@ def ticker_context(request):
     }
 
 
+def site_status_context(request):
+    from .models import SchoolInfo
+
+    school_info = SchoolInfo.objects.first()
+    return {
+        'site_last_updated': school_info.last_updated if school_info else None,
+    }
+
+
 def visitor_counts(request):
     from .models import DailyVisitor, VisitorProfile
 

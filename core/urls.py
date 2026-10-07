@@ -43,6 +43,8 @@ urlpatterns = [
     
     # নোটিশ সেকশন
     path('notices/', views.all_notices_view, name='all_notices'), # সকল নোটিশ টেবিল পেজের রুট
+    path('notices/<int:notice_id>/', views.notice_detail_view, name='notice_detail'),
+    path('notices/<int:notice_id>/download/', views.notice_download_view, name='notice_download'),
     
     # পরীক্ষার রুটিন সেকশন
     path('exam-routine/', views.exam_routine_view, name='exam_routine'), 
@@ -57,6 +59,7 @@ urlpatterns = [
     path('results/<str:category>/', views.result_category_view, name='result_category'),
     
     path('teachers/', views.teachers_view, name='teachers_page'), # শিক্ষকবৃন্দের পেজের রুট
+    path('committee/', views.committee_view, name='committee_page'),
     path('gallery/', views.gallery_view, name='gallery'), # গ্যালারি পেজের রুট
     path('contact/', views.contact_view, name='contact'), # যোগাযোগ পেজের রুট
 
@@ -76,7 +79,6 @@ urlpatterns = [
 
 # ডেভেলপমেন্ট এবং প্রোডাকশনে মিডিয়া ও স্ট্যাটিক ফাইল দেখার জন্য। 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += [
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
 ]
