@@ -1,0 +1,23 @@
+{% if student_tickers %}
+    {% for ticker in student_tickers %}
+        • <strong>{{ ticker.title|default:'Update' }}</strong> - {{ ticker.message }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    {% endfor %}
+{% endif %}
+
+{% if database_tickers %}
+    {% for ticker in database_tickers %}
+        • {{ ticker.title }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    {% endfor %}
+{% endif %}
+
+{% if ticker_routines %}
+    {% for routine in ticker_routines %}
+        • {{ routine.title }} (শ্রেণী: {{ routine.get_target_class_display }}) এর রুটিন প্রকাশিত হয়েছে &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    {% endfor %}
+{% endif %}
+
+{% if ticker_notices %}
+    {% for notice in ticker_notices %}
+        • <a href="{% url 'notice_detail' notice.pk %}">{{ notice.title }}</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    {% endfor %}
+{% endif %}
