@@ -5,6 +5,13 @@ import datetime
 from decimal import Decimal
 from django.conf import settings
 
+ACADEMIC_GROUP_CHOICES = [
+    ('', 'General'),
+    ('Science', 'Science'),
+    ('Commerce', 'Commerce'),
+    ('Arts', 'Arts'),
+]
+
 # 1. Subject Model
 class Subject(models.Model):
     TYPE_CHOICES = [
@@ -35,6 +42,14 @@ class Subject(models.Model):
     subject_type = models.CharField(max_length=1, choices=TYPE_CHOICES, verbose_name="Type")
     religion = models.CharField(max_length=10, choices=RELIGION_CHOICES, default='None', verbose_name="Religion")
     class_level = models.CharField(max_length=2, choices=CLASS_CHOICES, verbose_name="Class")
+    group_name = models.CharField(
+        max_length=20,
+        choices=ACADEMIC_GROUP_CHOICES,
+        blank=True,
+        default='',
+        help_text="For classes 9-10; General subjects are available to all groups.",
+        verbose_name="Group",
+    )
     has_practical = models.BooleanField(default=False, verbose_name="Has Practical?")
     full_mark = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name="Full Mark")
 
@@ -310,7 +325,7 @@ class TeacherSubjectAssignment(models.Model):
 
 class ExamRoutine(models.Model):
     CLASS_CHOICES = [(str(i), f'Class {i}') for i in range(6, 11)]
-    GROUP_CHOICES = [('Science', 'Science'), ('Commerce', 'Commerce'), ('Arts', 'Arts'), ('', 'General')]
+    GROUP_CHOICES = ACADEMIC_GROUP_CHOICES
     EXAM_CHOICES = [
         ('Half Yearly', 'Half Yearly Examination'),
         ('Annual Exam', 'Annual Examination'),

@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Student, TeacherSubjectAssignment, Mark, Subject, ExamRoutine, TeacherClassAssignment, Teacher, Testimonial
 from students.models import StudentAdmitCard, StudentResultPublication
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.template.loader import get_template, render_to_string
 from django.urls import reverse
 from django.db.models import Max, Q
@@ -643,29 +643,63 @@ def manage_routine_view(request):
     exam_year = datetime.date.today().year
     subject = ''
     subject_code = ''
+    selected_subject_id = None
     date = ''
     time = '10:00 AM'
     selected_apply_to = []
     selected_bulk_groups = []
+    available_subjects = Subject.objects.order_by('class_level', 'subject_name', 'subject_code', 'group_name')
 
     if request.method == 'POST':
         if 'save_routine' in request.POST:
             hidden_id = request.POST.get('routine_id')
             c = request.POST.get('class_name')
-            g = request.POST.get('group_name') if c in ['9', '10'] else ''
-            
+            g = request.POST.get('group_name', '') if c in ['9', '10'] else ''
+            if c not in dict(ExamRoutine.CLASS_CHOICES):
+                return HttpResponseBadRequest("Invalid class.")
+            if g not in dict(ExamRoutine.GROUP_CHOICES):
+                return HttpResponseBadRequest("Invalid group.")
+
+            existing_routine = get_object_or_404(ExamRoutine, id=hidden_id) if hidden_id else None
+            selected_subject_id = request.POST.get('subject_id')
+            subject_obj = None
+            if selected_subject_id == 'legacy' and existing_routine:
+                if existing_routine.class_name != c or (existing_routine.group_name or '') != g:
+                    return HttpResponseBadRequest("Choose a subject defined for the selected class and group.")
+                s = existing_routine.subject_name
+                sc = existing_routine.subject_code
+            else:
+                if selected_subject_id == 'legacy':
+                    return HttpResponseBadRequest("Choose a subject defined for the selected class.")
+                subject_obj = Subject.objects.filter(pk=selected_subject_id, class_level=c).first()
+                if not subject_obj:
+                    return HttpResponseBadRequest("Choose a subject defined for the selected class.")
+                if subject_obj.group_name and subject_obj.group_name != g:
+                    return HttpResponseBadRequest("This subject is not available for the selected group.")
+                s = subject_obj.subject_name
+                sc = subject_obj.subject_code
+
             # Class teachers and head/admin may save routines for any class
             et = request.POST.get('exam_type')
             ey = request.POST.get('exam_year') or datetime.date.today().year
-            s = request.POST.get('subject')
-            sc = request.POST.get('subject_code')
             d = request.POST.get('date')
             t = request.POST.get('time')
             extra_classes = request.POST.getlist('apply_to')
             bulk_groups = request.POST.getlist('bulk_groups')
+            valid_classes = dict(ExamRoutine.CLASS_CHOICES)
+            valid_groups = dict(ExamRoutine.GROUP_CHOICES)
+            if any(extra_class not in valid_classes for extra_class in extra_classes):
+                return HttpResponseBadRequest("Invalid additional class.")
+            if any(group not in valid_groups or not group for group in bulk_groups):
+                return HttpResponseBadRequest("Invalid additional group.")
+            if subject_obj and subject_obj.group_name and any(
+                extra_class in ['9', '10'] and any(group != subject_obj.group_name for group in bulk_groups)
+                for extra_class in extra_classes
+            ):
+                return HttpResponseBadRequest("A group-specific subject cannot be applied to a different group.")
 
-            if hidden_id:
-                routine = get_object_or_404(ExamRoutine, id=hidden_id)
+            if existing_routine:
+                routine = existing_routine
                 routine.class_name = c
                 routine.group_name = g
                 routine.exam_type = et
@@ -727,6 +761,18 @@ def manage_routine_view(request):
         exam_year = routine.exam_year
         subject = routine.subject_name
         subject_code = routine.subject_code
+        matching_subjects = Subject.objects.filter(
+            class_level=class_name,
+            subject_name=subject,
+            subject_code=subject_code,
+        )
+        if class_name in ['9', '10']:
+            matching_subject = matching_subjects.filter(group_name=group_name).first()
+            if not matching_subject and group_name:
+                matching_subject = matching_subjects.filter(group_name='').first()
+        else:
+            matching_subject = matching_subjects.filter(group_name='').first()
+        selected_subject_id = matching_subject.id if matching_subject else 'legacy'
         date = routine.exam_date.strftime('%Y-%m-%d')
         time = routine.exam_time
 
@@ -740,6 +786,8 @@ def manage_routine_view(request):
         'exam_year': exam_year,
         'subject': subject,
         'subject_code': subject_code,
+        'selected_subject_id': selected_subject_id,
+        'available_subjects': available_subjects,
         'date': date,
         'time': time,
         'selected_apply_to': selected_apply_to,
@@ -775,6 +823,14 @@ def view_routine(request):
     years = ExamRoutine.objects.order_by('-exam_year').values_list('exam_year', flat=True).distinct()
     selected_year = request.GET.get('year')
     selected_type = request.GET.get('type', '')
+    available_classes = [value for value, _ in ExamRoutine.CLASS_CHOICES]
+    requested_classes = request.GET.getlist('classes')
+    if requested_classes:
+        if any(class_name not in available_classes for class_name in requested_classes):
+            return HttpResponseBadRequest("Invalid class filter.")
+        selected_classes = [class_name for class_name in available_classes if class_name in requested_classes]
+    else:
+        selected_classes = available_classes
 
     if not selected_year:
         selected_year = years[0] if years else datetime.date.today().year
@@ -784,24 +840,41 @@ def view_routine(request):
     routines = ExamRoutine.objects.filter(exam_year=selected_year)
     if selected_type:
         routines = routines.filter(exam_type=selected_type)
+    routines = routines.filter(class_name__in=selected_classes)
+
+    routine_columns = []
+    for class_name in selected_classes:
+        groups = ['Science', 'Commerce', 'Arts'] if class_name in ['9', '10'] else ['']
+        for group_name in groups:
+            routine_columns.append({
+                'class_name': class_name,
+                'group_name': group_name,
+                'label': f"Class {class_name}" + (f" — {group_name}" if group_name else ''),
+            })
 
     dates = routines.order_by('exam_date').values_list('exam_date', flat=True).distinct()
 
     date_rows = []
+    print_rows = []
     for exam_date in dates:
         row = {'date': exam_date, 'cells': []}
 
         def find_routine(class_name, group_name=''):
-            return routines.filter(class_name=class_name, group_name=group_name, exam_date=exam_date).order_by('exam_time', 'id').first()
+            matching_routines = routines.filter(class_name=class_name, exam_date=exam_date)
+            routine = matching_routines.filter(group_name=group_name).order_by('exam_time', 'id').first()
+            if not routine and class_name in ['9', '10'] and group_name:
+                routine = matching_routines.filter(Q(group_name='') | Q(group_name__isnull=True)).order_by('exam_time', 'id').first()
+            return routine
 
-        for class_val in ['6', '7', '8']:
-            routine = find_routine(class_val)
+        for column in routine_columns:
+            routine = find_routine(column['class_name'], column['group_name'])
             row['cells'].append(routine)
-
-        for group_val in ['Science', 'Commerce', 'Arts']:
-            row['cells'].append(find_routine('9', group_val))
-        for group_val in ['Science', 'Commerce', 'Arts']:
-            row['cells'].append(find_routine('10', group_val))
+            if len(selected_classes) == 1 and routine:
+                print_rows.append({
+                    'date': exam_date,
+                    'group_name': column['group_name'],
+                    'routine': routine,
+                })
 
         date_rows.append(row)
 
@@ -810,7 +883,14 @@ def view_routine(request):
         'exam_types': exam_types,
         'selected_year': selected_year,
         'selected_type': selected_type,
+        'available_classes': available_classes,
+        'selected_classes': selected_classes,
+        'routine_columns': routine_columns,
+        'single_class': len(selected_classes) == 1,
+        'print_orientation': 'portrait' if len(selected_classes) == 1 else 'landscape',
+        'single_class_name': selected_classes[0] if len(selected_classes) == 1 else '',
         'date_rows': date_rows,
+        'print_rows': print_rows,
         'now_year': datetime.date.today().year,
     })
 

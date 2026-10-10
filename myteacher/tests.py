@@ -6,8 +6,10 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.template.loader import render_to_string
 from django.test import RequestFactory, TestCase
 from django.contrib.auth import get_user_model
+from django.urls import reverse
 
-from myteacher.models import Mark, Subject, Teacher, TeacherSubjectAssignment
+from myteacher.admin import ExamRoutineAdminForm
+from myteacher.models import ExamRoutine, Mark, Subject, Teacher, TeacherSubjectAssignment
 from myteacher.views import get_student_result_summary, mark_entry_view
 from students.models import Student, StudentResultPublication
 
@@ -243,6 +245,7 @@ class ResultSummarySubjectCodeTests(TestCase):
         # According to business rule, optional bonus must not make overall GPA 5.00
         self.assertTrue(summary['overall_gpa'] < Decimal('5.00'))
         self.assertNotEqual(summary['overall_grade'], 'A+')
+
 
     def test_result_summary_includes_highest_mark_in_class(self):
         subject = Subject.objects.create(
@@ -711,3 +714,182 @@ class ResultSummarySubjectCodeTests(TestCase):
         self.assertTrue(isinstance(summary['overall_gpa'], Decimal))
         self.assertTrue(summary['overall_gpa'] < Decimal('5.00'))
         self.assertNotEqual(summary['overall_grade'], 'A+')
+
+
+class RoutineSubjectSelectionTests(TestCase):
+    def setUp(self):
+        user = get_user_model().objects.create_user(username='routine-teacher', password='test-password')
+        Teacher.objects.create(
+            user=user,
+            teacher_id='RT001',
+            teacher_name='Routine Teacher',
+            designation='Assistant Teacher',
+            mobile='01700000000',
+            email='routine-teacher@example.com',
+            assigned_class='6',
+            teacher_img='',
+            is_class_teacher=True,
+            class_teacher_of='6',
+        )
+        self.client.force_login(user)
+
+    def create_subject(self, group_name=''):
+        return Subject.objects.create(
+            subject_name='Mathematics',
+            subject_code='109',
+            subject_type='1',
+            religion='None',
+            class_level='9',
+            group_name=group_name,
+        )
+
+    def routine_payload(self, subject, group_name='Science'):
+        return {
+            'save_routine': '1',
+            'class_name': '9',
+            'group_name': group_name,
+            'subject_id': str(subject.pk),
+            'date': '2026-10-11',
+            'time': '10:00 AM',
+            'exam_type': 'Half Yearly',
+            'exam_year': '2026',
+        }
+
+    def test_routine_uses_subject_name_and_code_from_selected_subject(self):
+        subject = self.create_subject('Science')
+
+        response = self.client.post(reverse('myteacher:manage_routine'), self.routine_payload(subject))
+
+        self.assertEqual(response.status_code, 302)
+        routine = ExamRoutine.objects.get()
+        self.assertEqual(routine.subject_name, 'Mathematics')
+        self.assertEqual(routine.subject_code, '109')
+        self.assertEqual(routine.group_name, 'Science')
+
+    def test_routine_form_renders_subjects_with_class_and_group_data(self):
+        subject = self.create_subject('Science')
+
+        response = self.client.get(reverse('myteacher:manage_routine'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'value="{subject.pk}"')
+        self.assertContains(response, 'data-class-level="9"')
+        self.assertContains(response, 'data-group-name="Science"')
+        self.assertContains(response, 'data-code="109"')
+
+    def test_group_specific_subject_cannot_be_saved_to_another_group(self):
+        subject = self.create_subject('Science')
+        payload = self.routine_payload(subject, 'Commerce')
+
+        response = self.client.post(reverse('myteacher:manage_routine'), payload)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(ExamRoutine.objects.exists())
+
+    def test_general_routine_is_shown_in_each_class_nine_group(self):
+        ExamRoutine.objects.create(
+            class_name='9',
+            group_name='',
+            exam_type='Half Yearly',
+            exam_year=2026,
+            subject_name='Bangla',
+            subject_code='101',
+            exam_date='2026-10-11',
+        )
+
+        response = self.client.get(reverse('myteacher:view_routine'))
+        cells = response.context['date_rows'][0]['cells']
+
+        self.assertEqual([cells[index].subject_name for index in (3, 4, 5)], ['Bangla'] * 3)
+
+    def test_single_class_routine_prints_portrait_with_letterhead_and_signatures(self):
+        ExamRoutine.objects.create(
+            class_name='9',
+            group_name='Science',
+            exam_type='Half Yearly',
+            exam_year=2026,
+            subject_name='Physics',
+            subject_code='136',
+            exam_date='2026-10-11',
+        )
+
+        response = self.client.get(reverse('myteacher:view_routine'), {'classes': ['9']})
+
+        self.assertEqual(response.context['print_orientation'], 'portrait')
+        self.assertTrue(response.context['single_class'])
+        self.assertContains(response, 'খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়')
+        self.assertContains(response, 'শ্রেণি শিক্ষক')
+        self.assertContains(response, 'প্রধান শিক্ষক')
+        self.assertContains(response, 'বিদ্যালয়ের পাওনা পরিশোধ পূর্বক')
+        self.assertContains(response, 'size: portrait')
+
+    def test_multiple_class_routine_prints_landscape_without_single_class_signatures(self):
+        for class_name, subject_name in [('6', 'Bangla'), ('9', 'Mathematics')]:
+            ExamRoutine.objects.create(
+                class_name=class_name,
+                group_name='' if class_name == '6' else 'Science',
+                exam_type='Half Yearly',
+                exam_year=2026,
+                subject_name=subject_name,
+                subject_code='101',
+                exam_date='2026-10-11',
+            )
+
+        response = self.client.get(
+            reverse('myteacher:view_routine'),
+            {'classes': ['6', '9']},
+        )
+
+        self.assertEqual(response.context['print_orientation'], 'landscape')
+        self.assertFalse(response.context['single_class'])
+        self.assertContains(response, 'Class 6')
+        self.assertContains(response, 'Class 9')
+        self.assertNotContains(response, 'শ্রেণি শিক্ষক')
+        self.assertContains(response, 'size: landscape')
+
+
+class RoutineAdminSubjectSelectionTests(TestCase):
+    def setUp(self):
+        self.subject = Subject.objects.create(
+            subject_name='Physics',
+            subject_code='136',
+            subject_type='1',
+            religion='None',
+            class_level='9',
+            group_name='Science',
+        )
+
+    def routine_form_data(self, group_name='Science'):
+        return {
+            'class_name': '9',
+            'group_name': group_name,
+            'subject_option': str(self.subject.pk),
+            'exam_type': 'Half Yearly',
+            'exam_year': '2026',
+            'exam_date': '2026-10-11',
+            'exam_time': '10:00 AM',
+        }
+
+    def test_admin_routine_form_saves_subject_name_and_code(self):
+        form = ExamRoutineAdminForm(data=self.routine_form_data())
+
+        self.assertTrue(form.is_valid(), form.errors)
+        routine = form.save()
+
+        self.assertEqual(routine.subject_name, 'Physics')
+        self.assertEqual(routine.subject_code, '136')
+
+    def test_admin_routine_subject_choices_include_class_group_and_code(self):
+        form = ExamRoutineAdminForm()
+        rendered_subject_field = str(form['subject_option'])
+
+        self.assertIn('Physics (136)', rendered_subject_field)
+        self.assertIn('data-class-level="9"', rendered_subject_field)
+        self.assertIn('data-group-name="Science"', rendered_subject_field)
+        self.assertIn('data-code="136"', rendered_subject_field)
+
+    def test_admin_routine_form_rejects_subject_from_another_group(self):
+        form = ExamRoutineAdminForm(data=self.routine_form_data('Commerce'))
+
+        self.assertFalse(form.is_valid())
+        self.assertIn('subject_option', form.errors)

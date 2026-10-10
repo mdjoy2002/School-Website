@@ -1,7 +1,101 @@
 {% extends 'myteacher/base.html' %}
+{% load static %}
 {% block content %}
-<div class="max-w-[1400px] mx-auto p-4 md:p-8">
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-6">
+<style>
+    @import url('https://fonts.maateen.me/kalpurush/font.css');
+
+    @page {
+        size: A4 {{ print_orientation|default:"portrait" }};
+        margin: 8mm;
+    }
+    .print-only { display: none; }
+
+    @media print {
+        body { 
+            background: #fff !important; 
+            font-family: 'Times New Roman', 'Kalpurush', serif !important;
+        }
+        .no-print, nav, footer { display: none !important; }
+        .print-only { display: block !important; }
+        .routine-controls { display: none !important; }
+        .print-wrapper { max-width: none !important; padding: 0 !important; }
+        .routine-signatures.print-only { display: flex !important; }
+
+        .routine-paper {
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 5mm !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            position: relative;
+            background: transparent !important;
+            font-family: 'Times New Roman', 'Kalpurush', serif !important;
+        }
+
+        .screen-heading { display: none !important; }
+
+        /* Official Pad Letterhead Layout */
+        .letterhead { 
+            border-bottom: 2px solid #111; 
+            margin-bottom: 2mm; 
+            padding-bottom: 2mm; 
+            text-align: center;
+        }
+        .letterhead-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .letterhead-logo { 
+            width: 18mm; 
+            height: 18mm; 
+            object-fit: contain; 
+            margin: 0 auto 1mm auto; 
+        }
+        .letterhead-bn { font-size: 18pt; font-weight: 700; line-height: 1.2; font-family: 'Kalpurush', serif; }
+        .letterhead-en { font-size: 13pt; font-weight: 700; text-decoration: underline; margin-top: 0.5mm; font-family: 'Times New Roman', serif; }
+        .letterhead-details { font-size: 14px; line-height: 1.2; margin-top: 0.5mm; }
+        .letterhead-meta { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; margin-top: 1mm; }
+
+        /* Memo row: Strictly forced Smarok No on Left and Tarikh on extreme Right Corner */
+        .memo-row { 
+            position: relative !important;
+            width: 100% !important;
+            display: block !important;
+            font-size: 14px; 
+            font-weight: 700; 
+            border-bottom: none !important; 
+            padding-bottom: 1.5mm; 
+            margin-bottom: 2mm; 
+            clear: both !important;
+        }
+        .memo-no {
+            float: left !important;
+            text-align: left !important;
+        }
+        .memo-date {
+            float: right !important;
+            text-align: right !important;
+        }
+
+        .routine-print-title { text-align: center; font-size: 16px; font-weight: 700; margin: 2mm 0; clear: both !important; }
+        .routine-print-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .routine-print-table th, .routine-print-table td { border: 1px solid #222; padding: 2mm; text-align: center; vertical-align: middle; font-size: 14px; }
+        .routine-print-table th { font-weight: 700; background-color: #f3f4f6 !important; font-size: 14px; }
+        .routine-print-table .subject-cell { text-align: left; }
+        .single-routine-table td { padding-top: 2mm; padding-bottom: 2mm; font-size: 14px; }
+        .routine-signatures { display: flex; justify-content: space-between; margin: 12mm 8mm 0; break-inside: avoid; }
+        .routine-signature { width: 38mm; text-align: center; border-top: 1px solid #111; padding-top: 1.5mm; font-size: 14px; font-weight: 700; }
+        .routine-note { margin-top: 5mm; font-size: 14px; font-weight: 700; text-align: center; }
+        .routine-print-table tr { break-inside: avoid; }
+    }
+</style>
+
+<div class="print-wrapper max-w-[1400px] mx-auto p-4 md:p-8">
+    <div class="routine-controls bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-6">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h2 class="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
@@ -9,19 +103,29 @@
                 </h2>
             </div>
             <form action="" method="GET" class="flex flex-wrap gap-3 items-center">
-                <select name="year" onchange="this.form.submit()" class="bg-white border border-slate-300 text-slate-700 text-sm rounded-lg px-4 py-2 font-semibold outline-none focus:ring-2 focus:ring-indigo-500">
+                <select name="year" class="bg-white border border-slate-300 text-slate-700 text-sm rounded-lg px-4 py-2 font-semibold outline-none focus:ring-2 focus:ring-indigo-500">
                     {% for year in years %}
                         <option value="{{ year }}" {% if selected_year|stringformat:"s" == year|stringformat:"s" %}selected{% endif %}>Year {{ year }}</option>
                     {% endfor %}
                 </select>
 
-                <select name="type" onchange="this.form.submit()" class="bg-white border border-slate-300 text-slate-700 text-sm rounded-lg px-4 py-2 font-semibold outline-none focus:ring-2 focus:ring-indigo-500">
+                <select name="type" class="bg-white border border-slate-300 text-slate-700 text-sm rounded-lg px-4 py-2 font-semibold outline-none focus:ring-2 focus:ring-indigo-500">
                     <option value="" {% if selected_type == '' %}selected{% endif %}>All Exam Types</option>
                     {% for exam_type in exam_types %}
                         <option value="{{ exam_type }}" {% if selected_type == exam_type %}selected{% endif %}>{{ exam_type }}</option>
                     {% endfor %}
                 </select>
 
+                <div class="flex flex-wrap gap-2 items-center text-sm">
+                    <span class="font-bold text-slate-600">Classes:</span>
+                    {% for class_value in available_classes %}
+                    <label class="inline-flex items-center gap-1">
+                        <input type="checkbox" name="classes" value="{{ class_value }}" {% if class_value in selected_classes %}checked{% endif %}>
+                        Class {{ class_value }}
+                    </label>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 transition no-print">Apply</button>
                 <button type="button" onclick="window.print()" class="bg-slate-800 text-white px-5 py-2 rounded-lg font-bold hover:bg-black transition flex items-center gap-2 no-print">
                     <i class="fas fa-print"></i> Print
                 </button>
@@ -35,8 +139,35 @@
         </div>
     </div>
 
-    <div class="bg-white p-4 md:p-10 rounded-2xl shadow-xl border border-slate-200">
-        <div class="text-center mb-10">
+    <div class="routine-paper bg-white p-4 md:p-10 rounded-2xl shadow-xl border border-slate-200">
+        <!-- Print Letterhead Pad Pattern -->
+        <div class="letterhead print-only">
+            <div class="letterhead-top">
+                <span>শিক্ষা</span>
+                <span>বিসমিল্লাহির রহমানির রাহিম<br>শান্তি</span>
+                <span>প্রগতি</span>
+            </div>
+            <img src="{% static 'images/logo.png' %}" alt="বিদ্যালয়ের লোগো" class="letterhead-logo">
+            <div class="letterhead-bn">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</div>
+            <div class="letterhead-en">Khondoker Naser Uddin High School</div>
+            <div class="letterhead-details">
+                হাজী ফয়েজ উদ্দীন ক্রস রোড, পোস্টঃ জিপিও-৯০০০, থানাঃ সোনাডাঙ্গা, জেলাঃ খুলনা<br>
+                Email: knuhighschool1994@gmail.com | Website: https://knuhighschool.pythonanywhere.com/<br>
+                মোবাঃ ০১৩০৯১১৭৪০৭, ০১৭১৪৯৩৯১২২
+            </div>
+            <div class="letterhead-meta">
+                <span>বিদ্যালয় কোডঃ ৩৫৭৪</span>
+                <span>EIIN: 117407</span>
+            </div>
+        </div>
+
+        <!-- Memo Row: Smarok No on Left, Date strictly on Right Corner -->
+        <div class="memo-row print-only">
+            <span class="memo-no">স্মারক নং- খঃনাঃউঃমাঃবিঃ/ ………………..</span>
+            <span class="memo-date">তারিখঃ…./…../{{ selected_year }}</span>
+        </div>
+
+        <div class="screen-heading text-center mb-10">
             <h1 class="text-3xl font-extrabold text-indigo-950 uppercase tracking-tight">Khondokar Naser Uddin Secondary School</h1>
             <p class="text-md font-bold text-slate-600 mt-2 tracking-[0.2em] uppercase border-b-2 border-indigo-900 inline-block px-10 pb-1">
                 {% if selected_type %}{{ selected_type }}{% else %}Master{% endif %} Exam Routine - {{ selected_year }}
@@ -44,47 +175,76 @@
         </div>
 
         {% if date_rows %}
+        <h2 class="routine-print-title print-only">
+            {% if selected_type %}{{ selected_type }}{% else %}পরীক্ষার{% endif %} রুটিন — {{ selected_year }}
+            {% if single_class %} (শ্রেণি {{ single_class_name }}){% endif %}
+        </h2>
+        {% if single_class %}
         <div class="overflow-x-auto">
-            <table class="w-full border-collapse">
+            <table class="routine-print-table single-routine-table">
                 <thead>
-                    <tr class="bg-indigo-950 text-white">
-                        <th rowspan="2" class="p-4 text-center text-xs uppercase border border-indigo-800 w-32">Date & Day</th>
-                        <th class="p-3 text-center text-xs uppercase border border-indigo-800">Class 6</th>
-                        <th class="p-3 text-center text-xs uppercase border border-indigo-800">Class 7</th>
-                        <th class="p-3 text-center text-xs uppercase border border-indigo-800">Class 8</th>
-                        <th colspan="3" class="p-3 text-center text-xs uppercase border border-indigo-800 bg-indigo-900">Class 9</th>
-                        <th colspan="3" class="p-3 text-center text-xs uppercase border border-indigo-800 bg-slate-900">Class 10</th>
+                    <tr>
+                        <th>তারিখ ও বার</th>
+                        {% if single_class_name == '9' or single_class_name == '10' %}<th>বিভাগ</th>{% endif %}
+                        <th>বিষয়</th>
+                        <th>বিষয় কোড</th>
+                        <th>পরীক্ষার সময়</th>
                     </tr>
-                    <tr class="bg-slate-100 text-slate-700 text-[9px] font-bold uppercase">
-                        <th class="border border-slate-300 p-2">General</th>
-                        <th class="border border-slate-300 p-2">General</th>
-                        <th class="border border-slate-300 p-2">General</th>
-                        <th class="border border-slate-300 p-2 bg-indigo-50">Sci</th>
-                        <th class="border border-slate-300 p-2 bg-indigo-50">Com</th>
-                        <th class="border border-slate-300 p-2 bg-indigo-50">Arts</th>
-                        <th class="border border-slate-300 p-2 bg-slate-200">Sci</th>
-                        <th class="border border-slate-300 p-2 bg-slate-200">Com</th>
-                        <th class="border border-slate-300 p-2 bg-slate-200">Arts</th>
+                </thead>
+                <tbody>
+                    {% for item in print_rows %}
+                    <tr>
+                        <td>{{ item.date|date:"d/m/Y" }}<br>{{ item.date|date:"l" }}</td>
+                        {% if single_class_name == '9' or single_class_name == '10' %}<td>{{ item.group_name|default:"সাধারণ" }}</td>{% endif %}
+                        <td class="subject-cell">{{ item.routine.subject_name }}</td>
+                        <td>{{ item.routine.subject_code|default:"-" }}</td>
+                        <td>{{ item.routine.exam_time }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="overflow-x-auto">
+            <table class="routine-print-table w-full border-collapse">
+                <thead>
+                    <tr>
+                        <th rowspan="2">Date & Day</th>
+                        {% for class_value in selected_classes %}
+                            {% if class_value == '9' or class_value == '10' %}
+                                <th colspan="3">Class {{ class_value }}</th>
+                            {% else %}
+                                <th rowspan="2">Class {{ class_value }}</th>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        {% for column in routine_columns %}
+                            {% if column.group_name %}
+                            <th>{{ column.group_name }}</th>
+                            {% endif %}
+                        {% endfor %}
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in date_rows %}
                     <tr>
-                        <td class="p-3 bg-slate-50 border border-slate-300 text-center">
-                            <div class="font-bold text-slate-800 text-[11px]">{{ row.date|date:"d M, Y" }}</div>
-                            <div class="text-[9px] text-indigo-600 font-extrabold uppercase mt-1">{{ row.date|date:"l" }}</div>
+                        <td>
+                            <strong>{{ row.date|date:"d M, Y" }}</strong><br>
+                            {{ row.date|date:"l" }}
                         </td>
                         {% for cell in row.cells %}
                         {% if cell.subject_name %}
-                        <td class="p-2 border border-slate-300 text-center align-middle bg-white">
-                            <div class="font-bold text-slate-900 text-[10px] leading-tight mb-1">{{ cell.subject_name }}</div>
-                            <div class="text-[9px] text-slate-600 font-medium">{{ cell.exam_time }}</div>
+                        <td>
+                            <strong>{{ cell.subject_name }}</strong><br>
+                            Code: {{ cell.subject_code|default:"-" }}<br>
+                            {{ cell.exam_time }}
                             {% if not selected_type %}
-                            <div class="text-[7px] text-indigo-500 font-bold mt-1 leading-none">[{{ cell.exam_type }}]</div>
+                            <br>[{{ cell.exam_type }}]
                             {% endif %}
                         </td>
                         {% else %}
-                        <td class="p-2 border border-slate-200 text-slate-300 text-center bg-slate-50/30 text-[10px] italic">-</td>
+                        <td>-</td>
                         {% endif %}
                         {% endfor %}
                     </tr>
@@ -92,6 +252,7 @@
                 </tbody>
             </table>
         </div>
+        {% endif %}
         {% else %}
         <div class="text-center py-20 bg-slate-50 rounded-xl border border-dashed border-slate-300">
             <i class="fas fa-folder-open text-4xl text-slate-300 mb-3"></i>
@@ -99,20 +260,13 @@
         </div>
         {% endif %}
 
-        <div class="hidden print:flex justify-between mt-24 px-10">
-            <div class="text-center">
-                <div class="border-t-2 border-black w-40 mb-1"></div>
-                <p class="text-[10px] font-bold uppercase">Exam Controller</p>
-            </div>
-            <div class="text-center text-slate-300 font-bold text-2xl italic">
-                KNHSS SEAL
-            </div>
-            <div class="text-center">
-                <img src="/static/images/sign.png" alt="Headmaster Signature" style="width: 120px; display: block; margin: 0 auto 5px;">
-                <div class="border-t-2 border-black w-40 mb-1"></div>
-                <p class="text-[10px] font-bold uppercase">Headmaster</p>
-            </div>
+        {% if single_class and date_rows %}
+        <div class="routine-signatures print-only">
+            <div class="routine-signature">শ্রেণি শিক্ষক</div>
+            <div class="routine-signature">প্রধান শিক্ষক</div>
         </div>
+        {% endif %}
+        <p class="routine-note print-only">বিঃদ্রঃ বিদ্যালয়ের পাওনা পরিশোধ পূর্বক শ্রেণী শিক্ষক হতে প্রবেশ পত্র নিয়ে পরীক্ষায় অংশগ্রহণ করবে।</p>
     </div>
 
     <p class="no-print text-center text-slate-400 text-[10px] mt-8 uppercase tracking-widest">&copy; {{ now_year }} Khondokar Naser Uddin Secondary School | Smart Management System</p>

@@ -31,7 +31,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-5 mb-8">
                     <div class="flex flex-col">
                         <label class="text-xs font-bold mb-2 ml-1">Main Class</label>
-                        <select name="class_name" id="class_name" class="p-3 rounded-xl border bg-white" required onchange="toggleGroup()">
+                        <select name="class_name" id="class_name" class="p-3 rounded-xl border bg-white" required onchange="toggleGroup(); filterRoutineSubjects()">
                             <option value="">Choose...</option>
                             <option value="6" {% if class_name == '6' %}selected{% endif %}>Class 6</option>
                             <option value="7" {% if class_name == '7' %}selected{% endif %}>Class 7</option>
@@ -42,15 +42,29 @@
                     </div>
                     <div id="group_box" class="flex flex-col {% if class_name != '9' and class_name != '10' %}hidden{% endif %}">
                         <label class="text-xs font-bold mb-2 ml-1 text-indigo-600">Main Group (9-10)</label>
-                        <select name="group_name" class="p-3 rounded-xl border bg-white">
+                        <select name="group_name" id="group_name" class="p-3 rounded-xl border bg-white" onchange="filterRoutineSubjects()">
                             <option value="" {% if group_name == '' %}selected{% endif %}>General</option>
                             <option value="Science" {% if group_name == 'Science' %}selected{% endif %}>Science</option>
                             <option value="Commerce" {% if group_name == 'Commerce' %}selected{% endif %}>Commerce</option>
                             <option value="Arts" {% if group_name == 'Arts' %}selected{% endif %}>Arts</option>
                         </select>
                     </div>
-                    <div class="flex flex-col"><label class="text-xs font-bold mb-2 ml-1">Subject Name</label><input type="text" name="subject" value="{{ subject }}" class="p-3 rounded-xl border bg-white" required></div>
-                    <div class="flex flex-col"><label class="text-xs font-bold mb-2 ml-1 text-indigo-600">Subject Code</label><input type="text" name="subject_code" value="{{ subject_code }}" class="p-3 rounded-xl border bg-white"></div>
+                    <div class="flex flex-col">
+                        <label class="text-xs font-bold mb-2 ml-1">Subject Name</label>
+                        <select name="subject_id" id="subject_id" class="p-3 rounded-xl border bg-white" required onchange="updateSubjectCode()">
+                            <option value="">Choose a subject...</option>
+                            {% for item in available_subjects %}
+                            <option value="{{ item.id }}" data-class-level="{{ item.class_level }}" data-group-name="{{ item.group_name }}" data-code="{{ item.subject_code }}" {% if selected_subject_id == item.id %}selected{% endif %}>
+                                {{ item.subject_name }}{% if item.subject_code %} ({{ item.subject_code }}){% endif %} — {{ item.get_subject_type_display }}{% if item.group_name %} — {{ item.group_name }}{% endif %}
+                            </option>
+                            {% endfor %}
+                            {% if selected_subject_id == 'legacy' %}
+                            <option value="legacy" data-class-level="{{ class_name }}" data-group-name="{{ group_name }}" data-code="{{ subject_code }}" selected>{{ subject }}{% if subject_code %} ({{ subject_code }}){% endif %} — Previously saved</option>
+                            {% endif %}
+                        </select>
+                        <p class="text-xs text-slate-500 mt-1">Subjects and codes are managed in the Subject section of the admin panel.</p>
+                    </div>
+                    <div class="flex flex-col"><label class="text-xs font-bold mb-2 ml-1 text-indigo-600">Subject Code</label><input type="text" id="subject_code_display" value="{{ subject_code }}" class="p-3 rounded-xl border bg-slate-100" readonly></div>
                     <div class="flex flex-col"><label class="text-xs font-bold mb-2 ml-1">Date</label><input type="date" name="date" value="{{ date }}" class="p-3 rounded-xl border bg-white" required></div>
                     <div class="flex flex-col"><label class="text-xs font-bold mb-2 ml-1">Time</label><input type="text" name="time" value="{{ time }}" class="p-3 rounded-xl border bg-white"></div>
                     <div class="flex flex-col"><label class="text-xs font-bold mb-2 ml-1">Exam Type</label>
@@ -113,7 +127,7 @@
                 <tbody class="divide-y">
                     {% for r in routines %}
                     <tr class="hover:bg-indigo-50/30 transition">
-                        <td class="p-5"><span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold text-[10px] uppercase">Class {{ r.class_name }}</span></td>
+                        <td class="p-5"><span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold text-[10px] uppercase">Class {{ r.class_name }}{% if r.group_name %} — {{ r.group_name }}{% elif r.class_name == '9' or r.class_name == '10' %} — General{% endif %}</span></td>
                         <td class="p-5 font-bold">{{ r.subject_name }}<div class="text-[10px] text-indigo-500">Code: {{ r.subject_code }}</div></td>
                         <td class="p-5 text-sm font-bold text-slate-700">{{ r.exam_date|date:"d M, Y" }}<div class="text-[10px] text-slate-400 uppercase">{{ r.exam_time }}</div></td>
                         <td class="p-5 text-center">
@@ -143,5 +157,32 @@ function toggleGroup() {
     const val = document.getElementById('class_name').value;
     document.getElementById('group_box').classList.toggle('hidden', !(val == '9' || val == '10'));
 }
+
+function filterRoutineSubjects() {
+    const className = document.getElementById('class_name').value;
+    const groupName = document.getElementById('group_name').value;
+    const subjectSelect = document.getElementById('subject_id');
+    const selectedOption = subjectSelect.selectedOptions[0];
+
+    Array.from(subjectSelect.options).forEach(option => {
+        if (!option.value) return;
+        const groupMatches = !option.dataset.groupName || ((className === '9' || className === '10') && option.dataset.groupName === groupName);
+        option.hidden = option.dataset.classLevel !== className || !groupMatches;
+    });
+
+    if (selectedOption && selectedOption.value && selectedOption.hidden) {
+        subjectSelect.value = '';
+    }
+    updateSubjectCode();
+}
+
+function updateSubjectCode() {
+    const subjectSelect = document.getElementById('subject_id');
+    const selectedOption = subjectSelect.selectedOptions[0];
+    document.getElementById('subject_code_display').value = selectedOption ? selectedOption.dataset.code || '' : '';
+}
+
+toggleGroup();
+filterRoutineSubjects();
 </script>
 {% endblock %}
