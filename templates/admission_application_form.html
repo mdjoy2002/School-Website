@@ -1,0 +1,632 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ভর্তি আবেদন ফরম</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @font-face {
+            font-family: 'Kalpurush';
+            src: url('{% static "fonts/Kalpurush-v0.258.ttf" %}') format('truetype');
+            font-display: swap;
+        }
+
+        body {
+            background: #f3f6fb;
+            font-family: 'Kalpurush', 'Noto Sans Bengali', 'Segoe UI', sans-serif;
+            color: #122132;
+        }
+
+        .form-shell {
+            width: min(100%, 1200px);
+            margin: 28px auto;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+        }
+        .school-header {
+            text-align: center;
+            border-bottom: 2px solid #dfeaf7;
+            padding-bottom: 20px;
+            margin-bottom: 28px;
+        }
+        .school-logo {
+            width: 86px;
+            height: 86px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid #f8c645;
+            background: #fff;
+            padding: 5px;
+        }
+        .school-name {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #0b3a6f;
+            margin-top: 10px;
+        }
+        .school-sub {
+            color: #4e5d7a;
+            font-size: 1rem;
+            line-height: 1.65;
+        }
+        .school-footer {
+            margin-top: 28px;
+            padding: 22px 12px 8px;
+            border-top: 2px solid #dfeaf7;
+            text-align: center;
+        }
+        .headmaster-signature {
+            width: min(100%, 280px);
+            margin: 0 0 22px auto;
+            padding-top: 42px;
+            border-top: 1px solid #52657a;
+            text-align: center;
+            color: #26384a;
+        }
+        .school-motto {
+            display: inline-block;
+            padding: 8px 22px;
+            border-radius: 999px;
+            background: #eff6ff;
+            color: #103d75;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        .section-title {
+            background: #ebf3ff;
+            color: #0d4ea3;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 25px 0 18px;
+        }
+        .form-label {
+            font-weight: 700;
+            color: #1f2d3d;
+        }
+        .required {
+            color: #d21d3a;
+            font-weight: 800;
+        }
+        .form-control, .form-select, textarea {
+            border-radius: 10px;
+            border: 1px solid #d5dfef;
+            min-height: 46px;
+            padding: 10px 12px;
+            font-family: 'Kalpurush', 'Noto Sans Bengali', 'Segoe UI', sans-serif;
+        }
+        .english-field {
+            font-family: 'Times New Roman', Times, serif;
+        }
+        .form-shell, .row > *, .form-control, .form-select, textarea { min-width: 0; }
+        .form-control, .form-select { font-size: 1rem; }
+        .form-actions .btn { min-height: 48px; }
+        .form-check {
+            border: 1px solid #e4eaf4;
+            border-radius: 10px;
+            padding: 12px 14px;
+            background: #f8fbff;
+            margin-bottom: 8px;
+        }
+        .document-checklist {
+            padding: 16px;
+            border: 1px solid #dce7f3;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #f8fbff, #fff);
+        }
+        .document-option {
+            display: flex;
+            min-height: 48px;
+            align-items: center;
+            gap: 11px;
+            padding: 10px 12px;
+            border: 1px solid #e0e8f1;
+            border-radius: 10px;
+            background: #fff;
+            cursor: pointer;
+        }
+        .document-option input {
+            flex: 0 0 18px;
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            accent-color: #0d6efd;
+        }
+        .document-option span { overflow-wrap: anywhere; }
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #0d4ea3, #0a6fce);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 26px;
+            font-weight: 700;
+            box-shadow: 0 12px 20px rgba(13, 78, 163, 0.2);
+        }
+        .btn-secondary-custom {
+            background: #f6c34a;
+            color: #142238;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-weight: 700;
+        }
+        @media (max-width: 768px) {
+            .school-name { font-size: 1.5rem; }
+            .form-shell { margin: 16px auto; padding: 16px; }
+            .section-title { font-size: 1.2rem; }
+            .school-header { margin-bottom: 20px; }
+        }
+        @media (max-width: 575.98px) {
+            .container { padding-right: 10px; padding-left: 10px; }
+            .form-shell { padding: 13px; border-radius: 14px; }
+            .school-logo { width: 70px; height: 70px; }
+            .school-name { font-size: 1.3rem; line-height: 1.35; overflow-wrap: anywhere; }
+            .school-sub { font-size: .95rem; overflow-wrap: anywhere; }
+            .section-title { margin: 20px 0 14px; padding: 9px 11px; font-size: 1.1rem; }
+            .form-control, .form-select, textarea { min-height: 48px; font-size: 16px; }
+            .document-checklist { padding: 12px; }
+            .form-actions { display: grid !important; grid-template-columns: 1fr; }
+            .form-actions .btn { width: 100%; margin: 0 !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-shell">
+            <div class="school-header">
+                <img src="{% static 'images/logo.png' %}" alt="School Logo" class="school-logo">
+                <div class="school-name">
+                    খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়
+                </div>
+                <div class="school-sub">
+                    <strong class="english-field">Khondoker Naser Uddin High School</strong><br>
+                    হাজী ফয়েজ উদ্দীন ক্রস রোড<br>
+                    পোস্টঃ জিপিও-৯০০০, থানাঃ সোনাডাঙ্গা, জেলাঃ খুলনা<br>
+                    মোবাঃ ০১৩০৯১১৭৪০৭, ০১৭১৪৯৩৯১২২<br>
+                    বিদ্যালয় কোডঃ ৩৫৭৪ <span class="english-field">| EIIN: 117407</span>
+                </div>
+            </div>
+
+            <div class="text-center mb-4">
+                <h2 class="fw-bold text-primary mb-2">ভর্তি আবেদন ফরম</h2>
+                <p class="text-muted mb-0">অনলাইনে আবেদন পূরণ করুন এবং পরে প্রিন্ট/পিডিএফ হিসেবে ডাউনলোড করুন</p>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags|default:'info' }}{% endif %}" role="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="section-title">১. শিক্ষার্থীর ব্যক্তিগত তথ্য</div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">শিক্ষার্থীর পূর্ণ নাম (বাংলা) <span class="required">*</span></label>
+                        <input type="text" name="student_name_bn" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">শিক্ষার্থীর নাম (ইংরেজি) <span class="required">*</span></label>
+                        <input type="text" name="student_name_en" class="form-control english-field" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">জন্মতারিখ <span class="required">*</span></label>
+                        <input type="date" name="date_of_birth" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">জন্মনিবন্ধন নম্বর <span class="required">*</span></label>
+                        <input type="text" name="birth_reg_no" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">লিঙ্গ <span class="required">*</span></label>
+                        <select class="form-select" name="gender" required>
+                            <option value="">নির্বাচন করুন</option>
+                            <option>ছেলে</option>
+                            <option>মেয়ে</option>
+                            <option>অন্যান্য</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">ধর্ম</label>
+                        <input type="text" name="religion" class="form-control" placeholder="ধর্ম">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">রক্তের গ্রুপ</label>
+                        <select class="form-select" name="blood_group">
+                            <option value="">নির্বাচন করুন</option>
+                            <option>A+</option>
+                            <option>A-</option>
+                            <option>B+</option>
+                            <option>B-</option>
+                            <option>AB+</option>
+                            <option>AB-</option>
+                            <option>O+</option>
+                            <option>O-</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">জাতীয়তা <span class="required">*</span></label>
+                        <input type="text" name="nationality" class="form-control" value="বাংলাদেশি" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">শিক্ষার্থীর ছবি <span class="required">*</span></label>
+                        <input type="file" name="student_photo" id="studentPhoto" class="form-control" accept="image/jpeg,image/png,image/webp" required>
+                        <small class="text-muted d-block mt-1">শুধু শিক্ষার্থীর ছবি আপলোড করুন; সর্বোচ্চ ৩০০ KB। অন্য কাগজপত্র এখানে আপলোড নয়।</small>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">প্রতিবন্ধিতা বা বিশেষ শিক্ষাসহায়তার তথ্য</label>
+                        <textarea name="special_support_info" class="form-control" rows="2" placeholder="প্রয়োজন হলে লিখুন"></textarea>
+                    </div>
+                </div>
+
+                <div class="section-title">২. ভর্তি-সংক্রান্ত তথ্য</div>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">যে শ্রেণিতে ভর্তি হবে</label>
+                        <select class="form-select" name="admission_class" id="admissionClass" required>
+                            <option value="">নির্বাচন করুন</option>
+                            <option value="ষষ্ঠ" {% if form_values.admission_class == 'ষষ্ঠ' %}selected{% endif %}>ষষ্ঠ</option>
+                            <option value="সপ্তম" {% if form_values.admission_class == 'সপ্তম' %}selected{% endif %}>সপ্তম</option>
+                            <option value="অষ্টম" {% if form_values.admission_class == 'অষ্টম' %}selected{% endif %}>অষ্টম</option>
+                            <option value="নবম" {% if form_values.admission_class == 'নবম' %}selected{% endif %}>নবম</option>
+                            <option value="দশম" {% if form_values.admission_class == 'দশম' %}selected{% endif %}>দশম</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">শিক্ষাবর্ষ</label>
+                        <input type="text" name="academic_year" class="form-control" value="{{ form_values.academic_year|default:'2027' }}" placeholder="যেমন: ২০২৭" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">শাখা (Section)</label>
+                        <input type="text" name="section" class="form-control" placeholder="যেমন: ‘ক’">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">গ্রুপ</label>
+                        <input type="text" name="group" class="form-control" placeholder="নবম–দশম">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">শিফট</label>
+                        <input type="text" name="shift" class="form-control" placeholder="প্রযোজ্য হলে">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">ভর্তির তারিখ</label>
+                        <input type="date" name="admission_date" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">ভর্তির ধরন</label>
+                        <select class="form-select" name="admission_type">
+                            <option value="">নির্বাচন করুন</option>
+                            <option>নতুন ভর্তি</option>
+                            <option>স্থানান্তর</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="section-title">৩. পিতা-মাতার তথ্য</div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">পিতার পূর্ণ নাম (বাংলা) <span class="required">*</span></label>
+                        <input type="text" name="father_name_bn" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">পিতার পূর্ণ নাম (ইংরেজি) <span class="required">*</span></label>
+                        <input type="text" name="father_name_en" class="form-control english-field" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">পেশা</label>
+                        <input type="text" name="father_occupation" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">মোবাইল নম্বর</label>
+                        <input type="tel" name="father_mobile" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">মাতার পূর্ণ নাম (বাংলা) <span class="required">*</span></label>
+                        <input type="text" name="mother_name_bn" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">মাতার পূর্ণ নাম (ইংরেজি) <span class="required">*</span></label>
+                        <input type="text" name="mother_name_en" class="form-control english-field" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">পেশা</label>
+                        <input type="text" name="mother_occupation" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">মোবাইল নম্বর</label>
+                        <input type="tel" name="mother_mobile" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">অভিভাবকের নাম</label>
+                        <input type="text" name="guardian_name" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">শিক্ষার্থীর সঙ্গে সম্পর্ক</label>
+                        <input type="text" name="guardian_relation" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">অভিভাবকের মোবাইল নম্বর <span class="required">*</span></label>
+                        <input type="tel" name="guardian_mobile" class="form-control" inputmode="tel" maxlength="24" autocomplete="tel" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">জাতীয় পরিচয়পত্র নম্বর (প্রয়োজন হলে)</label>
+                        <input type="text" name="parent_nid" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">জরুরি যোগাযোগ নম্বর</label>
+                        <input type="tel" name="emergency_contact" class="form-control">
+                    </div>
+                </div>
+
+                <div class="section-title">৪. ঠিকানা</div>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="same_as_permanent" value="1" id="sameAsPermanent">
+                            <label class="form-check-label" for="sameAsPermanent">বর্তমান ঠিকানা ও স্থায়ী ঠিকানা একই</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">বর্তমান ঠিকানা</label>
+                        <textarea name="present_address" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">স্থায়ী ঠিকানা</label>
+                        <textarea name="permanent_address" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">গ্রাম/মহল্লা</label>
+                        <input type="text" name="village" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">ডাকঘর</label>
+                        <input type="text" name="post_office" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">উপজেলা</label>
+                        <input type="text" name="upazila" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">জেলা</label>
+                        <input type="text" name="district" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">পোস্টকোড</label>
+                        <input type="text" name="postcode" class="form-control">
+                    </div>
+                </div>
+
+                <div class="section-title">৫. পূর্ববর্তী শিক্ষাপ্রতিষ্ঠানের তথ্য</div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">পূর্ববর্তী স্কুলের নাম</label>
+                        <input type="text" name="previous_school_name" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">স্কুলের ঠিকানা</label>
+                        <input type="text" name="previous_school_address" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">সর্বশেষ অধ্যয়ন করা শ্রেণি</label>
+                        <input type="text" name="last_study_class" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">সর্বশেষ পরীক্ষার ফলাফল</label>
+                        <input type="text" name="last_exam_result" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">পূর্ববর্তী রোল নম্বর</label>
+                        <input type="text" name="previous_roll" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">বোর্ড পরীক্ষার তথ্য</label>
+                        <input type="text" name="board_exam_info" class="form-control" placeholder="যদি প্রযোজ্য হয়">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">ছাড়পত্র বা Transfer Certificate (TC) সংযুক্তির বিবরণ</label>
+                        <input type="text" name="tc_reference" class="form-control" placeholder="উদাঃ TC নম্বর / সংযুক্তকরণ বিবরণ">
+                    </div>
+                </div>
+
+                <div class="section-title">৬. প্রয়োজনীয় কাগজপত্র</div>
+                <div class="document-checklist">
+                    <p class="mb-2">নিচের তালিকা থেকে আবেদনপত্রের সঙ্গে যে কাগজপত্র জমা দিচ্ছেন, সেগুলোতে টিক দিন।</p>
+                    <div id="requiredDocuments" class="row g-2" aria-live="polite">
+                        <div class="col-12 text-muted">প্রথমে ভর্তির শ্রেণি নির্বাচন করুন।</div>
+                    </div>
+                    <div class="small text-muted mt-2">নির্বাচিত হয়েছে: <span id="documentCount">0</span>/<span id="documentTotal">0</span></div>
+                </div>
+
+                <div class="section-title">৭. আবেদন ফি ও পেমেন্ট</div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">আবেদনকারীর ইমেইল <span class="required">*</span></label>
+                        <input type="email" name="email" class="form-control english-field" value="{{ form_values.email|default:'' }}" autocomplete="email" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">আবেদন ফি</label>
+                        <div class="form-control bg-light" id="applicationFeeDisplay">শ্রেণি নির্বাচন করুন</div>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">পেমেন্টের মাধ্যম <span class="required">*</span></label>
+                        <select class="form-select" name="payment_method" id="paymentMethod" required>
+                            <option value="">পেমেন্ট মাধ্যম বাছাই করুন</option>
+                            {% if admission_settings.bkash_enabled %}
+                                <option value="bkash">বিকাশ{% if admission_settings.bkash_number %} — {{ admission_settings.bkash_number }}{% endif %}</option>
+                            {% endif %}
+                            {% if admission_settings.nagad_enabled %}
+                                <option value="nagad">নগদ{% if admission_settings.nagad_number %} — {{ admission_settings.nagad_number }}{% endif %}</option>
+                            {% endif %}
+                            {% if admission_settings.in_school_enabled %}
+                                <option value="in_school">স্কুলে সরাসরি পেমেন্ট</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    {% if admission_settings.payment_instructions %}
+                        <div class="col-12 text-muted">{{ admission_settings.payment_instructions|linebreaksbr }}</div>
+                    {% endif %}
+                    <div class="col-12" id="paymentReferenceContainer">
+                        <label class="form-label" for="paymentReference">Transaction ID / পেমেন্ট রেফারেন্স</label>
+                        <input type="text" name="payment_reference" id="paymentReference" class="form-control" placeholder="বিকাশ/নগদ পেমেন্টের Transaction ID">
+                        <small class="text-muted">স্কুলে সরাসরি পেমেন্ট করলে এই ঘরটি পূরণ করতে হবে না।</small>
+                    </div>
+                </div>
+
+                <fieldset disabled>
+                <div class="section-title">৮. স্কুল অফিসের ব্যবহারের জন্য (শুধু অফিস পূরণ করবে)</div>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Admission ID</label>
+                        <input type="text" name="admission_id" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">ভর্তি অনুমোদনের অবস্থা</label>
+                        <select class="form-select" name="admission_status">
+                            <option value="">নির্বাচন করুন</option>
+                            <option>Pending</option>
+                            <option>Approved</option>
+                            <option>Rejected</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">ভর্তি ফি ও পেমেন্টের অবস্থা</label>
+                        <input type="text" name="payment_status" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">নির্ধারিত শ্রেণি</label>
+                        <input type="text" name="assigned_class" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">শাখা</label>
+                        <input type="text" name="assigned_section" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">রোল</label>
+                        <input type="text" name="assigned_roll" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">অনুমোদনকারীর নাম</label>
+                        <input type="text" name="approver_name" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">ভর্তি নিশ্চিত হওয়ার তারিখ</label>
+                        <input type="date" name="approval_date" class="form-control">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">মন্তব্য</label>
+                        <textarea name="office_comment" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                </fieldset>
+
+                <div class="form-actions d-flex justify-content-between mt-5 gap-2 flex-wrap">
+                    <a class="btn btn-outline-primary rounded-3 px-4 py-2" href="{% url 'home' %}">
+                        <i class="fas fa-home me-2"></i>হোম পেজে ফিরে যান
+                    </a>
+                    <a class="btn btn-secondary-custom" href="{% url 'admission_detail' 'form' %}">
+                        <i class="fas fa-file-pdf me-2"></i>ফরম ডাউনলোড
+                    </a>
+                    <button type="submit" class="btn btn-primary-custom">
+                        <i class="fas fa-save me-2"></i>ফরম জমা দিন ও প্রিন্ট করুন
+                    </button>
+                </div>
+            </form>
+            <div class="school-footer">
+                <div class="headmaster-signature">
+                    প্রধান শিক্ষকের স্বাক্ষর
+                </div>
+                <div class="school-motto">শিক্ষাই জাতির মেরুদন্ড</div>
+            </div>
+        </div>
+    </div>
+    {{ class_fees|json_script:"class-fees-data" }}
+    {{ document_options|json_script:"class-documents-data" }}
+    {{ selected_documents|json_script:"selected-documents-data" }}
+    <script>
+        const admissionForm = document.querySelector('form[enctype="multipart/form-data"]');
+        const studentPhoto = document.getElementById('studentPhoto');
+        studentPhoto.addEventListener('change', () => {
+            if (studentPhoto.files[0] && studentPhoto.files[0].size > 300 * 1024) {
+                studentPhoto.setCustomValidity('ছবির আকার ৩০০ KB-এর মধ্যে হতে হবে।');
+            } else {
+                studentPhoto.setCustomValidity('');
+            }
+        });
+        admissionForm.addEventListener('submit', (event) => {
+            if (studentPhoto.files[0] && studentPhoto.files[0].size > 300 * 1024) {
+                studentPhoto.reportValidity();
+                event.preventDefault();
+            }
+        });
+
+        const paymentMethod = document.getElementById('paymentMethod');
+        const paymentReference = document.getElementById('paymentReference');
+        const admissionClass = document.getElementById('admissionClass');
+        const applicationFeeDisplay = document.getElementById('applicationFeeDisplay');
+        const classFees = JSON.parse(document.getElementById('class-fees-data').textContent);
+        const classDocuments = JSON.parse(document.getElementById('class-documents-data').textContent);
+        const previouslySelectedDocuments = JSON.parse(document.getElementById('selected-documents-data').textContent);
+        const requiredDocuments = document.getElementById('requiredDocuments');
+        const documentCount = document.getElementById('documentCount');
+        const documentTotal = document.getElementById('documentTotal');
+        const selectedClassFee = () => Number(classFees[admissionClass.value] || 0);
+        const updateDocumentCount = () => {
+            documentCount.textContent = requiredDocuments.querySelectorAll('input:checked').length;
+        };
+        const renderRequiredDocuments = () => {
+            requiredDocuments.replaceChildren();
+            const documents = classDocuments[admissionClass.value] || [];
+            documentTotal.textContent = documents.length;
+            if (!admissionClass.value) {
+                requiredDocuments.innerHTML = '<div class="col-12 text-muted">প্রথমে ভর্তির শ্রেণি নির্বাচন করুন।</div>';
+                updateDocumentCount();
+                return;
+            }
+            if (!documents.length) {
+                requiredDocuments.innerHTML = '<div class="col-12 text-muted">এই শ্রেণির জন্য প্রয়োজনীয় কাগজপত্রের তালিকা এখনো নির্ধারণ করা হয়নি।</div>';
+                updateDocumentCount();
+                return;
+            }
+            documents.forEach((documentName) => {
+                const column = document.createElement('div');
+                column.className = 'col-12 col-md-6';
+                const label = document.createElement('label');
+                label.className = 'document-option';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = 'submitted_documents';
+                checkbox.value = documentName;
+                checkbox.checked = previouslySelectedDocuments.includes(documentName);
+                checkbox.addEventListener('change', updateDocumentCount);
+                const text = document.createElement('span');
+                text.textContent = documentName;
+                label.append(checkbox, text);
+                column.append(label);
+                requiredDocuments.append(column);
+            });
+            updateDocumentCount();
+        };
+        const updateApplicationFee = () => {
+            const fee = selectedClassFee();
+            applicationFeeDisplay.textContent = admissionClass.value ? `৳ ${fee.toFixed(2)}` : 'শ্রেণি নির্বাচন করুন';
+            updatePaymentReferenceRequirement();
+        };
+        const updatePaymentReferenceRequirement = () => {
+            const onlinePayment = ['bkash', 'nagad'].includes(paymentMethod.value);
+            paymentReference.required = selectedClassFee() > 0 && onlinePayment;
+        };
+        admissionClass.addEventListener('change', updateApplicationFee);
+        admissionClass.addEventListener('change', renderRequiredDocuments);
+        paymentMethod.addEventListener('change', updatePaymentReferenceRequirement);
+        updateApplicationFee();
+        renderRequiredDocuments();
+    </script>
+</body>
+</html>

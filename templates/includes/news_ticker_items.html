@@ -21,3 +21,7 @@
         • <a href="{% url 'notice_detail' notice.pk %}">{{ notice.title }}</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     {% endfor %}
 {% endif %}
+
+{% if admission_apply_settings %}
+    • <a href="{% url 'admission_application_form' %}">{{ admission_apply_settings.ticker_text }}</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{% endif %}

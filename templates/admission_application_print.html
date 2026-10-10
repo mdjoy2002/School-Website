@@ -1,0 +1,291 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ভর্তি আবেদন ফরম প্রিন্ট</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Kalpurush';
+            src: url('{% static "fonts/Kalpurush-v0.258.ttf" %}') format('truetype');
+            font-display: swap;
+        }
+
+        body {
+            background: #f5f7fb;
+            color: #122132;
+            font-family: 'Kalpurush', 'Noto Sans Bengali', 'Segoe UI', sans-serif;
+        }
+        .paper {
+            width: min(100% - 32px, 1100px);
+            margin: 24px auto;
+            background: #fff;
+            border: 1px solid #dfe8f5;
+            border-radius: 18px;
+            box-shadow: 0 16px 30px rgba(15, 50, 80, 0.07);
+            padding: 28px 26px;
+        }
+        .school-head {
+            text-align: center;
+            border: 2px solid #d7e8f8;
+            border-bottom: 5px solid #d6a32a;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #f3f8ff, #fff);
+            padding: 20px 16px 16px;
+            margin-bottom: 20px;
+        }
+        .school-logo {
+            width: 82px;
+            height: 82px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid #f8c645;
+            padding: 6px;
+            background: #fff;
+        }
+        .school-name {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #103d75;
+            margin-top: 12px;
+        }
+        .school-sub {
+            color: #4f637f;
+            font-size: 0.95rem;
+            line-height: 1.65;
+        }
+        .signature-area {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 42px;
+        }
+        .headmaster-signature {
+            width: 250px;
+            padding-top: 42px;
+            border-top: 1px solid #52657a;
+            color: #26384a;
+            text-align: center;
+        }
+        .school-footer {
+            margin-top: 28px;
+            padding: 16px 12px 4px;
+            border-top: 2px solid #dfe8f5;
+            text-align: center;
+        }
+        .school-motto {
+            display: inline-block;
+            padding: 8px 22px;
+            border-radius: 999px;
+            background: #eff6ff;
+            color: #103d75;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        .section-title {
+            font-weight: 800;
+            font-size: 1.35rem;
+            color: #fff;
+            background: linear-gradient(110deg, #123f70, #1876bb);
+            padding: 10px 12px;
+            border-radius: 10px;
+            margin: 22px 0 14px;
+        }
+        .info-row {
+            border-bottom: 1px dashed #d9e3f0;
+            padding: 8px 0;
+        }
+        .key { font-weight: 700; color: #3d4e62; }
+        .value { color: #1c2b38; }
+        .english-field {
+            font-family: 'Times New Roman', Times, serif;
+        }
+        .photo {
+            width: 120px;
+            height: 140px;
+            border: 2px solid #dfe8f5;
+            object-fit: cover;
+            border-radius: 10px;
+            background: #f8fbff;
+        }
+        .print-btn {
+            position: sticky;
+            top: 10px;
+            z-index: 99;
+        }
+        .paper, .row > *, .info-row, .value { min-width: 0; }
+        .value { overflow-wrap: anywhere; }
+        .application-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; }
+        .application-actions .btn { min-height: 44px; }
+        @media (max-width: 575.98px) {
+            .paper { width: calc(100% - 20px); margin: 10px auto; padding: 16px 12px; border-radius: 14px; }
+            .school-head { padding: 15px 10px 12px; }
+            .school-name { font-size: 1.4rem; line-height: 1.35; overflow-wrap: anywhere; }
+            .school-sub { overflow-wrap: anywhere; }
+            .section-title { font-size: 1.1rem; padding: 9px 10px; }
+            .photo { width: 100px; height: 120px; }
+            .application-actions { display: grid; grid-template-columns: 1fr; padding: 8px 10px; }
+            .application-actions .btn { width: 100%; margin: 0 !important; white-space: normal; }
+        }
+        @media print {
+            @page { size: A4; margin: 12mm; }
+            body { background: white; }
+            .no-print { display: none !important; }
+            .paper { width: 100%; box-shadow: none; border: none; margin: 0; max-width: none; padding: 0; }
+            .section-title { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+            .school-head { border-color: #d6a32a; }
+            * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print application-actions">
+        {% if application and application.pdf_file %}
+            <a href="{% url 'admission_application_download_pdf' %}" class="btn btn-success px-4 py-2">
+                <i class="fas fa-file-download me-2"></i>আবেদনের PDF ডাউনলোড
+            </a>
+            <a href="{% url 'admission_status_lookup' %}" class="btn btn-outline-primary px-4 py-2">আবেদনের বর্তমান অবস্থা</a>
+        {% endif %}
+        <button class="btn btn-primary px-4 py-2" onclick="window.print()">
+            <i class="fas fa-download me-2"></i> PDF ডাউনলোড / প্রিন্ট
+        </button>
+        <a href="{% url 'admission_application_form' %}" class="btn btn-outline-primary px-4 py-2 ms-2">ফিরে যান</a>
+    </div>
+
+    <div class="paper">
+        <div class="school-head">
+            <img src="{% static 'images/logo.png' %}" alt="School Logo" class="school-logo">
+            <div class="school-name">খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়</div>
+            <div class="school-sub">
+                <strong class="english-field">Khondoker Naser Uddin High School</strong><br>
+                হাজী ফয়েজ উদ্দীন ক্রস রোড<br>
+                পোস্টঃ জিপিও-৯০০০, থানাঃ সোনাডাঙ্গা, জেলাঃ খুলনা<br>
+                মোবাঃ ০১৩০৯১১৭৪০৭, ০১৭১৪৯৩৯১২২<br>
+                বিদ্যালয় কোডঃ ৩৫৭৪ <span class="english-field">| EIIN: 117407</span>
+            </div>
+        </div>
+
+        <div class="text-center mb-3">
+            <h3 class="fw-bold text-primary mb-0">ভর্তি আবেদন ফরম</h3>
+            {% if application %}
+                <div class="mt-2 text-primary fw-bold">Application ID: {{ application.application_id }}</div>
+            {% endif %}
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-2 text-center">
+                {% if application and application.student_photo %}
+                    <img src="{% url 'admission_application_student_photo' %}" class="photo" alt="Student Photo">
+                {% else %}
+                    <div class="photo d-flex align-items-center justify-content-center text-muted">ছবি নেই</div>
+                {% endif %}
+            </div>
+            <div class="col-md-10">
+                <div class="info-row"><span class="key">শিক্ষার্থীর পূর্ণ নাম (বাংলা):</span> <span class="value">{{ form_data.student_name_bn|default:'-' }}</span></div>
+                <div class="info-row"><span class="key">শিক্ষার্থীর নাম (ইংরেজি):</span> <span class="value english-field">{{ form_data.student_name_en|default:'-' }}</span></div>
+                <div class="info-row"><span class="key">জন্মতারিখ:</span> <span class="value">{{ form_data.date_of_birth|default:'-' }}</span></div>
+                <div class="info-row"><span class="key">জন্মনিবন্ধন নম্বর:</span> <span class="value">{{ form_data.birth_reg_no|default:'-' }}</span></div>
+            </div>
+        </div>
+
+        <div class="section-title">১. শিক্ষার্থীর ব্যক্তিগত তথ্য</div>
+        <div class="row g-3">
+            <div class="col-md-4"><div class="info-row"><span class="key">লিঙ্গ:</span> <span class="value">{{ form_data.gender|default:'-' }}</span></div></div>
+            <div class="col-md-4"><div class="info-row"><span class="key">ধর্ম:</span> <span class="value">{{ form_data.religion|default:'-' }}</span></div></div>
+            <div class="col-md-4"><div class="info-row"><span class="key">রক্তের গ্রুপ:</span> <span class="value">{{ form_data.blood_group|default:'-' }}</span></div></div>
+            <div class="col-md-4"><div class="info-row"><span class="key">জাতীয়তা:</span> <span class="value">{{ form_data.nationality|default:'-' }}</span></div></div>
+            <div class="col-md-8"><div class="info-row"><span class="key">প্রতিবন্ধিতা বা বিশেষ শিক্ষাসহায়তার তথ্য:</span> <span class="value">{{ form_data.special_support_info|default:'-' }}</span></div></div>
+        </div>
+
+        <div class="section-title">২. ভর্তি-সংক্রান্ত তথ্য</div>
+        <div class="row g-3">
+            <div class="col-md-3"><div class="info-row"><span class="key">শ্রেণি:</span> <span class="value">{{ form_data.admission_class|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">শিক্ষাবর্ষ:</span> <span class="value">{{ form_data.academic_year|default:'-' }}</span></div></div>
+            <div class="col-md-2"><div class="info-row"><span class="key">শাখা:</span> <span class="value">{{ form_data.section|default:'-' }}</span></div></div>
+            <div class="col-md-2"><div class="info-row"><span class="key">আবেদন রোল:</span> <span class="value">{{ form_data.class_roll_number|default:'-' }}</span></div></div>
+            <div class="col-md-2"><div class="info-row"><span class="key">গ্রুপ:</span> <span class="value">{{ form_data.group|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">শিফট:</span> <span class="value">{{ form_data.shift|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">ভর্তির তারিখ:</span> <span class="value">{{ form_data.admission_date|default:'-' }}</span></div></div>
+            <div class="col-md-6"><div class="info-row"><span class="key">ভর্তির ধরন:</span> <span class="value">{{ form_data.admission_type|default:'-' }}</span></div></div>
+        </div>
+
+        <div class="section-title">৩. পিতা-মাতার তথ্য</div>
+        <div class="row g-3">
+            <div class="col-md-6"><div class="info-row"><span class="key">পিতার পূর্ণ নাম (বাংলা):</span> <span class="value">{{ form_data.father_name_bn|default:form_data.father_name|default:'-' }}</span></div></div>
+            <div class="col-md-6"><div class="info-row"><span class="key">পিতার পূর্ণ নাম (ইংরেজি):</span> <span class="value english-field">{{ form_data.father_name_en|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">পেশা:</span> <span class="value">{{ form_data.father_occupation|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">মোবাইল:</span> <span class="value">{{ form_data.father_mobile|default:'-' }}</span></div></div>
+            <div class="col-md-6"><div class="info-row"><span class="key">মাতার পূর্ণ নাম (বাংলা):</span> <span class="value">{{ form_data.mother_name_bn|default:form_data.mother_name|default:'-' }}</span></div></div>
+            <div class="col-md-6"><div class="info-row"><span class="key">মাতার পূর্ণ নাম (ইংরেজি):</span> <span class="value english-field">{{ form_data.mother_name_en|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">পেশা:</span> <span class="value">{{ form_data.mother_occupation|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">মোবাইল:</span> <span class="value">{{ form_data.mother_mobile|default:'-' }}</span></div></div>
+            <div class="col-md-6"><div class="info-row"><span class="key">অভিভাবকের নাম:</span> <span class="value">{{ form_data.guardian_name|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">সম্পর্ক:</span> <span class="value">{{ form_data.guardian_relation|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">মোবাইল:</span> <span class="value">{{ form_data.guardian_mobile|default:'-' }}</span></div></div>
+            <div class="col-md-6"><div class="info-row"><span class="key">জরুরি যোগাযোগ:</span> <span class="value">{{ form_data.emergency_contact|default:'-' }}</span></div></div>
+        </div>
+
+        <div class="section-title">৪. ঠিকানা</div>
+        <div class="row g-3">
+            <div class="col-md-6"><div class="info-row"><span class="key">বর্তমান ঠিকানা:</span> <span class="value">{{ form_data.present_address|default:'-' }}</span></div></div>
+            <div class="col-md-6"><div class="info-row"><span class="key">স্থায়ী ঠিকানা:</span> <span class="value">{{ form_data.permanent_address|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">গ্রাম/মহল্লা:</span> <span class="value">{{ form_data.village|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">ডাকঘর:</span> <span class="value">{{ form_data.post_office|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">উপজেলা:</span> <span class="value">{{ form_data.upazila|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">জেলা:</span> <span class="value">{{ form_data.district|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">পোস্টকোড:</span> <span class="value">{{ form_data.postcode|default:'-' }}</span></div></div>
+        </div>
+
+        <div class="section-title">৫. পূর্ববর্তী শিক্ষাপ্রতিষ্ঠানের তথ্য</div>
+        <div class="row g-3">
+            <div class="col-md-6"><div class="info-row"><span class="key">স্কুলের নাম:</span> <span class="value">{{ form_data.previous_school_name|default:'-' }}</span></div></div>
+            <div class="col-md-6"><div class="info-row"><span class="key">স্কুলের ঠিকানা:</span> <span class="value">{{ form_data.previous_school_address|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">সর্বশেষ শ্রেণি:</span> <span class="value">{{ form_data.last_study_class|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">ফলাফল:</span> <span class="value">{{ form_data.last_exam_result|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">পূর্ববর্তী রোল:</span> <span class="value">{{ form_data.previous_roll|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">বোর্ড তথ্য:</span> <span class="value">{{ form_data.board_exam_info|default:'-' }}</span></div></div>
+            <div class="col-md-12"><div class="info-row"><span class="key">TC সংযুক্তির বিবরণ:</span> <span class="value">{{ form_data.tc_reference|default:'-' }}</span></div></div>
+        </div>
+
+        <div class="section-title">৬. প্রয়োজনীয় কাগজপত্র</div>
+        {% if form_data.attached_documents %}
+            <ul class="mb-0">
+                {% for document in form_data.attached_documents %}
+                    <li><span aria-hidden="true">☑</span> {{ document }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="info-row"><span class="value">কোনো কাগজপত্রের পাশে টিক দেওয়া হয়নি।</span></div>
+        {% endif %}
+
+        <div class="section-title">৭. আবেদন ফি ও পেমেন্ট</div>
+        <div class="row g-3">
+            <div class="col-md-4"><div class="info-row"><span class="key">আবেদন ফি:</span> <span class="value">৳ {{ form_data.application_fee|default:'0.00' }}</span></div></div>
+            <div class="col-md-4"><div class="info-row"><span class="key">পেমেন্টের মাধ্যম:</span> <span class="value">{{ form_data.payment_method_display|default:'-' }}</span></div></div>
+            <div class="col-md-4"><div class="info-row"><span class="key">Transaction ID / রেফারেন্স:</span> <span class="value">{{ form_data.payment_reference|default:'-' }}</span></div></div>
+            <div class="col-md-6"><div class="info-row"><span class="key">আবেদনকারীর ইমেইল:</span> <span class="value english-field">{{ form_data.email|default:'-' }}</span></div></div>
+        </div>
+
+        <div class="section-title">৮. স্কুল অফিসের ব্যবহারের জন্য</div>
+        <div class="row g-3">
+            <div class="col-md-3"><div class="info-row"><span class="key">Admission ID:</span> <span class="value english-field">{{ form_data.application_id|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">অবস্থা:</span> <span class="value">{{ form_data.admission_status|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">পেমেন্টের অবস্থা:</span> <span class="value">{{ form_data.payment_status|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">নির্ধারিত শ্রেণি:</span> <span class="value">{{ form_data.assigned_class|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">শাখা:</span> <span class="value">{{ form_data.assigned_section|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">রোল:</span> <span class="value">{{ form_data.assigned_roll|default:form_data.class_roll_number|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">অনুমোদনকারীর নাম:</span> <span class="value">{{ form_data.approver_name|default:'-' }}</span></div></div>
+            <div class="col-md-3"><div class="info-row"><span class="key">ভর্তি নিশ্চিত হওয়ার তারিখ:</span> <span class="value">{{ form_data.approval_date|default:'-' }}</span></div></div>
+            <div class="col-12"><div class="info-row"><span class="key">মন্তব্য:</span> <span class="value">{{ form_data.office_comment|default:'-' }}</span></div></div>
+        </div>
+
+        <div class="signature-area">
+            <div class="headmaster-signature">প্রধান শিক্ষকের স্বাক্ষর</div>
+        </div>
+        <div class="school-footer">
+            <div class="school-motto">শিক্ষাই জাতির মেরুদন্ড</div>
+        </div>
+    </div>
+</body>
+</html>

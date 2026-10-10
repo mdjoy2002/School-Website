@@ -179,6 +179,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> হোম</a></li>
+                     {% if admission_apply_settings %}<li class="nav-item"><a class="nav-link" href="{% url 'admission_application_form' %}"><i class="fas fa-user-plus"></i> এডমিশন আবেদন</a></li>{% endif %}
                      <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="studentCornerDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-graduate"></i> শিক্ষার্থী কর্নার
@@ -198,7 +199,9 @@
                             <i class="fas fa-user-plus"></i> ভর্তি তথ্য
                         </a>
                         <ul class="dropdown-menu shadow border-0">
-                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'form' %}"><i class="fas fa-file-signature"></i> ভর্তি আবেদন ফরম</a></li>
+                            {% if admission_apply_settings %}<li><a class="dropdown-item" href="{% url 'admission_application_form' %}"><i class="fas fa-file-signature me-2"></i> অনলাইন ভর্তি আবেদন ফরম</a></li>{% endif %}
+                            <li><a class="dropdown-item" href="{% url 'admission_status_lookup' %}"><i class="fas fa-search me-2"></i> আবেদনের বর্তমান অবস্থা</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admission_detail' 'form' %}"><i class="fas fa-download me-2"></i> ফরম ডাউনলোড</a></li>
                             <li><a class="dropdown-item" href="{% url 'admission_detail' 'guide' %}"><i class="fas fa-clipboard-check"></i> ভর্তি নির্দেশিকা</a></li>
                             <li><a class="dropdown-item" href="{% url 'admission_detail' 'result' %}"><i class="fas fa-list-ol"></i> ভর্তি পরীক্ষার ফলাফল</a></li>
                             <li><a class="dropdown-item" href="{% url 'admission_detail' 'fees' %}"><i class="fas fa-tags"></i> বেতন ও ফি সমূহ</a></li>

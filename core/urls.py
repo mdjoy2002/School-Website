@@ -53,6 +53,12 @@ urlpatterns = [
     path('student-corner/<str:category_name>/', views.student_corner_detail, name='corner_detail'),
 
     # ভর্তি তথ্য সেকশন (ডাইনামিক রুট)
+    path('admission/application/', views.admission_application_form, name='admission_application_form'),
+    path('admission/application/print/', views.admission_application_print, name='admission_application_print'),
+    path('admission/application/pdf/', views.admission_application_download_pdf, name='admission_application_download_pdf'),
+    path('admission/application/photo/', views.admission_application_student_photo, name='admission_application_student_photo'),
+    path('admission/application/status/', views.admission_status_lookup, name='admission_status_lookup'),
+    path('admission/application/status/pdf/', views.admission_status_pdf, name='admission_status_pdf'),
     path('admission/<str:category>/', views.admission_detail, name='admission_detail'),
 
     # --- ফলাফল সেকশন (ডাইনামিক রুট) ---

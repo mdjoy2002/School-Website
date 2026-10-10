@@ -87,6 +87,37 @@ p, li, td, th, .card, .dropdown-item, footer a {
     }
 }
 
+@media (min-width: 992px) {
+    .navbar .navbar-nav {
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .navbar .navbar-nav > .nav-item {
+        flex: 0 1 auto;
+    }
+
+    .navbar .navbar-nav > .nav-item > .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        max-width: 100%;
+        padding: 10px 8px !important;
+        font-size: clamp(0.78rem, 0.88vw, 0.9rem);
+        line-height: 1.25;
+        white-space: normal;
+    }
+
+    .navbar .navbar-nav > .nav-item > .nav-link[href$="/admission/application/"] {
+        max-width: 9.5rem;
+    }
+
+    .navbar .navbar-nav > .nav-item > .nav-link > i {
+        flex: 0 0 auto;
+        margin-right: 0;
+    }
+}
+
 @media (max-width: 767.98px) {
     .container, .container-fluid {
         --bs-gutter-x: 1.5rem;
@@ -121,6 +152,11 @@ p, li, td, th, .card, .dropdown-item, footer a {
 
     .form-control, .form-select, .btn {
         max-width: 100%;
+    }
+
+    .navbar .navbar-nav > .nav-item > .nav-link[href$="/admission/application/"] {
+        width: 100%;
+        max-width: none;
     }
 }
 

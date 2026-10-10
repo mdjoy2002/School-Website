@@ -1,0 +1,260 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#123f70">
+    <title>আবেদনের বর্তমান অবস্থা</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Kalpurush';
+            src: url('{% static "fonts/Kalpurush-v0.258.ttf" %}') format('truetype');
+            font-display: swap;
+        }
+        :root {
+            color-scheme: light;
+            --navy: #123f70;
+            --blue: #1976c9;
+            --ink: #16283d;
+            --muted: #65758b;
+        }
+        * { box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            color: var(--ink);
+            background:
+                radial-gradient(ellipse at 10% 5%, #dceeff 0, transparent 32rem),
+                radial-gradient(ellipse at 95% 95%, #e5f4ef 0, transparent 28rem),
+                #f4f7fb;
+            font-family: 'Kalpurush', 'Noto Sans Bengali', sans-serif;
+        }
+        .page-wrap { width: min(100% - 32px, 900px); margin: 0 auto; padding: 28px 0 48px; }
+        .top-link { color: var(--navy); font-weight: 700; text-decoration: none; }
+        .top-link:hover { color: var(--blue); }
+        .hero {
+            position: relative;
+            overflow: hidden;
+            padding: clamp(24px, 5vw, 48px);
+            color: white;
+            border-radius: 26px;
+            background: linear-gradient(125deg, #103761, #176fb7 72%, #318ac7);
+            box-shadow: 0 20px 45px #123f7025;
+        }
+        .hero::after {
+            position: absolute;
+            right: -45px;
+            bottom: -115px;
+            width: 270px;
+            height: 270px;
+            border: 1px solid #ffffff30;
+            border-radius: 50%;
+            box-shadow: 0 0 0 28px #ffffff0b, 0 0 0 58px #ffffff0b;
+            content: "";
+            pointer-events: none;
+        }
+        .hero h1 { max-width: 650px; font-size: clamp(1.8rem, 5vw, 2.65rem); font-weight: 800; }
+        .hero p { max-width: 580px; color: #e3f1ff; font-size: 1.08rem; }
+        .hero-icon {
+            display: grid;
+            width: 58px;
+            height: 58px;
+            margin-bottom: 18px;
+            place-items: center;
+            border: 1px solid #ffffff55;
+            border-radius: 18px;
+            background: #ffffff18;
+            font-size: 1.7rem;
+        }
+        .panel {
+            position: relative;
+            z-index: 1;
+            margin-top: -18px;
+            padding: clamp(20px, 4vw, 36px);
+            border: 1px solid #e5ebf3;
+            border-radius: 22px;
+            background: white;
+            box-shadow: 0 16px 40px #18365712;
+        }
+        .panel h2 { color: var(--navy); font-size: 1.5rem; font-weight: 800; }
+        .form-label { font-weight: 700; }
+        .form-control {
+            min-height: 52px;
+            border: 1px solid #d9e2ee;
+            border-radius: 12px;
+            font-family: 'Times New Roman', 'Kalpurush', serif;
+        }
+        .form-control:focus { border-color: #67a9e1; box-shadow: 0 0 0 .22rem #1976c91c; }
+        .btn { min-height: 48px; border-radius: 12px; font-weight: 700; }
+        .btn-primary { border-color: var(--blue); background: linear-gradient(120deg, var(--navy), var(--blue)); }
+        .result-card {
+            overflow: hidden;
+            margin-top: 26px;
+            border: 1px solid #e4ebf3;
+            border-radius: 18px;
+            background: #fff;
+        }
+        .result-head { padding: 22px; background: linear-gradient(120deg, #f0f7ff, #f8fbff); }
+        .result-head h2 { color: var(--navy); font-size: 1.35rem; font-weight: 800; }
+        .application-id {
+            display: inline-block;
+            max-width: 100%;
+            padding: 8px 12px;
+            color: #164c7d;
+            border: 1px solid #d4e7f8;
+            border-radius: 10px;
+            background: white;
+            font-family: 'Times New Roman', serif;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+        .result-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 20px; }
+        .result-item {
+            min-width: 0;
+            padding: 15px 16px;
+            border: 1px solid #e8edf4;
+            border-radius: 13px;
+            background: #fbfcfe;
+        }
+        .result-label { display: block; margin-bottom: 6px; color: var(--muted); font-size: .95rem; }
+        .result-value { color: var(--ink); font-size: 1.08rem; font-weight: 700; overflow-wrap: anywhere; }
+        .status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; }
+        .status-pending { color: #805500; background: #fff3cf; }
+        .status-approved { color: #12633e; background: #dff5e9; }
+        .status-rejected { color: #8d2630; background: #fde6e8; }
+        .status-default { color: #475569; background: #edf1f5; }
+        .note { padding: 16px 20px; color: #45556b; border-top: 1px solid #edf1f5; background: #f8fafc; overflow-wrap: anywhere; }
+        .pdf-panel { padding: 16px; border-top: 1px solid #edf1f5; background: #f7f9fc; }
+        .pdf-frame { display: block; width: 100%; height: min(78vh, 900px); min-height: 420px; border: 1px solid #dce5ef; border-radius: 12px; background: white; }
+        .not-found { margin-top: 22px; padding: 16px 18px; border: 1px solid #f2d899; border-radius: 13px; background: #fff8e7; }
+        .footer-note { color: var(--muted); font-size: .95rem; }
+        @media (max-width: 575.98px) {
+            .page-wrap { width: min(100% - 20px, 900px); padding-top: 14px; }
+            .hero { border-radius: 20px; }
+            .panel { margin-top: -12px; border-radius: 18px; }
+            .result-grid { grid-template-columns: minmax(0, 1fr); gap: 9px; padding: 14px; }
+            .result-head { padding: 18px; }
+            .pdf-panel { padding: 12px; }
+            .pdf-frame { height: 68vh; min-height: 360px; }
+            .actions { display: grid; grid-template-columns: 1fr; }
+            .actions .btn { width: 100%; margin: 0 !important; }
+        }
+    </style>
+</head>
+<body>
+    <main class="page-wrap">
+        <a class="top-link d-inline-flex align-items-center gap-2 mb-3" href="{% url 'home' %}">
+            <span aria-hidden="true">←</span> হোম পেজ
+        </a>
+
+        <header class="hero">
+            <div class="hero-icon" aria-hidden="true">✓</div>
+            <h1>আবেদনের বর্তমান অবস্থা</h1>
+            <p class="mb-0">আপনার Application ID এবং আবেদনে দেওয়া ইমেইল দিয়ে আবেদন ও পেমেন্টের সর্বশেষ তথ্য দেখুন।</p>
+        </header>
+
+        <section class="panel" aria-labelledby="lookup-title">
+            <h2 id="lookup-title">আবেদন খুঁজুন</h2>
+            <p class="text-secondary mb-4">ইমেইলে পাওয়া Application ID ব্যবহার করুন। আপনার তথ্য শুধু ID ও ইমেইল—দুটো মিললেই দেখানো হবে।</p>
+            <form method="post" class="row g-3">
+                {% csrf_token %}
+                <div class="col-12 col-md-6">
+                    <label class="form-label" for="applicationId">Application ID</label>
+                    <input class="form-control" id="applicationId" name="application_id"
+                           value="{{ request.POST.application_id|default:'' }}" placeholder="উদাহরণ: ADM-2027-06-0001"
+                           autocomplete="off" autocapitalize="characters" required>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label" for="applicantEmail">আবেদনে দেওয়া ইমেইল</label>
+                    <input class="form-control" id="applicantEmail" type="email" name="email"
+                           value="{{ request.POST.email|default:'' }}" placeholder="name@example.com"
+                           autocomplete="email" inputmode="email" required>
+                </div>
+                <div class="col-12 actions d-flex flex-wrap gap-2 pt-2">
+                    <button class="btn btn-primary px-4" type="submit">আবেদনের অবস্থা দেখুন</button>
+                    <a class="btn btn-outline-secondary px-4" href="{% url 'home' %}">হোম পেজে ফিরুন</a>
+                </div>
+            </form>
+
+            {% if searched and not application %}
+                <div class="not-found" role="alert">
+                    <strong>আবেদন পাওয়া যায়নি।</strong><br>
+                    Application ID ও ইমেইল ঠিকভাবে লিখেছেন কি না যাচাই করে আবার চেষ্টা করুন।
+                </div>
+            {% endif %}
+
+            {% if application %}
+                <section class="result-card" aria-live="polite" aria-labelledby="result-title">
+                    <div class="result-head">
+                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+                            <div>
+                                <h2 id="result-title" class="mb-2">আবেদনের তথ্য</h2>
+                                <span class="application-id">{{ application.application_id }}</span>
+                            </div>
+                            {% if application.status == 'APPROVED' %}
+                                <span class="status-pill status-approved"><span aria-hidden="true">●</span> {{ application.get_status_display }}</span>
+                            {% elif application.status == 'REJECTED' %}
+                                <span class="status-pill status-rejected"><span aria-hidden="true">●</span> {{ application.get_status_display }}</span>
+                            {% elif application.status == 'PENDING' %}
+                                <span class="status-pill status-pending"><span aria-hidden="true">●</span> {{ application.get_status_display }}</span>
+                            {% else %}
+                                <span class="status-pill status-default">{{ application.get_status_display }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <span class="result-label">আবেদনের অবস্থা</span>
+                            <span class="result-value">{{ application.get_status_display }}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">পেমেন্টের অবস্থা</span>
+                            <span class="result-value">{{ application.get_payment_status_display }}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">নির্ধারিত শ্রেণি</span>
+                            <span class="result-value">{{ application.get_assigned_class_display|default:'-' }}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">শাখা</span>
+                            <span class="result-value">{{ application.get_assigned_section_display|default:'-' }}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">রোল</span>
+                            <span class="result-value">{% if application.assigned_roll %}{{ application.assigned_roll|stringformat:"02d" }}{% else %}-{% endif %}</span>
+                        </div>
+                        {% if application.status == 'APPROVED' %}
+                            <div class="result-item">
+                                <span class="result-label">ভর্তি নিশ্চিত হওয়ার তারিখ</span>
+                                <span class="result-value">{{ application.admission_confirmed_at|default:'-' }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% if application.office_comment %}
+                        <div class="note"><strong>স্কুলের মন্তব্য:</strong><br>{{ application.office_comment|linebreaksbr }}</div>
+                    {% endif %}
+                    <div class="pdf-panel">
+                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-3">
+                            <div>
+                                <h3 class="h5 mb-1">আবেদন ফরমের PDF</h3>
+                                <p class="text-secondary mb-0">নিচে ফরমটি দেখুন অথবা ডাউনলোড করে রাখুন।</p>
+                            </div>
+                            <a class="btn btn-success px-4 flex-shrink-0"
+                               href="{% url 'admission_status_pdf' %}?download=1">
+                                PDF ডাউনলোড
+                            </a>
+                        </div>
+                        <iframe class="pdf-frame" src="{% url 'admission_status_pdf' %}"
+                                title="ভর্তি আবেদন ফরম PDF" loading="lazy">
+                            আপনার ব্রাউজারে PDF দেখা যাচ্ছে না। উপরের PDF ডাউনলোড বাটন ব্যবহার করুন।
+                        </iframe>
+                    </div>
+                </section>
+            {% endif %}
+        </section>
+        <p class="footer-note text-center mt-4 mb-0">আবেদন-সংক্রান্ত সহায়তার জন্য সরাসরি বিদ্যালয়ের অফিসে যোগাযোগ করুন।</p>
+    </main>
+</body>
+</html>

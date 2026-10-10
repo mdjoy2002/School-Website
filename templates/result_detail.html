@@ -168,6 +168,7 @@
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">হোম</a></li>
                         
+                        {% if admission_apply_settings %}<li class="nav-item"><a class="nav-link" href="{% url 'admission_application_form' %}"><i class="fas fa-user-plus"></i> এডমিশন আবেদন</a></li>{% endif %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="studentDropdown" data-bs-toggle="dropdown">শিক্ষার্থী কর্নার</a>
                             <ul class="dropdown-menu">
@@ -184,7 +185,9 @@
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="admissionDropdown" data-bs-toggle="dropdown">ভর্তি তথ্য</a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'admission_detail' 'form' %}">আবেদন ফরম</a></li>
+                                {% if admission_apply_settings %}<li><a class="dropdown-item" href="{% url 'admission_application_form' %}">অনলাইন ভর্তি আবেদন ফরম</a></li>{% endif %}
+                                <li><a class="dropdown-item" href="{% url 'admission_status_lookup' %}"><i class="fas fa-search me-2"></i> আবেদনের বর্তমান অবস্থা</a></li>
+                                <li><a class="dropdown-item" href="{% url 'admission_detail' 'form' %}">ফরম ডাউনলোড</a></li>
                                 <li><a class="dropdown-item" href="{% url 'admission_detail' 'guide' %}">ভর্তি নির্দেশিকা</a></li>
                                 <li><a class="dropdown-item" href="{% url 'admission_detail' 'result' %}">ভর্তির ফলাফল</a></li>
                                 <li><a class="dropdown-item" href="{% url 'admission_detail' 'fees' %}">বেতন ও ফি</a></li>

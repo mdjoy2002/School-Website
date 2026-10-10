@@ -1,5 +1,13 @@
+import json
+import mimetypes
+
 from django import forms
 from django.contrib import admin
+from django.core.exceptions import PermissionDenied
+from django.http import FileResponse, Http404
+from django.urls import path, reverse
+from django.utils.html import format_html
+from .admission_pdf import admission_pdf_download_filename, ensure_admission_pdf, generate_admission_pdf
 from .models import (
 
     Notice, TickerNews, Slider, EntryPopupImage, SchoolInfo, LeadershipProfile, CommitteeMember, AboutImage, Teacher,
@@ -7,7 +15,8 @@ from .models import (
     Notice, TickerNews, Slider, SchoolInfo, AboutImage, Teacher, 
 
     Headmaster, GeneralTeacher, Staff, GalleryCategory, GalleryImage,
-    ContactMessage, ExamRoutine, StudentCornerData, AdmissionInfo, ResultData
+    ContactMessage, ExamRoutine, StudentCornerData, AdmissionInfo, AdmissionApplication,
+    AdmissionApplySettings, ResultData
 )
 
 LEADERSHIP_PROFILE_DESIGNATIONS = {
@@ -116,6 +125,182 @@ class AdmissionInfoAdmin(admin.ModelAdmin):
     list_display = ('title', 'category', 'created_at')
     list_filter = ('category', 'created_at')
     search_fields = ('title',)
+
+
+@admin.register(AdmissionApplication)
+class AdmissionApplicationAdmin(admin.ModelAdmin):
+    list_display = (
+        'application_id', 'student_name', 'application_class', 'class_roll_number',
+        'payment_method', 'payment_amount', 'payment_status', 'status',
+        'submitted_at', 'pdf_download',
+    )
+    list_filter = ('status', 'payment_status', 'admission_class', 'academic_year', 'submitted_at')
+    search_fields = (
+        'application_id',
+        'email',
+        'application_data__student_name_bn',
+        'application_data__student_name_en',
+        'application_data__father_name_bn',
+        'application_data__father_name_en',
+        'application_data__father_name',
+        'application_data__mother_name_bn',
+        'application_data__mother_name_en',
+        'application_data__mother_name',
+        'application_data__guardian_name',
+    )
+    readonly_fields = (
+        'application_id', 'email', 'admission_class', 'academic_year',
+        'class_roll_number', 'assigned_roll', 'application_fee',
+        'payment_method_display', 'submitted_at',
+        'student_photo_preview', 'pdf_download', 'application_data_display',
+    )
+    fields = (
+        'application_id', 'status', 'payment_status', 'payment_method_display',
+        'application_fee', 'admission_class', 'academic_year', 'class_roll_number',
+        'assigned_class', 'assigned_section', 'assigned_roll', 'approver_name',
+        'admission_confirmed_at', 'office_comment', 'email', 'submitted_at',
+        'student_photo_preview', 'pdf_download', 'application_data_display',
+    )
+    date_hierarchy = 'submitted_at'
+
+    def get_urls(self):
+        custom_urls = [
+            path(
+                '<path:object_id>/download-pdf/',
+                self.admin_site.admin_view(self.download_pdf_view),
+                name='main_app_admissionapplication_download_pdf',
+            ),
+            path(
+                '<path:object_id>/student-photo/',
+                self.admin_site.admin_view(self.student_photo_view),
+                name='main_app_admissionapplication_student_photo',
+            ),
+        ]
+        return custom_urls + super().get_urls()
+
+    def download_pdf_view(self, request, object_id):
+        application = self.get_object(request, object_id)
+        if application is None:
+            raise Http404
+        if not self.has_view_or_change_permission(request, application):
+            raise PermissionDenied
+        ensure_admission_pdf(application)
+        filename = admission_pdf_download_filename(application)
+        return FileResponse(application.pdf_file.open('rb'), as_attachment=True, filename=filename)
+
+    def student_photo_view(self, request, object_id):
+        application = self.get_object(request, object_id)
+        if (
+            application is None
+            or not application.student_photo
+            or not application.student_photo.storage.exists(application.student_photo.name)
+        ):
+            raise Http404
+        if not self.has_view_or_change_permission(request, application):
+            raise PermissionDenied
+        content_type = mimetypes.guess_type(application.student_photo.name)[0] or 'application/octet-stream'
+        return FileResponse(application.student_photo.open('rb'), content_type=content_type)
+
+    @admin.display(description='শিক্ষার্থীর নাম', ordering='submitted_at')
+    def student_name(self, obj):
+        return obj.application_data.get('student_name_bn', 'নাম নেই')
+
+    @admin.display(description='শিক্ষাবর্ষ')
+    def application_year(self, obj):
+        return obj.application_data.get('academic_year', '-')
+
+    @admin.display(description='পেমেন্ট মাধ্যম')
+    def payment_method(self, obj):
+        return obj.application_data.get('payment_method_display', '-')
+
+    @admin.display(description='আবেদন ফি')
+    def payment_amount(self, obj):
+        return f"৳ {obj.application_data.get('application_fee', '0.00')}"
+
+    @admin.display(description='পেমেন্ট রেফারেন্স')
+    def payment_reference(self, obj):
+        return obj.application_data.get('payment_reference', '-')
+
+    @admin.display(description='ছবি')
+    def student_photo_preview(self, obj):
+        if not obj.student_photo:
+            return 'ছবি নেই'
+        url = reverse('admin:main_app_admissionapplication_student_photo', args=(obj.pk,))
+        return format_html(
+            '<img src="{}" alt="শিক্ষার্থীর ছবি" style="max-width: 140px; max-height: 160px;">',
+            url,
+        )
+
+    @admin.display(description='PDF ফরম')
+    def pdf_download(self, obj):
+        url = reverse('admin:main_app_admissionapplication_download_pdf', args=(obj.pk,))
+        return format_html('<a href="{}">PDF ডাউনলোড / তৈরি করুন</a>', url)
+
+    @admin.display(description='আবেদনের পূর্ণ তথ্য')
+    def application_data_display(self, obj):
+        return format_html(
+            '<pre style="white-space: pre-wrap; font-family: inherit;">{}</pre>',
+            json.dumps(obj.application_data, ensure_ascii=False, indent=2),
+        )
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.display(description='শ্রেণি')
+    def application_class(self, obj):
+        return obj.get_admission_class_display() if obj.admission_class else '-'
+
+    @admin.display(description='পেমেন্ট মাধ্যম')
+    def payment_method_display(self, obj):
+        return obj.application_data.get('payment_method_display', '-')
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        obj.application_data.update({
+            'application_id': obj.application_id,
+            'admission_class': obj.get_assigned_class_display() or obj.assigned_class,
+            'roll_no': str(obj.assigned_roll or obj.class_roll_number or ''),
+            'admission_status': obj.get_status_display(),
+            'payment_status': obj.get_payment_status_display(),
+            'assigned_class': obj.get_assigned_class_display() or obj.assigned_class,
+            'assigned_section': obj.get_assigned_section_display() or obj.assigned_section,
+            'assigned_roll': str(obj.assigned_roll or obj.class_roll_number or ''),
+            'approver_name': obj.approver_name,
+            'approval_date': obj.admission_confirmed_at.isoformat() if obj.admission_confirmed_at else '',
+            'office_comment': obj.office_comment,
+        })
+        obj.save(update_fields=['application_data'])
+        generate_admission_pdf(obj)
+
+
+@admin.register(AdmissionApplySettings)
+class AdmissionApplySettingsAdmin(admin.ModelAdmin):
+    fields = (
+        'is_active',
+        'fee_class_6',
+        'fee_class_7',
+        'fee_class_8',
+        'fee_class_9',
+        'fee_class_10',
+        'documents_class_6',
+        'documents_class_7',
+        'documents_class_8',
+        'documents_class_9',
+        'documents_class_10',
+        'bkash_enabled',
+        'bkash_number',
+        'nagad_enabled',
+        'nagad_number',
+        'in_school_enabled',
+        'payment_instructions',
+        'ticker_text',
+    )
+    def has_add_permission(self, request):
+        return not AdmissionApplySettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 # --- নতুন সংযোজন: ফলাফল তথ্য (Result Data) সেকশন ---
 @admin.register(ResultData)

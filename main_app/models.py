@@ -1,5 +1,7 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 from core.compression import CompressedUploadMixin
+from .storage import PrivateAdmissionStorage
 
 
 # ১. নোটিশ বোর্ড
@@ -99,12 +101,27 @@ class GalleryImage(CompressedUploadMixin, models.Model):
 # ৪. আমাদের সম্পর্কে ও বিদ্যালয়ের তথ্য
 class SchoolInfo(models.Model):
     title = models.CharField(max_length=200, default="আমাদের সম্পর্কে", verbose_name="শিরোনাম")
+    school_name_bangla = models.CharField(
+        max_length=255,
+        default="খন্দকার নাসের উদ্দিন মাধ্যমিক বিদ্যালয়",
+        verbose_name="স্কুলের নাম (বাংলা)",
+    )
+    school_name_english = models.CharField(
+        max_length=255,
+        default="Khondakar Naser Uddin Secondary School",
+        verbose_name="স্কুলের নাম (ইংরেজি)",
+    )
+    school_code = models.CharField(
+        max_length=50,
+        default="KNS-001",
+        verbose_name="স্কুল কোড",
+    )
     description = models.TextField(verbose_name="স্কুলের বর্ণনা/ইতিহাস")
     address = models.CharField(max_length=255, default="বয়রা, খুলনা, বাংলাদেশ", verbose_name="ঠিকানা")
     phone_main = models.CharField(max_length=20, default="+৮৮০", verbose_name="প্রধান ফোন নম্বর")
     phone_alt = models.CharField(max_length=20, blank=True, null=True, verbose_name="বিকল্প ফোন নম্বর")
     email = models.EmailField(default="info@example.com", verbose_name="অফিসিয়াল ইমেইল")
-    map_url = models.TextField(blank=True, null=True, verbose_name="গুগল ম্যাপ এমবেড লিঙ্ক (iframe code)")
+    map_url = models.TextField(blank=True, null=True, verbose_name="গুগল ম্যাপ এমবেড লিংক (iframe code)")
     facebook_url = models.URLField(blank=True, null=True, verbose_name="ফেসবুক পেজ লিঙ্ক")
     youtube_url = models.URLField(blank=True, null=True, verbose_name="ইউটিউব চ্যানেল লিঙ্ক")
     last_updated = models.DateTimeField(auto_now=True, verbose_name="সর্বশেষ আপডেট")
@@ -287,7 +304,220 @@ class AdmissionInfo(CompressedUploadMixin, models.Model):
         verbose_name_plural = "৮. ভর্তি সংক্রান্ত তথ্য (ফরম, ফলাফল ইত্যাদি)"
         ordering = ['-created_at']
 
-# ৯. ফলাফল তথ্য (Result Data)
+# ৯. ভর্তি আবেদন
+class AdmissionApplication(models.Model):
+    ADMISSION_CLASS_CHOICES = [
+        ('ষষ্ঠ', 'ষষ্ঠ'),
+        ('সপ্তম', 'সপ্তম'),
+        ('অষ্টম', 'অষ্টম'),
+        ('নবম', 'নবম'),
+        ('দশম', 'দশম'),
+    ]
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+    ]
+    PAYMENT_STATUS_CHOICES = [
+        ('PENDING', 'অপেক্ষমাণ'),
+        ('PAID', 'পরিশোধিত'),
+        ('UNPAID', 'বকেয়া'),
+        ('WAIVED', 'মওকুফ'),
+    ]
+    SECTION_CHOICES = [
+        ('ক', 'ক'),
+        ('খ', 'খ'),
+        ('গ', 'গ'),
+        ('ঘ', 'ঘ'),
+        ('A', 'A'),
+        ('B', 'B'),
+        ('C', 'C'),
+        ('D', 'D'),
+        ('OTHER', 'অন্যান্য'),
+    ]
+
+    application_id = models.CharField(max_length=32, unique=True, blank=True, null=True, verbose_name="Admission ID")
+    email = models.EmailField(blank=True, verbose_name="আবেদনকারীর ইমেইল")
+    admission_class = models.CharField(
+        max_length=20,
+        choices=ADMISSION_CLASS_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="আবেদিত শ্রেণি",
+    )
+    academic_year = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name="শিক্ষাবর্ষ")
+    class_roll_number = models.PositiveIntegerField(blank=True, null=True, verbose_name="শ্রেণিভিত্তিক আবেদন রোল")
+    application_fee = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        verbose_name="আবেদন ফি (টাকা)",
+    )
+    application_data = models.JSONField(verbose_name="আবেদনের তথ্য")
+    student_photo = models.ImageField(
+        storage=PrivateAdmissionStorage(),
+        upload_to='admission_applications/photos/',
+        verbose_name="শিক্ষার্থীর ছবি",
+    )
+    pdf_file = models.FileField(
+        storage=PrivateAdmissionStorage(),
+        upload_to='admission_applications/pdfs/',
+        blank=True,
+        verbose_name="আবেদন ফরমের PDF",
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='PENDING',
+        verbose_name="আবেদনের অবস্থা",
+    )
+    payment_status = models.CharField(
+        max_length=10,
+        choices=PAYMENT_STATUS_CHOICES,
+        default='UNPAID',
+        verbose_name="ভর্তি ফি ও পেমেন্টের অবস্থা",
+    )
+    assigned_class = models.CharField(
+        max_length=20,
+        choices=ADMISSION_CLASS_CHOICES,
+        blank=True,
+        verbose_name="নির্ধারিত শ্রেণি",
+    )
+    assigned_section = models.CharField(
+        max_length=10,
+        choices=SECTION_CHOICES,
+        blank=True,
+        verbose_name="নির্ধারিত শাখা",
+    )
+    assigned_roll = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="নির্ধারিত রোল",
+    )
+    approver_name = models.CharField(max_length=150, blank=True, verbose_name="অনুমোদনকারীর নাম")
+    admission_confirmed_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="ভর্তি নিশ্চিত হওয়ার তারিখ",
+    )
+    office_comment = models.TextField(blank=True, verbose_name="মন্তব্য")
+    submitted_at = models.DateTimeField(auto_now_add=True, verbose_name="আবেদনের সময়")
+
+    def save(self, *args, **kwargs):
+        if not self.assigned_class and self.admission_class:
+            self.assigned_class = self.admission_class
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.application_id or self.application_data.get('student_name_bn', f'আবেদন #{self.pk}')
+
+    class Meta:
+        verbose_name = "ভর্তি আবেদন"
+        verbose_name_plural = "ভর্তি আবেদনসমূহ"
+        ordering = ['-submitted_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=('admission_class', 'academic_year', 'class_roll_number'),
+                name='unique_admission_class_year_roll',
+            ),
+        ]
+
+
+class AdmissionSequence(models.Model):
+    admission_class = models.CharField(
+        max_length=20,
+        choices=AdmissionApplication.ADMISSION_CLASS_CHOICES,
+        verbose_name="শ্রেণি",
+    )
+    academic_year = models.PositiveSmallIntegerField(verbose_name="শিক্ষাবর্ষ")
+    next_application_number = models.PositiveIntegerField(default=1, verbose_name="পরবর্তী আবেদন নম্বর")
+    next_roll_number = models.PositiveIntegerField(default=1, verbose_name="পরবর্তী শ্রেণিভিত্তিক রোল")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=('admission_class', 'academic_year'),
+                name='unique_admission_sequence_class_year',
+            ),
+        ]
+        verbose_name = "ভর্তি আবেদন সিরিয়াল"
+        verbose_name_plural = "ভর্তি আবেদন সিরিয়াল"
+
+
+class AdmissionApplySettings(models.Model):
+    CLASS_FEE_FIELDS = {
+        'ষষ্ঠ': 'fee_class_6',
+        'সপ্তম': 'fee_class_7',
+        'অষ্টম': 'fee_class_8',
+        'নবম': 'fee_class_9',
+        'দশম': 'fee_class_10',
+    }
+    CLASS_DOCUMENT_FIELDS = {
+        'ষষ্ঠ': 'documents_class_6',
+        'সপ্তম': 'documents_class_7',
+        'অষ্টম': 'documents_class_8',
+        'নবম': 'documents_class_9',
+        'দশম': 'documents_class_10',
+    }
+    singleton_key = models.PositiveSmallIntegerField(
+        primary_key=True,
+        default=1,
+        editable=False,
+    )
+    is_active = models.BooleanField(default=False, verbose_name="ভর্তি আবেদন চালু আছে")
+    application_fee = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=0,
+        verbose_name="আবেদন ফি (টাকা)",
+    )
+    fee_class_6 = models.DecimalField(max_digits=8, decimal_places=2, default=0, validators=[MinValueValidator(0)], verbose_name="ষষ্ঠ শ্রেণির আবেদন ফি")
+    fee_class_7 = models.DecimalField(max_digits=8, decimal_places=2, default=0, validators=[MinValueValidator(0)], verbose_name="সপ্তম শ্রেণির আবেদন ফি")
+    fee_class_8 = models.DecimalField(max_digits=8, decimal_places=2, default=0, validators=[MinValueValidator(0)], verbose_name="অষ্টম শ্রেণির আবেদন ফি")
+    fee_class_9 = models.DecimalField(max_digits=8, decimal_places=2, default=0, validators=[MinValueValidator(0)], verbose_name="নবম শ্রেণির আবেদন ফি")
+    fee_class_10 = models.DecimalField(max_digits=8, decimal_places=2, default=0, validators=[MinValueValidator(0)], verbose_name="দশম শ্রেণির আবেদন ফি")
+    documents_class_6 = models.TextField(blank=True, verbose_name="ষষ্ঠ শ্রেণির প্রয়োজনীয় কাগজপত্র (প্রতি লাইনে একটি)")
+    documents_class_7 = models.TextField(blank=True, verbose_name="সপ্তম শ্রেণির প্রয়োজনীয় কাগজপত্র (প্রতি লাইনে একটি)")
+    documents_class_8 = models.TextField(blank=True, verbose_name="অষ্টম শ্রেণির প্রয়োজনীয় কাগজপত্র (প্রতি লাইনে একটি)")
+    documents_class_9 = models.TextField(blank=True, verbose_name="নবম শ্রেণির প্রয়োজনীয় কাগজপত্র (প্রতি লাইনে একটি)")
+    documents_class_10 = models.TextField(blank=True, verbose_name="দশম শ্রেণির প্রয়োজনীয় কাগজপত্র (প্রতি লাইনে একটি)")
+    bkash_enabled = models.BooleanField(default=True, verbose_name="বিকাশ পেমেন্ট চালু")
+    bkash_number = models.CharField(max_length=30, blank=True, verbose_name="বিকাশ নম্বর")
+    nagad_enabled = models.BooleanField(default=True, verbose_name="নগদ পেমেন্ট চালু")
+    nagad_number = models.CharField(max_length=30, blank=True, verbose_name="নগদ নম্বর")
+    in_school_enabled = models.BooleanField(default=True, verbose_name="স্কুলে পেমেন্ট চালু")
+    payment_instructions = models.TextField(blank=True, verbose_name="পেমেন্ট নির্দেশনা")
+    ticker_text = models.CharField(
+        max_length=200,
+        default="অনলাইন ভর্তি আবেদন চলছে — আবেদন করতে এখানে ক্লিক করুন",
+        verbose_name="নিউজ টিকারের লেখা",
+    )
+
+    def fee_for_class(self, admission_class):
+        field_name = self.CLASS_FEE_FIELDS.get(admission_class)
+        return getattr(self, field_name) if field_name else 0
+
+    def documents_for_class(self, admission_class):
+        field_name = self.CLASS_DOCUMENT_FIELDS.get(admission_class)
+        if not field_name:
+            return []
+        lines = getattr(self, field_name).splitlines()
+        return list(dict.fromkeys(line.strip() for line in lines if line.strip()))
+
+    def save(self, *args, **kwargs):
+        self.singleton_key = 1
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return "Admission apply"
+
+    class Meta:
+        verbose_name = "Admission apply"
+        verbose_name_plural = "Admission apply"
+
+
+# ১০. ফলাফল তথ্য (Result Data)
 class ResultData(CompressedUploadMixin, models.Model):
     CATEGORY_CHOICES = [
         ('public', 'পাবলিক পরীক্ষার ফলাফল'),

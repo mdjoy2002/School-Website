@@ -1,17 +1,29 @@
 import os
+import re
 import tempfile
 from io import BytesIO
 
 from django.contrib.auth import get_user_model
+from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.shortcuts import render
-from django.test import SimpleTestCase, TestCase, override_settings
+from django.test import Client, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from PIL import Image
 
 from core.compression import compress_image_field
 from main_app.admin import LeadershipProfileForm
-from main_app.models import CommitteeMember, EntryPopupImage, GalleryCategory, GalleryImage, LeadershipProfile, Notice
+from main_app.models import (
+    AdmissionApplication,
+    AdmissionApplySettings,
+    AdmissionSequence,
+    CommitteeMember,
+    EntryPopupImage,
+    GalleryCategory,
+    GalleryImage,
+    LeadershipProfile,
+    Notice,
+)
 
 
 def home(request):
@@ -33,6 +45,481 @@ class CompressionTests(SimpleTestCase):
         compress_image_field(uploaded_file)
 
         self.assertTrue(uploaded_file.name)
+
+
+class AdmissionApplicationTests(TestCase):
+    def test_admission_application_is_closed_by_default(self):
+        response = self.client.get(reverse('admission_application_form'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'বর্তমানে অনলাইন ভর্তি আবেদন গ্রহণ বন্ধ আছে')
+        self.assertNotContains(response, 'ফরম জমা দিন')
+
+    def test_admin_can_configure_and_activate_admission(self):
+        user = get_user_model().objects.create_superuser(
+            'settings_admin',
+            'settings@example.com',
+            'secret123',
+        )
+        self.client.force_login(user)
+        settings_url = reverse('admin:main_app_admissionapplysettings_add')
+        response = self.client.post(
+            settings_url,
+            {
+                'is_active': 'on',
+                'fee_class_6': '250.00',
+                'fee_class_7': '200.00',
+                'fee_class_8': '200.00',
+                'fee_class_9': '300.00',
+                'fee_class_10': '300.00',
+                'documents_class_6': 'জন্মনিবন্ধন সনদ\nমার্কশিট',
+                'documents_class_7': 'জন্মনিবন্ধন সনদ\nবার্ষিক পরীক্ষার ফলাফল',
+                'bkash_enabled': 'on',
+                'bkash_number': '01700000000',
+                'nagad_enabled': 'on',
+                'nagad_number': '01800000000',
+                'in_school_enabled': 'on',
+                'payment_instructions': 'পেমেন্টের পর রেফারেন্স দিন',
+                'ticker_text': '২০২৭ শিক্ষাবর্ষে ভর্তি চলছে',
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        settings = AdmissionApplySettings.objects.get()
+        self.assertTrue(settings.is_active)
+        self.assertEqual(settings.fee_class_6, 250)
+        self.assertEqual(settings.documents_for_class('ষষ্ঠ'), ['জন্মনিবন্ধন সনদ', 'মার্কশিট'])
+        self.assertEqual(settings.documents_for_class('সপ্তম'), ['জন্মনিবন্ধন সনদ', 'বার্ষিক পরীক্ষার ফলাফল'])
+        self.assertEqual(settings.bkash_number, '01700000000')
+        self.assertEqual(settings.nagad_number, '01800000000')
+        form_response = self.client.get(reverse('admission_application_form'))
+        self.assertContains(form_response, 'id="admissionClass"')
+        self.assertContains(form_response, '250.00')
+        self.assertEqual(
+            self.client.get(reverse('admin:main_app_admissionapplysettings_changelist')).status_code,
+            200,
+        )
+
+        response = self.client.post(
+            reverse('admin:main_app_admissionapplysettings_change', args=[settings.pk]),
+            {
+                'fee_class_6': '250.00',
+                'fee_class_7': '200.00',
+                'fee_class_8': '200.00',
+                'fee_class_9': '300.00',
+                'fee_class_10': '300.00',
+                'documents_class_6': 'জন্মনিবন্ধন সনদ\nমার্কশিট',
+                'documents_class_7': 'জন্মনিবন্ধন সনদ\nবার্ষিক পরীক্ষার ফলাফল',
+                'bkash_enabled': 'on',
+                'bkash_number': '01700000000',
+                'nagad_enabled': 'on',
+                'nagad_number': '01800000000',
+                'in_school_enabled': 'on',
+                'payment_instructions': 'পেমেন্টের পর রেফারেন্স দিন',
+                'ticker_text': '২০২৭ শিক্ষাবর্ষে ভর্তি চলছে',
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        settings.refresh_from_db()
+        self.assertFalse(settings.is_active)
+
+    def test_student_form_shows_configured_documents_for_selected_class(self):
+        AdmissionApplySettings.objects.create(
+            is_active=True,
+            documents_class_6='জন্মনিবন্ধন সনদ\nমার্কশিট',
+            documents_class_7='জন্মনিবন্ধন সনদ\nবার্ষিক পরীক্ষার ফলাফল',
+        )
+
+        response = self.client.get(reverse('admission_application_form'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class-documents-data')
+        self.assertContains(response, "checkbox.name = 'submitted_documents'")
+        self.assertContains(response, 'খন্দকার নাসের উদ্দীন মাধ্যমিক বিদ্যালয়')
+        self.assertContains(response, 'Khondoker Naser Uddin High School')
+        self.assertContains(response, 'হাজী ফয়েজ উদ্দীন ক্রস রোড')
+        self.assertContains(response, 'বিদ্যালয় কোডঃ ৩৫৭৪')
+        self.assertContains(response, 'EIIN: 117407')
+        self.assertContains(response, 'প্রধান শিক্ষকের স্বাক্ষর')
+        self.assertContains(response, 'শিক্ষাই জাতির মেরুদন্ড')
+        self.assertNotContains(response, '৮. অন্যান্য তথ্য')
+        self.assertEqual(
+            response.context['document_options'],
+            {
+                'ষষ্ঠ': ['জন্মনিবন্ধন সনদ', 'মার্কশিট'],
+                'সপ্তম': ['জন্মনিবন্ধন সনদ', 'বার্ষিক পরীক্ষার ফলাফল'],
+                'অষ্টম': [],
+                'নবম': [],
+                'দশম': [],
+            },
+        )
+
+    def test_active_admission_is_shown_in_navigation_and_news_ticker(self):
+        AdmissionApplySettings.objects.create(
+            is_active=True,
+            ticker_text='২০২৭ শিক্ষাবর্ষে ভর্তি চলছে',
+        )
+
+        response = self.client.get(reverse('home'))
+
+        self.assertContains(response, '২০২৭ শিক্ষাবর্ষে ভর্তি চলছে')
+        self.assertContains(response, 'এডমিশন আবেদন')
+        self.assertContains(response, reverse('admission_application_form'))
+        self.assertContains(response, reverse('admission_status_lookup'))
+        application_form = self.client.get(reverse('admission_application_form'))
+        self.assertContains(application_form, reverse('home'))
+        self.assertContains(application_form, 'হোম পেজে ফিরে যান')
+
+        AdmissionApplySettings.objects.update(is_active=False)
+        inactive_response = self.client.get(reverse('home'))
+        self.assertNotContains(inactive_response, '২০২৭ শিক্ষাবর্ষে ভর্তি চলছে')
+        self.assertNotContains(inactive_response, 'এডমিশন আবেদন')
+
+    def test_online_payment_requires_reference_and_disabled_methods_are_rejected(self):
+        AdmissionApplySettings.objects.create(
+            is_active=True,
+            fee_class_6='250.00',
+            bkash_enabled=True,
+            nagad_enabled=False,
+            in_school_enabled=True,
+        )
+        application_data = {
+            'student_name_bn': 'পরীক্ষার্থী',
+            'student_name_en': 'Test Student',
+            'date_of_birth': '2012-01-02',
+            'birth_reg_no': '1234567890',
+            'gender': 'ছেলে',
+            'nationality': 'বাংলাদেশি',
+            'email': 'applicant@example.com',
+            'admission_class': 'ষষ্ঠ',
+            'academic_year': '2027',
+            'guardian_mobile': '০১৭১৪৯৩৯১২২',
+        }
+
+        response = self.client.post(
+            reverse('admission_application_form'),
+            {**application_data, 'payment_method': 'bkash'},
+        )
+        self.assertContains(response, 'Transaction ID / রেফারেন্স নম্বর দিন')
+        self.assertFalse(AdmissionApplication.objects.exists())
+
+        response = self.client.post(
+            reverse('admission_application_form'),
+            {
+                **application_data,
+                'payment_method': 'nagad',
+                'payment_reference': 'TEST-123',
+            },
+        )
+        self.assertContains(response, 'চালু থাকা একটি বৈধ পেমেন্ট মাধ্যম')
+        self.assertFalse(AdmissionApplication.objects.exists())
+
+    def test_student_photo_over_300_kb_is_rejected(self):
+        AdmissionApplySettings.objects.create(is_active=True, in_school_enabled=True)
+        response = self.client.post(
+            reverse('admission_application_form'),
+            data={
+                'student_name_bn': 'পরীক্ষার্থী',
+                'student_name_en': 'Test Student',
+                'date_of_birth': '2012-01-02',
+                'birth_reg_no': '1234567890',
+                'gender': 'ছেলে',
+                'nationality': 'বাংলাদেশি',
+                'father_name_bn': 'আব্দুল করিম',
+                'father_name_en': 'Abdul Karim',
+                'mother_name_bn': 'রহিমা খাতুন',
+                'mother_name_en': 'Rahima Khatun',
+                'email': 'applicant@example.com',
+                'admission_class': 'ষষ্ঠ',
+                'academic_year': '2027',
+                'payment_method': 'in_school',
+                'student_photo': SimpleUploadedFile(
+                    'student.jpg',
+                    b'x' * (300 * 1024 + 1),
+                    content_type='image/jpeg',
+                ),
+            },
+        )
+
+        self.assertContains(response, 'ছবির আকার ৩০০ KB-এর মধ্যে হতে হবে')
+        self.assertFalse(AdmissionApplication.objects.exists())
+
+    def test_applications_get_sequential_class_and_year_rolls(self):
+        AdmissionApplySettings.objects.create(is_active=True, in_school_enabled=True)
+        with tempfile.TemporaryDirectory() as media_root, override_settings(
+            MEDIA_ROOT=media_root,
+            EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+        ):
+            for index in range(2):
+                image_buffer = BytesIO()
+                Image.new('RGB', (24, 32), color='white').save(image_buffer, format='JPEG')
+                response = self.client.post(
+                    reverse('admission_application_form'),
+                    data={
+                        'student_name_bn': f'পরীক্ষার্থী {index}',
+                        'student_name_en': f'Test Student {index}',
+                        'date_of_birth': '2012-01-02',
+                        'birth_reg_no': f'123456789{index}',
+                        'gender': 'ছেলে',
+                        'nationality': 'বাংলাদেশি',
+                        'father_name_bn': 'আব্দুল করিম',
+                        'father_name_en': 'Abdul Karim',
+                        'mother_name_bn': 'রহিমা খাতুন',
+                        'mother_name_en': 'Rahima Khatun',
+                        'email': f'applicant{index}@example.com',
+                        'guardian_mobile': '01714939122',
+                        'admission_class': 'ষষ্ঠ',
+                        'academic_year': '2027',
+                        'payment_method': 'in_school',
+                        'student_photo': SimpleUploadedFile(
+                            f'student-{index}.jpg',
+                            image_buffer.getvalue(),
+                            content_type='image/jpeg',
+                        ),
+                    },
+                )
+                self.assertRedirects(response, reverse('admission_application_print'))
+
+            applications = list(
+                AdmissionApplication.objects.order_by('class_roll_number')
+            )
+            self.assertEqual(
+                [application.application_id for application in applications],
+                [
+                    'KNU-01714939122-2027-06-0001',
+                    'KNU-01714939122-2027-06-0002',
+                ],
+            )
+            self.assertEqual(
+                [application.class_roll_number for application in applications],
+                [1, 2],
+            )
+            sequence = AdmissionSequence.objects.get(admission_class='ষষ্ঠ', academic_year=2027)
+            self.assertEqual(sequence.next_application_number, 3)
+            self.assertEqual(sequence.next_roll_number, 3)
+
+    def test_submission_is_saved_as_pdf_and_visible_in_admin(self):
+        AdmissionApplySettings.objects.create(
+            is_active=True,
+            fee_class_6='250.00',
+            documents_class_6='জন্মনিবন্ধন সনদ\nমার্কশিট\nছাড়পত্র (TC)',
+            bkash_enabled=True,
+            nagad_enabled=False,
+            in_school_enabled=True,
+        )
+        user = get_user_model().objects.create_superuser(
+            'admission_admin',
+            'admission@example.com',
+            'secret123',
+        )
+        image_buffer = BytesIO()
+        Image.new('RGB', (48, 64), color='white').save(image_buffer, format='JPEG')
+        uploaded_photo = SimpleUploadedFile(
+            'student.jpg',
+            image_buffer.getvalue(),
+            content_type='image/jpeg',
+        )
+
+        with tempfile.TemporaryDirectory() as media_root, override_settings(
+            MEDIA_ROOT=media_root,
+            EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+        ):
+            response = self.client.post(
+                reverse('admission_application_form'),
+                data={
+                    'student_name_bn': 'পরীক্ষার্থী',
+                    'student_name_en': 'Test Student',
+                    'date_of_birth': '2012-01-02',
+                    'birth_reg_no': '1234567890',
+                    'gender': 'ছেলে',
+                    'nationality': 'বাংলাদেশি',
+                    'father_name_bn': 'আব্দুল করিম',
+                    'father_name_en': 'Abdul Karim',
+                    'mother_name_bn': 'রহিমা খাতুন',
+                    'mother_name_en': 'Rahima Khatun',
+                    'guardian_mobile': '০১৭১৪৯৩৯১২২',
+                    'email': 'applicant@example.com',
+                    'admission_class': 'ষষ্ঠ',
+                    'academic_year': '2027',
+                    'submitted_documents': ['জন্মনিবন্ধন সনদ', 'মার্কশিট', 'অন্য একটি অগ্রহণযোগ্য কাগজ'],
+                    'payment_method': 'bkash',
+                    'payment_reference': 'TXN-123456',
+                    'admission_id': 'UNTRUSTED',
+                    'student_photo': uploaded_photo,
+                },
+            )
+            self.assertRedirects(response, reverse('admission_application_print'))
+
+            application = AdmissionApplication.objects.get()
+            self.addCleanup(application.student_photo.delete, save=False)
+            self.addCleanup(application.pdf_file.delete, save=False)
+            self.assertEqual(application.application_data['student_name_bn'], 'পরীক্ষার্থী')
+            self.assertEqual(application.application_data['attached_documents'], ['জন্মনিবন্ধন সনদ', 'মার্কশিট'])
+            self.assertEqual(application.application_data['payment_method'], 'bkash')
+            self.assertEqual(application.application_data['application_fee'], '250.00')
+            self.assertEqual(application.application_fee, 250)
+            self.assertEqual(application.application_id, 'KNU-01714939122-2027-06-0001')
+            self.assertEqual(application.class_roll_number, 1)
+            self.assertEqual(application.assigned_roll, 1)
+            self.assertEqual(len(mail.outbox), 1)
+            self.assertEqual(mail.outbox[0].to, ['applicant@example.com'])
+            self.assertEqual(mail.outbox[0].from_email, 'imtiazsarderjoy@gmail.com')
+            self.assertIn(application.application_id, mail.outbox[0].body)
+            self.assertEqual(application.application_data['payment_reference'], 'TXN-123456')
+            self.assertEqual(application.application_data['father_name_bn'], 'আব্দুল করিম')
+            self.assertEqual(application.application_data['father_name_en'], 'Abdul Karim')
+            self.assertEqual(application.application_data['mother_name_bn'], 'রহিমা খাতুন')
+            self.assertEqual(application.application_data['mother_name_en'], 'Rahima Khatun')
+            self.assertNotIn('admission_id', application.application_data)
+            with application.pdf_file.open('rb') as pdf:
+                pdf_content = pdf.read()
+            self.assertTrue(pdf_content.startswith(b'%PDF-'))
+            self.assertIn(b'Kalpurush', pdf_content)
+            media_boxes = re.findall(rb'/MediaBox\s*\[([^\]]+)\]', pdf_content)
+            self.assertTrue(media_boxes)
+            for media_box in media_boxes:
+                self.assertRegex(
+                    media_box.decode('ascii'),
+                    r'\s*0\s+0\s+595\.2756\s+841\.8898\s*',
+                )
+            print_view = self.client.get(reverse('admission_application_print'))
+            self.assertContains(print_view, reverse('admission_application_download_pdf'))
+            self.assertContains(print_view, reverse('admission_application_student_photo'))
+            self.assertContains(print_view, 'পিতার পূর্ণ নাম (বাংলা)')
+            self.assertContains(print_view, 'Abdul Karim')
+            self.assertContains(print_view, 'রহিমা খাতুন')
+            self.assertContains(print_view, application.application_id)
+            self.assertContains(print_view, 'জন্মনিবন্ধন সনদ')
+            self.assertContains(print_view, 'Khondoker Naser Uddin High School')
+            self.assertContains(print_view, 'হাজী ফয়েজ উদ্দীন ক্রস রোড')
+            self.assertContains(print_view, 'পোস্টঃ জিপিও-৯০০০, থানাঃ সোনাডাঙ্গা, জেলাঃ খুলনা')
+            self.assertContains(print_view, 'মোবাঃ ০১৩০৯১১৭৪০৭, ০১৭১৪৯৩৯১২২')
+            self.assertContains(print_view, 'বিদ্যালয় কোডঃ ৩৫৭৪')
+            self.assertContains(print_view, 'EIIN: 117407')
+            self.assertContains(print_view, 'প্রধান শিক্ষকের স্বাক্ষর')
+            self.assertContains(print_view, 'শিক্ষাই জাতির মেরুদন্ড')
+            self.assertNotContains(print_view, '৮. অন্যান্য তথ্য')
+            public_pdf = self.client.get(reverse('admission_application_download_pdf'))
+            self.assertEqual(public_pdf.status_code, 200)
+            self.assertIn('test-student-class-6-2027.pdf', public_pdf['Content-Disposition'])
+            public_pdf.close()
+            self.assertEqual(Client().get(reverse('admission_application_download_pdf')).status_code, 404)
+
+            self.client.force_login(user)
+            listing = self.client.get(reverse('admin:main_app_admissionapplication_changelist'))
+            detail = self.client.get(
+                reverse('admin:main_app_admissionapplication_change', args=[application.pk])
+            )
+            photo = self.client.get(
+                reverse('admin:main_app_admissionapplication_student_photo', args=[application.pk])
+            )
+            photo_content = b''.join(photo.streaming_content)
+            photo.close()
+
+            self.assertEqual(listing.status_code, 200)
+            self.assertContains(listing, 'পরীক্ষার্থী')
+            self.assertEqual(detail.status_code, 200)
+            self.assertContains(detail, 'জন্মনিবন্ধন সনদ')
+            self.assertContains(detail, 'name="payment_status"')
+            self.assertContains(detail, 'name="approver_name"')
+            original_pdf_name = application.pdf_file.name
+            updated = self.client.post(
+                reverse('admin:main_app_admissionapplication_change', args=[application.pk]),
+                {
+                    'status': 'APPROVED',
+                    'payment_status': 'PAID',
+                    'assigned_class': 'ষষ্ঠ',
+                    'assigned_section': 'ক',
+                    'approver_name': 'প্রধান শিক্ষক',
+                    'admission_confirmed_at': '2027-01-15',
+                    'office_comment': 'ভর্তি অনুমোদিত',
+                },
+                follow=True,
+            )
+            self.assertEqual(updated.status_code, 200)
+            application.refresh_from_db()
+            self.assertEqual(application.status, 'APPROVED')
+            self.assertEqual(application.payment_status, 'PAID')
+            self.assertIn('ভর্তি অনুমোদিত', application.application_data['office_comment'])
+            self.assertTrue(application.pdf_file.name.rsplit('/', 1)[-1].startswith('admission-application-v9-'))
+            self.assertNotEqual(application.pdf_file.name, original_pdf_name)
+            download = self.client.get(
+                reverse('admin:main_app_admissionapplication_download_pdf', args=[application.pk])
+            )
+            downloaded_pdf = b''.join(download.streaming_content)
+            download.close()
+            self.assertEqual(download.status_code, 200)
+            self.assertEqual(download['Content-Type'], 'application/pdf')
+            self.assertIn('test-student-class-6-2027.pdf', download['Content-Disposition'])
+            self.assertTrue(downloaded_pdf.startswith(b'%PDF-'))
+            self.assertEqual(photo['Content-Type'], 'image/jpeg')
+            self.assertTrue(photo_content)
+
+            application.pdf_file.delete(save=True)
+            application.pdf_file.save(
+                'admission-application-old-layout.pdf',
+                SimpleUploadedFile(
+                    'admission-application-old-layout.pdf',
+                    b'%PDF-obsolete',
+                    content_type='application/pdf',
+                ),
+                save=True,
+            )
+            upgraded = self.client.get(
+                reverse('admin:main_app_admissionapplication_download_pdf', args=[application.pk])
+            )
+            upgraded_pdf = b''.join(upgraded.streaming_content)
+            upgraded.close()
+            application.refresh_from_db()
+            self.assertTrue(upgraded_pdf.startswith(b'%PDF-'))
+            self.assertTrue(application.pdf_file.name.rsplit('/', 1)[-1].startswith('admission-application-v9-'))
+
+            application.pdf_file.delete(save=True)
+            application.student_photo.delete(save=True)
+            missing_photo = self.client.get(
+                reverse('admin:main_app_admissionapplication_student_photo', args=[application.pk])
+            )
+            self.assertEqual(missing_photo.status_code, 404)
+            regenerated = self.client.get(
+                reverse('admin:main_app_admissionapplication_download_pdf', args=[application.pk])
+            )
+            regenerated_pdf = b''.join(regenerated.streaming_content)
+            regenerated.close()
+            application.refresh_from_db()
+            self.assertEqual(regenerated.status_code, 200)
+            self.assertTrue(regenerated_pdf.startswith(b'%PDF-'))
+            self.assertTrue(application.pdf_file.storage.exists(application.pdf_file.name))
+
+            status_response = self.client.post(
+                reverse('admission_status_lookup'),
+                {'application_id': application.application_id, 'email': application.email},
+            )
+            self.assertContains(status_response, application.application_id)
+            self.assertContains(status_response, 'ভর্তি অনুমোদিত')
+            self.assertContains(status_response, 'result-grid')
+            self.assertContains(status_response, 'আবেদনের বর্তমান অবস্থা')
+            self.assertContains(status_response, reverse('admission_status_pdf'))
+            status_pdf = self.client.get(reverse('admission_status_pdf'))
+            status_pdf_bytes = b''.join(status_pdf.streaming_content)
+            status_pdf.close()
+            self.assertEqual(status_pdf.status_code, 200)
+            self.assertEqual(status_pdf['Content-Type'], 'application/pdf')
+            self.assertIn('inline', status_pdf['Content-Disposition'])
+            self.assertTrue(status_pdf_bytes.startswith(b'%PDF-'))
+            status_pdf_download = self.client.get(
+                reverse('admission_status_pdf'),
+                {'download': '1'},
+            )
+            self.assertIn('attachment', status_pdf_download['Content-Disposition'])
+            self.assertIn('test-student-class-6-2027.pdf', status_pdf_download['Content-Disposition'])
+            status_pdf_download.close()
+            private_status_response = self.client.post(
+                reverse('admission_status_lookup'),
+                {'application_id': application.application_id, 'email': 'wrong@example.com'},
+            )
+            self.assertContains(private_status_response, 'আবেদন পাওয়া যায়নি')
+            self.assertNotContains(private_status_response, 'ভর্তি অনুমোদিত')
+            self.assertEqual(self.client.get(reverse('admission_status_pdf')).status_code, 404)
 
 
 class MediaServingTests(SimpleTestCase):

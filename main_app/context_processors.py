@@ -4,12 +4,13 @@ from django.db.models import Sum
 from django.utils import timezone
 
 def ticker_context(request):
-    from .models import TickerNews, Notice, ExamRoutine
+    from .models import TickerNews, Notice, ExamRoutine, AdmissionApplySettings
 
     return {
         'database_tickers': TickerNews.objects.filter(is_active=True).order_by('-created_at'),
         'ticker_notices': Notice.objects.filter(is_active=True, show_on_ticker=True).order_by('-created_at'),
         'ticker_routines': ExamRoutine.objects.filter(show_on_ticker=True).order_by('-created_at'),
+        'admission_apply_settings': AdmissionApplySettings.objects.filter(is_active=True).first(),
     }
 
 
