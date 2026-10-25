@@ -29,13 +29,14 @@ class VisitorTrackingMiddleware:
         response = self.get_response(request)
 
         visitor_uuid = getattr(request, '_visitor_uuid', None)
-        if visitor_uuid and not request.COOKIES.get(self.COOKIE_NAME):
+        if visitor_uuid:
             response.set_cookie(
                 self.COOKIE_NAME,
                 visitor_uuid,
                 max_age=self.COOKIE_MAX_AGE,
                 samesite=self.COOKIE_SAMESITE,
                 httponly=self.COOKIE_HTTPONLY,
+                secure=request.is_secure(),
             )
         return response
 
@@ -45,7 +46,7 @@ class VisitorTrackingMiddleware:
 
         if request.path.startswith(settings.STATIC_URL) or request.path.startswith(settings.MEDIA_URL):
             return None
-        if request.path.startswith('/admin/'):
+        if request.path.startswith(('/admin/', '/knu2026/')):
             return None
 
         session_key = request.session.session_key
@@ -54,8 +55,9 @@ class VisitorTrackingMiddleware:
             session_key = request.session.session_key
 
         ip_address = self.get_client_ip(request)
-        visitor_uuid = request.COOKIES.get(self.COOKIE_NAME)
-        if not visitor_uuid:
+        try:
+            visitor_uuid = str(uuid.UUID(request.COOKIES.get(self.COOKIE_NAME, '')))
+        except ValueError:
             visitor_uuid = str(uuid.uuid4())
             request._visitor_uuid = visitor_uuid
 
@@ -70,13 +72,12 @@ class VisitorTrackingMiddleware:
         profile.save(update_fields=['ip_address', 'last_visit'])
 
         today = timezone.localdate()
-        if not DailyVisitor.objects.filter(date=today, ip_address=ip_address, session_key=session_key).exists():
-            DailyVisitor.objects.create(
-                date=today,
-                ip_address=ip_address,
-                session_key=session_key,
-                visitor_profile=profile,
-            )
+        DailyVisitor.objects.get_or_create(
+            date=today,
+            ip_address=ip_address,
+            session_key=session_key,
+            defaults={'visitor_profile': profile},
+        )
 
         request.visitor_profile = profile
         return None

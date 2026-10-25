@@ -38,8 +38,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
 
-    # Temporarily disabled for testing
-    # 'main_app.middleware.VisitorTrackingMiddleware',
+    'main_app.middleware.VisitorTrackingMiddleware',
 
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -66,8 +65,7 @@ TEMPLATES = [
                 'main_app.context_processors.ticker_context',
                 'main_app.context_processors.site_status_context',
 
-                # Temporarily disabled for testing
-                # 'main_app.context_processors.visitor_counts',
+                'main_app.context_processors.visitor_counts',
             ],
         },
     },

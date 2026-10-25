@@ -18,16 +18,75 @@ from main_app.models import (
     AdmissionApplySettings,
     AdmissionSequence,
     CommitteeMember,
+    DailyVisitor,
     EntryPopupImage,
     GalleryCategory,
     GalleryImage,
     LeadershipProfile,
     Notice,
+    VisitorProfile,
 )
 
 
 def home(request):
     return render(request, 'index.html')
+
+
+class VisitorTrackingTests(TestCase):
+    def test_counts_unique_visitors_and_new_visitors(self):
+        first_response = self.client.get(reverse('home'))
+
+        self.assertEqual(first_response.status_code, 200)
+        self.assertEqual(first_response.context['visitor_counts'], {
+            'today': 1,
+            'total': 1,
+            'new': 1,
+        })
+        self.assertEqual(VisitorProfile.objects.count(), 1)
+        self.assertEqual(DailyVisitor.objects.count(), 1)
+
+        repeated_response = self.client.get(reverse('home'))
+
+        self.assertEqual(repeated_response.context['visitor_counts'], {
+            'today': 1,
+            'total': 1,
+            'new': 1,
+        })
+        self.assertEqual(DailyVisitor.objects.count(), 1)
+
+        returning_browser = Client()
+        returning_browser.cookies['visitor_uuid'] = self.client.cookies['visitor_uuid'].value
+        returning_response = returning_browser.get(reverse('home'))
+
+        self.assertEqual(returning_response.context['visitor_counts'], {
+            'today': 1,
+            'total': 1,
+            'new': 1,
+        })
+
+        second_client = Client()
+        second_response = second_client.get(reverse('home'))
+
+        self.assertEqual(second_response.context['visitor_counts'], {
+            'today': 2,
+            'total': 2,
+            'new': 2,
+        })
+
+    def test_replaces_invalid_visitor_cookie(self):
+        self.client.cookies['visitor_uuid'] = 'not-a-uuid'
+
+        response = self.client.get(reverse('home'))
+
+        replacement_uuid = response.cookies['visitor_uuid'].value
+        self.assertNotEqual(replacement_uuid, 'not-a-uuid')
+        self.assertEqual(VisitorProfile.objects.get().visitor_uuid, replacement_uuid)
+
+    def test_admin_requests_are_not_counted(self):
+        response = self.client.get('/knu2026/')
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(VisitorProfile.objects.count(), 0)
 
 
 class CompressionTests(SimpleTestCase):

@@ -27,14 +27,19 @@ def visitor_counts(request):
     from .models import DailyVisitor, VisitorProfile
 
     today = timezone.localdate()
-    today_count = DailyVisitor.objects.filter(date=today).count()
-    total_count = DailyVisitor.objects.count()
-    unique_count = VisitorProfile.objects.count()
+    today_count = (
+        DailyVisitor.objects.filter(date=today)
+        .values('visitor_profile_id')
+        .distinct()
+        .count()
+    )
+    total_count = VisitorProfile.objects.count()
+    new_count = VisitorProfile.objects.filter(first_visit__date=today).count()
 
     return {
         'visitor_counts': {
             'today': today_count,
             'total': total_count,
-            'unique': unique_count,
+            'new': new_count,
         }
     }
