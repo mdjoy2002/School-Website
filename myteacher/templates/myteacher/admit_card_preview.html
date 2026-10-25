@@ -42,7 +42,7 @@
                         <td>{{ rt.exam_date|date:'d-m-Y' }}</td>
                         <td>{{ rt.exam_date|date:'D' }}</td>
                         <td>{{ rt.subject_code|default:'-' }}</td>
-                        <td>{{ rt.subject_name }}</td>
+                        <td>{{ rt.display_subject_name|default:rt.subject_name }}</td>
                         <td>{{ rt.exam_time }}</td>
                     </tr>
                 {% empty %}

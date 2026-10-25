@@ -53,14 +53,17 @@ class StudentPortalTests(TestCase):
         self.assertEqual(setting.display_name, 'Class 6 • Half Yearly • 2026')
 
     def test_admit_card_routines_only_include_students_religious_subject(self):
-        for subject_name, religion, subject_code in (
-            ('Islamic Studies', 'Islam', 'IS101'),
-            ('Hindu Religious Studies', 'Hindu', 'HR101'),
+        for subject_name, religion, subject_code, subject_type in (
+            ('Islamic Studies', 'Islam', 'IS101', '0'),
+            ('Hindu Religious Studies', 'Hindu', 'HR101', '0'),
+            ('English', 'None', 'E101', '1'),
+            ('English', 'None', 'E102', '2'),
+            ('Optional Subject', 'None', 'O401', '4'),
         ):
             Subject.objects.create(
                 subject_name=subject_name,
                 subject_code=subject_code,
-                subject_type='0',
+                subject_type=subject_type,
                 religion=religion,
                 class_level='6',
             )
@@ -89,11 +92,23 @@ class StudentPortalTests(TestCase):
             religion='Hindu',
         )
 
+        muslim_subjects = {
+            routine.display_subject_name for routine in self.student.get_routines()
+        }
+        hindu_subjects = {
+            routine.display_subject_name for routine in hindu_student.get_routines()
+        }
+        expected_common_subjects = {
+            'English 1st',
+            'English 2nd',
+            'Optional Subject (4th Subject)',
+        }
+
         self.assertEqual(
-            [routine.subject_name for routine in self.student.get_routines()],
-            ['Islamic Studies'],
+            muslim_subjects,
+            expected_common_subjects | {'Islamic Studies'},
         )
         self.assertEqual(
-            [routine.subject_name for routine in hindu_student.get_routines()],
-            ['Hindu Religious Studies'],
+            hindu_subjects,
+            expected_common_subjects | {'Hindu Religious Studies'},
         )

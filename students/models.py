@@ -191,24 +191,29 @@ class Student(models.Model):
             class_level=self.current_class,
             subject_name__in={routine.subject_name for routine in routine_rows},
         )
-        religions_by_subject = {}
-        for subject in subjects:
-            religions_by_subject.setdefault((subject.subject_name, subject.subject_code), set()).add(
-                subject.effective_religion
-            )
-            religions_by_subject.setdefault((subject.subject_name, None), set()).add(
-                subject.effective_religion
-            )
-
         matching_routine_ids = []
         for routine in routine_rows:
+            matching_subjects = [
+                subject for subject in subjects
+                if subject.subject_name == routine.subject_name
+            ]
+            exact_code_subjects = [
+                subject for subject in matching_subjects
+                if subject.subject_code == routine.subject_code
+            ]
+            if exact_code_subjects:
+                matching_subjects = exact_code_subjects
+            group_subjects = [
+                subject for subject in matching_subjects
+                if (subject.group_name or '') == (routine.group_name or '')
+            ]
+            if group_subjects:
+                matching_subjects = group_subjects
+
             religions = {
-                religion
-                for religion in religions_by_subject.get(
-                    (routine.subject_name, routine.subject_code),
-                    religions_by_subject.get((routine.subject_name, None), set()),
-                )
-                if religion != 'None'
+                subject.effective_religion
+                for subject in matching_subjects
+                if subject.effective_religion != 'None'
             }
             if not religions:
                 name = routine.subject_name.strip().lower()
@@ -221,10 +226,26 @@ class Student(models.Model):
                     )
                     if keyword in name
                 }
+
+            subject_types = {subject.subject_type for subject in matching_subjects}
+            routine.display_subject_name = routine.subject_name
+            if len(subject_types) == 1:
+                subject_type = subject_types.pop()
+                if subject_type in ('1', '2'):
+                    type_label = '1st' if subject_type == '1' else '2nd'
+                    if type_label.lower() not in routine.subject_name.lower():
+                        routine.display_subject_name = f'{routine.subject_name} {type_label}'
+                elif subject_type == '4' and '4th subject' not in routine.subject_name.lower():
+                    routine.display_subject_name = f'{routine.subject_name} (4th Subject)'
+
             if not religions or self.religion in religions:
                 matching_routine_ids.append(routine.pk)
 
-        return routines.filter(pk__in=matching_routine_ids)
+        matching_routine_ids = set(matching_routine_ids)
+        return [
+            routine for routine in routine_rows
+            if routine.pk in matching_routine_ids
+        ]
 
     class Meta:
         verbose_name = 'Student'
