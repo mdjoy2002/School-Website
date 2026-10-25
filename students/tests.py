@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
+from myteacher.models import ExamRoutine, Subject
+
 from .models import Student, StudentAdmitCardSetting, StudentPromotionHistory
 
 
@@ -49,3 +51,49 @@ class StudentPortalTests(TestCase):
 
         self.assertTrue(setting.is_enabled)
         self.assertEqual(setting.display_name, 'Class 6 • Half Yearly • 2026')
+
+    def test_admit_card_routines_only_include_students_religious_subject(self):
+        for subject_name, religion, subject_code in (
+            ('Islamic Studies', 'Islam', 'IS101'),
+            ('Hindu Religious Studies', 'Hindu', 'HR101'),
+        ):
+            Subject.objects.create(
+                subject_name=subject_name,
+                subject_code=subject_code,
+                subject_type='0',
+                religion=religion,
+                class_level='6',
+            )
+            ExamRoutine.objects.create(
+                class_name='6',
+                group_name='',
+                exam_type='Half Yearly',
+                exam_year=2026,
+                subject_name=subject_name,
+                subject_code=subject_code,
+                exam_date='2026-10-11',
+            )
+
+        hindu_student = Student.objects.create(
+            photo='',
+            full_name='Hindu Student',
+            father_name='Father',
+            mother_name='Mother',
+            student_id='S10002',
+            gender='Female',
+            date_of_birth='2010-01-01',
+            current_class='6',
+            class_roll=2,
+            shift='Day',
+            mobile_num='01700000002',
+            religion='Hindu',
+        )
+
+        self.assertEqual(
+            [routine.subject_name for routine in self.student.get_routines()],
+            ['Islamic Studies'],
+        )
+        self.assertEqual(
+            [routine.subject_name for routine in hindu_student.get_routines()],
+            ['Hindu Religious Studies'],
+        )

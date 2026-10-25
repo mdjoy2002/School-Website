@@ -178,12 +178,53 @@ class Student(models.Model):
 
     def get_routines(self):
         ExamRoutine = apps.get_model('myteacher', 'ExamRoutine')
+        Subject = apps.get_model('myteacher', 'Subject')
         student_group = self.group if self.group else 'General'
-        return ExamRoutine.objects.filter(
+        routines = ExamRoutine.objects.filter(
             class_name=self.current_class
         ).filter(
             Q(group_name=student_group) | Q(group_name='General') | Q(group_name='') | Q(group_name__isnull=True)
         ).order_by('exam_date')
+
+        routine_rows = list(routines)
+        subjects = Subject.objects.filter(
+            class_level=self.current_class,
+            subject_name__in={routine.subject_name for routine in routine_rows},
+        )
+        religions_by_subject = {}
+        for subject in subjects:
+            religions_by_subject.setdefault((subject.subject_name, subject.subject_code), set()).add(
+                subject.effective_religion
+            )
+            religions_by_subject.setdefault((subject.subject_name, None), set()).add(
+                subject.effective_religion
+            )
+
+        matching_routine_ids = []
+        for routine in routine_rows:
+            religions = {
+                religion
+                for religion in religions_by_subject.get(
+                    (routine.subject_name, routine.subject_code),
+                    religions_by_subject.get((routine.subject_name, None), set()),
+                )
+                if religion != 'None'
+            }
+            if not religions:
+                name = routine.subject_name.strip().lower()
+                religions = {
+                    religion for keyword, religion in (
+                        ('islam', 'Islam'),
+                        ('hindu', 'Hindu'),
+                        ('buddhist', 'Buddhist'),
+                        ('christian', 'Christian'),
+                    )
+                    if keyword in name
+                }
+            if not religions or self.religion in religions:
+                matching_routine_ids.append(routine.pk)
+
+        return routines.filter(pk__in=matching_routine_ids)
 
     class Meta:
         verbose_name = 'Student'
