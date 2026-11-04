@@ -38,15 +38,22 @@ INSTALLED_APPS = [
     'sms_management',
 ]
 
-HTTPSMS_API_KEY = os.environ.get('HTTPSMS_API_KEY', '')
+# সরাসরি ডিফল্ট মানসহ কনফিগারেশন যুক্ত করা হলো
+HTTPSMS_API_KEY = os.environ.get(
+    'HTTPSMS_API_KEY',
+    'uk_ICQ8Ee2Gimh79rKtAhG3-rRITqMDNX27mS15eauw1ePvLbxuZ6AC9XVRTqkX4DZe'
+)
 HTTPSMS_PHONE_NUMBER = os.environ.get(
     'HTTPSMS_PHONE_NUMBER',
-    os.environ.get('HTTPSMS_FROM_NUMBER', ''),
+    os.environ.get('HTTPSMS_FROM_NUMBER', '+8801845613283'),
 )
 HTTPSMS_FROM_NUMBER = HTTPSMS_PHONE_NUMBER
 HTTPSMS_WEBHOOK_SIGNING_KEY = os.environ.get('HTTPSMS_WEBHOOK_SIGNING_KEY', '')
 
-SMS_GATEWAY_API_KEY = os.environ.get('SMS_GATEWAY_API_KEY', '')
+SMS_GATEWAY_API_KEY = os.environ.get(
+    'SMS_GATEWAY_API_KEY',
+    'Al9IkoTi8Idbej47S328URpHuTq28i6b41Uplptc'
+)
 SMS_GATEWAY_SENDER_ID = os.environ.get('SMS_GATEWAY_SENDER_ID', '')
 SMS_GATEWAY_CONTENT_ID = os.environ.get('SMS_GATEWAY_CONTENT_ID', '')
 
