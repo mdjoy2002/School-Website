@@ -13,6 +13,7 @@ from django.http import HttpResponse # robots.txt এবং google verification 
 from django.contrib.auth import views as auth_views  # Auth views import korlam
 from django.views.static import serve
 from django.urls import re_path
+from sms_management.views import webhook as sms_webhook
 
 # সাইটম্যাপের জন্য প্রয়োজনীয় ইমপোর্ট
 from django.contrib.sitemaps.views import sitemap
@@ -38,6 +39,8 @@ def google_verify(request):
     return HttpResponse("google-site-verification: googlec5cbc4a5f7c18e19.html")
 
 urlpatterns = [
+    path('sms/webhook/', sms_webhook, name='httpsms_webhook'),
+    path('knu2026/sms/', include('sms_management.urls')),
     path('knu2026/', admin.site.urls),
     path('', views.home, name='home'), # হোম পেজের রুট
     

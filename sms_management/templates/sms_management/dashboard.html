@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="bn">
+<head>
+    {% load static %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SMS Management | KNU High School</title>
+    <link rel="stylesheet" href="{% static 'css/global-fonts.css' %}">
+    <style>
+        :root {
+            color-scheme: light;
+            --ink: #172a3a;
+            --muted: #647587;
+            --line: #e2eaf0;
+            --paper: #fff;
+            --canvas: #f3f7fa;
+            --green: #07875d;
+            --green-dark: #056b49;
+            --green-soft: #e7f6ef;
+            --blue-soft: #eaf3ff;
+            --amber-soft: #fff6df;
+            --red-soft: #fff0ee;
+            --shadow: 0 16px 42px rgba(27, 55, 75, .08);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: var(--canvas);
+            color: var(--ink);
+            font: 16px/1.6 "Times New Roman", "Kalpurush", serif;
+        }
+        a { color: inherit; }
+        .page { width: min(1180px, calc(100% - 36px)); margin: 0 auto; padding: 28px 0 56px; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 76px; margin-bottom: 22px; padding: 8px 0; }
+        .topbar-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px 18px; }
+        .brand { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 1rem; font-weight: 650; }
+        .brand-mark { display: block; width: 58px; height: 58px; flex: 0 0 58px; object-fit: contain; border-radius: 15px; background: white; }
+        .back-link { color: var(--muted); font-size: .9rem; text-decoration: none; }
+        .back-link:hover { color: var(--green); }
+        .teacher-back-link { color: var(--green-dark); font-weight: 750; }
+        .hero {
+            position: relative; overflow: hidden; min-height: 230px; padding: clamp(34px, 6vw, 64px);
+            border-radius: 26px; background: linear-gradient(120deg, #073d36, #087954 68%, #20a776);
+            box-shadow: var(--shadow); color: white; animation: rise-in .55s ease-out both;
+        }
+        .hero:after {
+            position: absolute; top: -110px; right: -50px; width: 330px; height: 330px;
+            border: 1px solid rgba(255,255,255,.16); border-radius: 50%;
+            box-shadow: 0 0 0 34px rgba(255,255,255,.045), 0 0 0 68px rgba(255,255,255,.035);
+            content: "";
+        }
+        .hero-inner { position: relative; z-index: 1; max-width: 700px; }
+        .eyebrow { margin: 0 0 7px; color: #b7ead2; font-size: .78rem; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+        h1 { margin: 0; font-size: clamp(1.75rem, 4vw, 2.7rem); letter-spacing: -.035em; line-height: 1.2; }
+        .hero-copy { max-width: 620px; margin: 12px 0 0; color: #e1f4eb; }
+        .hero-chip { display: inline-flex; gap: 8px; align-items: center; margin-top: 20px; padding: 7px 12px; border: 1px solid rgba(255,255,255,.24); border-radius: 999px; background: rgba(255,255,255,.09); font-size: .83rem; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #75e3a8; }
+        .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 18px 0 24px; }
+        .stat { display: flex; min-height: 102px; align-items: center; gap: 13px; padding: 18px; border: 1px solid var(--line); border-radius: 18px; background: var(--paper); box-shadow: 0 5px 16px rgba(27,55,75,.035); }
+        .stat-icon { display: grid; width: 43px; height: 43px; flex: 0 0 43px; place-items: center; border-radius: 14px; background: var(--green-soft); color: var(--green); font-size: 1.15rem; }
+        .stat:nth-child(2) .stat-icon { background: var(--blue-soft); color: #3474bb; }
+        .stat:nth-child(3) .stat-icon { background: #e9f7f5; color: #14877b; }
+        .stat:nth-child(4) .stat-icon { background: var(--red-soft); color: #bf5546; }
+        .stat-value { display: block; font-size: 1.42rem; font-weight: 800; line-height: 1.2; }
+        .stat-label { display: block; margin-top: 3px; color: var(--muted); font-size: .78rem; }
+        .layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(300px, .75fr); gap: 18px; align-items: start; }
+        .card { min-width: 0; padding: clamp(18px, 3vw, 28px); border: 1px solid var(--line); border-radius: 21px; background: var(--paper); box-shadow: 0 7px 24px rgba(27,55,75,.045); }
+        .card-heading { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 20px; }
+        .heading-icon { display: grid; width: 42px; height: 42px; flex: 0 0 42px; place-items: center; border-radius: 13px; background: var(--green-soft); color: var(--green); font-size: 1.1rem; }
+        h2 { margin: 0; font-size: 1.17rem; letter-spacing: -.01em; }
+        .subheading { margin: 2px 0 0; color: var(--muted); font-size: .86rem; }
+        .field { margin: 0 0 17px; }
+        .field[hidden] { display: none; }
+        .field label { display: block; margin-bottom: 7px; font-size: .9rem; font-weight: 750; }
+        .field input:not([type=checkbox]), .field select, .field textarea {
+            display: block; width: 100%; min-height: 47px; padding: 11px 13px;
+            border: 1px solid #d6e0e8; border-radius: 12px; outline: none;
+            background: #fbfdfe; color: var(--ink); font: inherit; transition: border-color .15s, box-shadow .15s;
+        }
+        .field textarea { min-height: 150px; resize: vertical; }
+        .field input:focus, .field select:focus, .field textarea:focus { border-color: #42a982; box-shadow: 0 0 0 4px rgba(7,135,93,.11); }
+        .field select[multiple] { min-height: 155px; }
+        .field select[multiple] option { padding: 5px 7px; }
+        .recipient-checkbox-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 8px; max-height: 340px; overflow-y: auto; margin: 8px 0 0 !important; padding: 4px !important; background: transparent !important; }
+        .recipient-checkbox-list li { display: block !important; min-width: 0; margin: 0 !important; }
+        .recipient-checkbox-list label { display: flex !important; min-height: 46px; align-items: center; gap: 10px !important; margin: 0 !important; padding: 10px 12px; border: 1px solid var(--line); border-radius: 11px; background: #fff; cursor: pointer; transition: border-color .15s, background .15s, transform .15s; }
+        .recipient-checkbox-list label:hover { transform: translateY(-1px); border-color: #9acfb7; background: #f7fcf9; }
+        .recipient-checkbox-list input[type=checkbox] { width: 18px; height: 18px; flex: 0 0 18px; margin: 0; accent-color: var(--green); }
+        .student-picker { margin: 0 0 17px; }
+        .student-picker[hidden] { display: none; }
+        .student-picker-heading { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 9px; }
+        .student-picker-heading label { margin: 0; font-size: .9rem; font-weight: 750; }
+        .student-count { padding: 3px 9px; border-radius: 999px; background: var(--green-soft); color: var(--green-dark); font-size: .75rem; font-weight: 750; }
+        .student-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(205px, 1fr)); gap: 9px; max-height: 430px; overflow-y: auto; padding: 2px; }
+        .student-card { display: flex; min-width: 0; align-items: center; gap: 10px; padding: 10px; border: 1px solid var(--line); border-radius: 13px; background: white; cursor: pointer; transition: border-color .15s, background .15s, box-shadow .15s; }
+        .student-card:hover { border-color: #9acfb7; }
+        .student-card.selected { border-color: var(--green); background: #f0faf5; box-shadow: 0 0 0 2px rgba(7,135,93,.08); }
+        .student-card input { width: 17px; height: 17px; flex: 0 0 17px; accent-color: var(--green); }
+        .student-photo { width: 48px; height: 48px; flex: 0 0 48px; border-radius: 50%; background: #e7f1ed; object-fit: cover; }
+        .student-initial { display: grid; place-items: center; color: var(--green-dark); font-weight: 800; }
+        .student-info { min-width: 0; }
+        .student-name { display: block; overflow: hidden; font-size: .84rem; font-weight: 750; text-overflow: ellipsis; white-space: nowrap; }
+        .student-meta { display: block; color: var(--muted); font-size: .73rem; }
+        .student-empty { grid-column: 1 / -1; padding: 19px; border: 1px dashed #cbd8e1; border-radius: 12px; color: var(--muted); text-align: center; font-size: .85rem; }
+        .student-picker-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
+        .small-action { padding: 5px 9px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--green-dark); cursor: pointer; font: inherit; font-size: .76rem; font-weight: 700; }
+        .field small { display: block; margin-top: 6px; color: var(--muted); font-size: .79rem; }
+        .field ul { margin: 8px 0 0; padding: 11px 14px; border-radius: 11px; background: #f6f9fb; list-style: none; }
+        .field ul li { display: inline-flex; align-items: center; gap: 5px; margin: 3px 14px 3px 0; }
+        .field ul input { accent-color: var(--green); }
+        .errorlist { margin: 5px 0; padding: 0; color: #b42318; font-size: .84rem; list-style: none; }
+        .primary-button {
+            display: inline-flex; width: 100%; min-height: 49px; justify-content: center; align-items: center; gap: 9px;
+            padding: 11px 18px; border: 0; border-radius: 13px; background: var(--green); color: #fff;
+            cursor: pointer; font: inherit; font-weight: 750; transition: background .15s, transform .15s;
+        }
+        .primary-button:hover { transform: translateY(-1px); background: var(--green-dark); }
+        .notice { margin: 0 0 13px; padding: 12px 14px; border: 1px solid #f0dda4; border-radius: 13px; background: var(--amber-soft); color: #76550d; font-size: .86rem; }
+        .notice.success { border-color: #c3e8d1; background: var(--green-soft); color: #126642; }
+        .notice.error { border-color: #f0c7c1; background: var(--red-soft); color: #9c3428; }
+        .notice p { margin: 4px 0; }
+        .notice code, .helper code { padding: 2px 5px; border-radius: 5px; background: rgba(0,0,0,.055); font-size: .82em; overflow-wrap: anywhere; }
+        .helper { margin: 15px 0 0; color: var(--muted); font-size: .82rem; }
+        .guide-list { margin: 0; padding-left: 1.35rem; color: #415364; font-size: .88rem; }
+        .guide-list li { padding: 0 0 11px 4px; }
+        .guide-list li::marker { color: var(--green); font-weight: 800; }
+        .history-card { margin-top: 18px; animation: rise-in .55s .08s ease-out both; }
+        .history-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .history-count { padding: 4px 10px; border-radius: 999px; background: #edf3f7; color: var(--muted); font-size: .76rem; }
+        .history-tabs { display: flex; gap: 8px; overflow-x: auto; margin: 0 0 16px; padding: 3px 2px 8px; scrollbar-width: thin; }
+        .history-tab { flex: 0 0 auto; padding: 9px 14px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--muted); text-decoration: none; font-size: .84rem; font-weight: 700; transition: background .2s, color .2s, transform .2s; }
+        .history-tab:hover { transform: translateY(-2px); border-color: #9acfb7; color: var(--green-dark); }
+        .history-tab.active { border-color: var(--green); background: var(--green); color: #fff; }
+        .history-actions { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 15px 12px; }
+        .recipient-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+        .delete-action { padding: 5px 9px; border: 1px solid #f1c7c1; border-radius: 8px; background: #fff8f7; color: #a63d32; cursor: pointer; font: inherit; font-size: .76rem; font-weight: 700; }
+        .campaign-list { display: grid; gap: 10px; }
+        .campaign { overflow: hidden; border: 1px solid var(--line); border-radius: 14px; }
+        .campaign summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; align-items: center; padding: 13px 15px; cursor: pointer; list-style: none; }
+        .campaign summary::-webkit-details-marker { display: none; }
+        .campaign summary:after { grid-column: 2; grid-row: 1 / span 2; color: #8293a1; content: "＋"; font-size: 1.2rem; }
+        .campaign[open] summary:after { content: "−"; }
+        .campaign-title { overflow: hidden; font-size: .89rem; font-weight: 750; text-overflow: ellipsis; white-space: nowrap; }
+        .campaign-meta { color: var(--muted); font-size: .76rem; }
+        .status { justify-self: end; padding: 4px 9px; border-radius: 999px; background: #edf3f7; color: #42566a; font-size: .73rem; font-weight: 750; }
+        .campaign-content { padding: 0 15px 12px; color: #415364; font-size: .84rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+        .recipient-list { border-top: 1px solid var(--line); padding: 10px 15px 13px; }
+        .recipient { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; color: var(--muted); font-size: .77rem; }
+        .recipient span:last-child { color: var(--ink); font-weight: 650; text-align: right; }
+        .empty { padding: 24px 12px; border: 1px dashed #cbd8e1; border-radius: 14px; color: var(--muted); text-align: center; }
+        .empty-icon { display: block; margin-bottom: 5px; color: #91a6b5; font-size: 1.7rem; }
+        .school-footer { margin-top: 30px; padding: clamp(30px, 5vw, 52px); border-radius: 22px; background: linear-gradient(130deg, #172a3a, #24485a); color: #e7eef3; animation: rise-in .55s .12s ease-out both; }
+        .footer-school { margin: 0 0 8px; color: white; font-size: clamp(1.25rem, 2.7vw, 1.7rem); font-weight: 800; }
+        .footer-copy { margin: 0; color: #bfccd5; font-size: 1rem; }
+        .footer-contact { display: flex; flex-wrap: wrap; gap: 10px 24px; margin-top: 18px; color: #d7e2e8; font-size: .96rem; }
+        @keyframes rise-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+        @media (max-width: 850px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .layout { grid-template-columns: 1fr; } }
+        @media (max-width: 520px) {
+            .page { width: min(100% - 22px, 1180px); padding-top: 12px; }
+            .topbar { margin-bottom: 13px; }
+            .hero { min-height: 200px; padding: 27px 20px; border-radius: 19px; }
+            .brand { font-size: .85rem; }
+            .brand-mark { width: 48px; height: 48px; flex-basis: 48px; }
+            .topbar { align-items: flex-start; }
+            .topbar-links { max-width: 48%; flex-direction: column; align-items: flex-end; gap: 5px; text-align: right; }
+            .stats { gap: 9px; margin: 12px 0 15px; }
+            .stat { min-height: 85px; gap: 9px; padding: 12px 10px; }
+            .stat-icon { width: 36px; height: 36px; flex-basis: 36px; border-radius: 11px; }
+            .stat-value { font-size: 1.2rem; }
+            .stat-label { font-size: .71rem; }
+            .card { border-radius: 17px; }
+            .campaign summary { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+<main class="page">
+    <nav class="topbar" aria-label="প্রধান নেভিগেশন">
+        <div class="brand"><img class="brand-mark" src="{% static 'images/logo.png' %}" alt="বিদ্যালয়ের লোগো"><span>খন্দকার নাসের উদ্দিন মাধ্যমিক বিদ্যালয়<br>School SMS Center</span></div>
+        <div class="topbar-links">
+            {% if user.teacher %}
+                <a class="back-link teacher-back-link" href="{% url 'myteacher:dashboard' %}">← নিজের Teacher Dashboard-এ ফিরুন</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-inner">
+            <p class="eyebrow">খন্দকার নাসের উদ্দিন মাধ্যমিক বিদ্যালয়</p>
+            <h1>বিদ্যালয়ের SMS পাঠান সহজে</h1>
+            <p class="hero-copy">অভিভাবক ও শিক্ষকদের কাছে জরুরি বার্তা পাঠান, প্রাপকদের আগে দেখে নিশ্চিত করুন এবং পাঠানোর অবস্থা এক জায়গায় অনুসরণ করুন।</p>
+            <span class="hero-chip"><span class="dot"></span>{% if api_configured %}SMS gateway প্রস্তুত{% else %}SMS gateway সেটআপ বাকি{% endif %}</span>
+        </div>
+    </header>
+
+    <section class="stats" aria-label="SMS পরিসংখ্যান">
+        <article class="stat"><span class="stat-icon" aria-hidden="true">▤</span><span><strong class="stat-value">{{ campaign_stats.total|default:0 }}</strong><span class="stat-label">মোট ক্যাম্পেইন</span></span></article>
+        <article class="stat"><span class="stat-icon" aria-hidden="true">♧</span><span><strong class="stat-value">{{ campaign_stats.recipients|default:0 }}</strong><span class="stat-label">মোট প্রাপক</span></span></article>
+        <article class="stat"><span class="stat-icon" aria-hidden="true">✓</span><span><strong class="stat-value">{{ recipient_stats.submitted|default:0 }}</strong><span class="stat-label">Provider-এ জমা হয়েছে</span></span></article>
+        <article class="stat"><span class="stat-icon" aria-hidden="true">!</span><span><strong class="stat-value">{{ recipient_stats.needs_attention|default:0 }}</strong><span class="stat-label">ব্যর্থ/যাচাই প্রয়োজন</span></span></article>
+    </section>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="notice {% if message.tags == 'success' %}success{% else %}error{% endif %}" role="status">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    {% if not sms_net_configured %}
+        <div class="notice" role="status"><strong>SMS.NET.BD সেটআপ বাকি</strong><p>SMS.NET.BD campaign পাঠাতে <code>SMS_GATEWAY_API_KEY</code> server-এর environment-এ সেট করুন।</p></div>
+    {% endif %}
+    {% if not httpsms_configured %}
+        <div class="notice" role="status"><strong>httpSMS সেটআপ বাকি</strong><p>Android SIM gateway ব্যবহার করতে <code>HTTPSMS_API_KEY</code> ও <code>HTTPSMS_PHONE_NUMBER</code> server-এর environment-এ সেট করুন।</p></div>
+    {% endif %}
+    {% if balance %}
+        <div class="notice success" role="status"><strong>সর্বশেষ SMS.NET.BD ব্যালেন্স</strong><p>{{ balance.amount }} · পরীক্ষা হয়েছে {{ balance.checked_at }}</p></div>
+    {% endif %}
+    <div class="notice" role="note" id="smsnet-balance">
+        <strong>SMS.NET.BD অ্যাকাউন্ট ব্যালেন্স</strong>
+        <p>ব্যালেন্স দেখতে নিচে চাপুন। API key server-এ থাকবে এবং URL-এ পাঠানো হবে না।</p>
+        <form method="post" action="{% url 'sms_management:check_balance' %}">
+            {% csrf_token %}
+            <button class="small-action" type="submit">ব্যালেন্স পরীক্ষা করুন</button>
+        </form>
+    </div>
+    {% if not test_delivered %}
+        <div class="notice" role="status"><strong>Bulk SMS পাঠানোর আগে পরীক্ষা করুন</strong><p>প্রথমে administrator-এর নিজের নিবন্ধিত নম্বরে পরীক্ষামূলক SMS পাঠান এবং provider report-এ Sent status নিশ্চিত করুন।</p></div>
+    {% endif %}
+    {% if not content_id_configured %}
+        <div class="notice" role="note" id="smsnet-content-id"><strong>Bulk campaign-এর জন্য Content ID</strong><p>SMS.NET.BD-তে একাধিক প্রাপককে পাঠাতে approved <code>SMS_GATEWAY_CONTENT_ID</code> server-এর environment-এ কনফিগার করুন।</p></div>
+    {% endif %}
+    <div class="notice" role="note"><strong>SMS status</strong><p>Provider request গ্রহণ করলেই SMS delivered হয় না। Submitted status আলাদা; সর্বশেষ তথ্যের জন্য প্রতিটি recipient-এর report পরীক্ষা করুন।</p></div>
+
+    <div class="layout">
+        <section class="card" id="compose">
+            <div class="card-heading">
+                <span class="heading-icon" aria-hidden="true">✎</span>
+                <div><h2>নতুন SMS তৈরি করুন</h2><p class="subheading">প্রাপক বাছাই করুন, বার্তা লিখুন, তারপর পাঠানোর আগে যাচাই করুন।</p></div>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                {% for field in form %}
+                    {% if field.name != 'selected_students' %}
+                    <div class="field" id="field-{{ field.name }}">
+                        {{ field.errors }}
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                        {% if field.name == 'selected_teachers' %}
+                            <div class="student-picker-actions">
+                                <button class="small-action" type="button" id="select-all-teachers">সব শিক্ষক বাছাই</button>
+                                <button class="small-action" type="button" id="clear-teachers">বাছাই বাতিল</button>
+                            </div>
+                        {% endif %}
+                        {% if field.name == 'selected_office_staff' %}
+                            <div class="student-picker-actions">
+                                <button class="small-action" type="button" id="select-all-office-staff">সব অফিস স্টাফ বাছাই</button>
+                                <button class="small-action" type="button" id="clear-office-staff">বাছাই বাতিল</button>
+                            </div>
+                        {% endif %}
+                        {% if field.name == 'message' %}
+                            <small><span id="message-count">0</span> characters · Preview নিচে</small>
+                            <div class="campaign-content" id="message-preview" aria-live="polite"></div>
+                        {% endif %}
+                    </div>
+                    {% if field.name == 'selected_class' %}
+                    <div class="student-picker" id="student-picker" hidden>
+                        <div class="student-picker-heading">
+                            <label>শিক্ষার্থীদের ছবি ও নাম থেকে বাছাই করুন</label>
+                            <span class="student-count" id="student-count">০ জন নির্বাচিত</span>
+                        </div>
+                        <ul class="errorlist" id="selected-students-errors">
+                            {% for error in form.selected_students.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                        <div class="student-picker-actions">
+                            <button class="small-action" type="button" id="select-all-students">সবাইকে বাছাই</button>
+                            <button class="small-action" type="button" id="clear-students">বাছাই বাতিল</button>
+                        </div>
+                        <div class="student-grid" id="student-grid"
+                             data-students-url="{% url 'sms_management:students_for_class' %}"
+                             data-selected-students="{{ selected_student_ids|join:',' }}"
+                             aria-live="polite">
+                            <div class="student-empty">শিক্ষার্থীদের তালিকা দেখতে একটি শ্রেণি নির্বাচন করুন।</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                {% endfor %}
+                <button class="primary-button" type="submit"><span aria-hidden="true">➜</span> প্রাপক ও বার্তা যাচাই করুন</button>
+                <p class="helper">পরবর্তী ধাপে সব নম্বর ও ব্যক্তিগত বার্তা দেখে নিশ্চিত করার সুযোগ পাবেন।</p>
+            </form>
+        </section>
+
+        <section class="card" id="sms-guide">
+            <div class="card-heading">
+                <span class="heading-icon" aria-hidden="true">i</span>
+                <div><h2>ব্যবহারের সহজ নিয়ম</h2><p class="subheading">নিরাপদে SMS পাঠানোর কয়েকটি ধাপ</p></div>
+            </div>
+            <ol class="guide-list">
+                <li>প্রথমে পরীক্ষামূলক SMS-এর জন্য একটি নম্বর লিখুন।</li>
+                <li>প্রাপক ও বার্তার preview ভালোভাবে মিলিয়ে নিন।</li>
+                <li>Bulk SMS-এর আগে নির্বাচিত gateway দিয়ে test SMS-এর status যাচাই করুন।</li>
+                <li>Guardian, Teacher ও Office Staff-এর নাম/সন্তানের নাম তাদের নিজস্ব template অনুযায়ী স্বয়ংক্রিয়ভাবে বসবে।</li>
+            </ol>
+            <p class="helper">বাংলা ও ইংরেজি দুই ভাষাতেই বার্তা লেখা যায়। একই নম্বর এক ক্যাম্পেইনে একবারই যাবে।</p>
+        </section>
+    </div>
+
+    <section class="card history-card" id="history">
+        <div class="history-heading">
+            <div class="card-heading" style="margin:0">
+                <span class="heading-icon" aria-hidden="true">◷</span>
+                <div><h2>সাম্প্রতিক SMS ইতিহাস</h2><p class="subheading">প্রতিটি ক্যাম্পেইনের প্রাপক ও delivery status দেখুন।</p></div>
+            </div>
+            <span class="history-count">সর্বশেষ ৩০টি</span>
+        </div>
+        <nav class="history-tabs" aria-label="প্রাপক ক্যাটাগরি অনুসারে SMS ইতিহাস">
+            <a class="history-tab {% if recipient_type_filter == 'all' %}active{% endif %}" href="?recipient_type=all#history">সব <span>{{ visible_history_count }}</span></a>
+            <a class="history-tab {% if recipient_type_filter == 'guardian' %}active{% endif %}" href="?recipient_type=guardian#history">অভিভাবক <span>{{ history_counts.guardian|default:0 }}</span></a>
+            <a class="history-tab {% if recipient_type_filter == 'teacher' %}active{% endif %}" href="?recipient_type=teacher#history">শিক্ষক <span>{{ history_counts.teacher|default:0 }}</span></a>
+            <a class="history-tab {% if recipient_type_filter == 'office_staff' %}active{% endif %}" href="?recipient_type=office_staff#history">অফিস স্টাফ <span>{{ history_counts.office_staff|default:0 }}</span></a>
+        </nav>
+        {% if campaigns %}
+            <div class="campaign-list">
+                {% for campaign in campaigns %}
+                    <details class="campaign">
+                        <summary>
+                            <span class="campaign-title">#{{ campaign.pk }} · {{ campaign.title }} · {{ campaign.visible_recipients|length }} জন</span>
+                            <span class="status">{{ campaign.get_status_display }}</span>
+                            <span class="campaign-meta">{{ campaign.get_gateway_display }} · {{ campaign.get_audience_display }} · {{ campaign.created_at|date:"d M Y, h:i A" }}{% if campaign.scheduled_at %} · নির্ধারিত {{ campaign.scheduled_at|date:"d M Y, h:i A" }}{% endif %}</span>
+                        </summary>
+                        <div class="campaign-content">{{ campaign.content }}</div>
+                        {% if campaign.status == 'draft' and campaign.pending_recipient_count %}
+                            <div class="history-actions">
+                                <a class="small-action" href="{% url 'sms_management:review_pending_campaign' campaign.pk %}">⟳ Pending SMS যাচাই করে পাঠান ({{ campaign.pending_recipient_count }})</a>
+                            </div>
+                        {% endif %}
+                        <div class="recipient-list">
+                            {% for recipient in campaign.visible_recipients %}
+                                <div class="recipient">
+                                    <span>{{ recipient.recipient_name }} · {{ recipient.get_recipient_type_display }} · {{ recipient.phone_number }}</span>
+                                    <span>{{ recipient.get_status_display }}{% if recipient.api_error_code %} · Error {{ recipient.api_error_code }}{% endif %}{% if recipient.sms_charge %} · Charge {{ recipient.sms_charge }}{% endif %}</span>
+                                </div>
+                                <div class="campaign-content">{{ recipient.message }}</div>
+                                <div class="recipient-actions">
+                                    <form method="post" action="{% url 'sms_management:delete_sent_recipient' campaign.pk recipient.pk %}" onsubmit="return confirm('এই SMS history record স্থায়ীভাবে মুছে ফেলবেন?');">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="recipient_type" value="{{ recipient_type_filter }}">
+                                        <button class="delete-action" type="submit">🗑 SMS history মুছুন</button>
+                                    </form>
+                                </div>
+                                {% if recipient.api_request_id %}
+                                    <div class="recipient">
+                                        <span>Request ID: {{ recipient.api_request_id }}</span>
+                                        <form method="post" action="{% url 'sms_management:refresh_report' campaign.pk recipient.pk %}">
+                                            {% csrf_token %}
+                                            <button class="small-action" type="submit">Report দেখুন</button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                                {% if recipient.api_response %}
+                                    <details class="campaign-content">
+                                        <summary>Gateway response</summary>
+                                        <pre>{{ recipient.api_response }}</pre>
+                                    </details>
+                                {% endif %}
+                                {% if recipient.error_message %}<div class="campaign-content">{{ recipient.error_message }}</div>{% endif %}
+                            {% empty %}
+                                <div class="recipient">এই ক্যাম্পেইনে কোনো প্রাপক নেই।</div>
+                            {% endfor %}
+                        </div>
+                    </details>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty"><span class="empty-icon" aria-hidden="true">✉</span>এখনো কোনো SMS ক্যাম্পেইন নেই। প্রথম SMS তৈরি করতে উপরের ফর্ম ব্যবহার করুন।</div>
+        {% endif %}
+    </section>
+</main>
+<footer class="school-footer page">
+    <p class="footer-school">খন্দকার নাসের উদ্দিন মাধ্যমিক বিদ্যালয়</p>
+    <p class="footer-copy">বিদ্যালয়ের SMS যোগাযোগ কেন্দ্র · প্রাপকের category অনুযায়ী ব্যক্তিগত বার্তা তৈরি হবে।</p>
+    <div class="footer-contact">
+        <span>📍 বয়রা, খুলনা</span>
+        <span>☎ +৮৮০ ১৩০৬ ১১৭৪০৭</span>
+        <span>✉ knuhighschool1994@gmail.com</span>
+    </div>
+</footer>
+<script>
+    const audienceField = document.getElementById('id_audience');
+    const messageField = document.getElementById('id_message');
+    const messageCount = document.getElementById('message-count');
+    const messagePreview = document.getElementById('message-preview');
+    function updateMessagePreview() {
+        messageCount.textContent = messageField.value.length;
+        messagePreview.textContent = messageField.value;
+    }
+    messageField.addEventListener('input', updateMessagePreview);
+    updateMessagePreview();
+
+    const audienceFields = {
+        classes: ['class_guardians'],
+        selected_class: ['selected_guardians'],
+        selected_teachers: ['selected_teachers'],
+        selected_office_staff: ['selected_office_staff'],
+        test_number: ['test'],
+    };
+    function updateAudienceFields() {
+        Object.entries(audienceFields).forEach(([field, audiences]) => {
+            document.getElementById(`field-${field}`).hidden = !audiences.includes(audienceField.value);
+        });
+    }
+    audienceField.addEventListener('change', updateAudienceFields);
+    updateAudienceFields();
+    const gatewayField = document.getElementById('id_gateway');
+    const balanceNotice = document.getElementById('smsnet-balance');
+    const contentIdNotice = document.getElementById('smsnet-content-id');
+    function updateGatewayNotices() {
+        const usesSmsNet = gatewayField.value === 'sms_net_bd';
+        balanceNotice.hidden = !usesSmsNet;
+        if (contentIdNotice) contentIdNotice.hidden = !usesSmsNet;
+    }
+    gatewayField.addEventListener('change', updateGatewayNotices);
+    updateGatewayNotices();
+
+    const selectedClass = document.getElementById('id_selected_class');
+    const studentPicker = document.getElementById('student-picker');
+    const studentGrid = document.getElementById('student-grid');
+    const studentCount = document.getElementById('student-count');
+    const selectedStudentIds = new Set(
+        studentGrid.dataset.selectedStudents.split(',').filter(Boolean)
+    );
+
+    function updateSelectedStudentCount() {
+        const checkedCount = studentGrid.querySelectorAll('input[name="selected_students"]:checked').length;
+        studentCount.textContent = `${checkedCount} জন নির্বাচিত`;
+    }
+
+    function renderStudentCard(student) {
+        const label = document.createElement('label');
+        label.className = 'student-card';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.name = 'selected_students';
+        checkbox.value = student.id;
+        checkbox.checked = selectedStudentIds.has(String(student.id));
+        label.classList.toggle('selected', checkbox.checked);
+        checkbox.addEventListener('change', () => {
+            if (checkbox.checked) selectedStudentIds.add(String(student.id));
+            else selectedStudentIds.delete(String(student.id));
+            label.classList.toggle('selected', checkbox.checked);
+            updateSelectedStudentCount();
+        });
+
+        const photo = document.createElement('img');
+        photo.className = 'student-photo';
+        photo.alt = '';
+        photo.loading = 'lazy';
+        if (student.photo_url) {
+            photo.src = student.photo_url;
+            photo.addEventListener('error', () => photo.replaceWith(makeInitial(student.name)));
+        } else {
+            photo.replaceWith(makeInitial(student.name));
+        }
+
+        const info = document.createElement('span');
+        info.className = 'student-info';
+        const name = document.createElement('span');
+        name.className = 'student-name';
+        name.textContent = student.name;
+        const meta = document.createElement('span');
+        meta.className = 'student-meta';
+        meta.textContent = `রোল ${student.roll}${student.guardian ? ` · অভিভাবক: ${student.guardian}` : ''}`;
+        info.append(name, meta);
+        label.append(checkbox, photo, info);
+        return label;
+    }
+
+    function makeInitial(name) {
+        const initial = document.createElement('span');
+        initial.className = 'student-photo student-initial';
+        initial.setAttribute('aria-hidden', 'true');
+        initial.textContent = (name || '?').trim().charAt(0) || '?';
+        return initial;
+    }
+
+    async function loadStudentsForClass() {
+        const isStudentAudience = audienceField.value === 'selected_guardians';
+        studentPicker.hidden = !isStudentAudience;
+        if (!isStudentAudience) return;
+
+        const classLevel = selectedClass.value;
+        if (!classLevel) {
+            studentGrid.replaceChildren();
+            const empty = document.createElement('div');
+            empty.className = 'student-empty';
+            empty.textContent = 'শিক্ষার্থীদের তালিকা দেখতে একটি শ্রেণি নির্বাচন করুন।';
+            studentGrid.append(empty);
+            updateSelectedStudentCount();
+            return;
+        }
+
+        studentGrid.replaceChildren();
+        const loading = document.createElement('div');
+        loading.className = 'student-empty';
+        loading.textContent = 'শিক্ষার্থীদের তালিকা আনা হচ্ছে…';
+        studentGrid.append(loading);
+        try {
+            const url = new URL(studentGrid.dataset.studentsUrl, window.location.origin);
+            url.searchParams.set('class_level', classLevel);
+            const response = await fetch(url, {headers: {'Accept': 'application/json'}});
+            if (!response.ok) throw new Error('Student list request failed.');
+            const data = await response.json();
+            studentGrid.replaceChildren();
+            if (!data.students.length) {
+                const empty = document.createElement('div');
+                empty.className = 'student-empty';
+                empty.textContent = 'এই শ্রেণিতে কোনো শিক্ষার্থী পাওয়া যায়নি।';
+                studentGrid.append(empty);
+            } else {
+                data.students.forEach(student => studentGrid.append(renderStudentCard(student)));
+            }
+            updateSelectedStudentCount();
+        } catch (error) {
+            studentGrid.replaceChildren();
+            const failed = document.createElement('div');
+            failed.className = 'student-empty';
+            failed.textContent = 'তালিকা আনা যায়নি। আবার চেষ্টা করুন।';
+            studentGrid.append(failed);
+        }
+    }
+
+    selectedClass.addEventListener('change', loadStudentsForClass);
+    audienceField.addEventListener('change', loadStudentsForClass);
+    document.getElementById('select-all-students').addEventListener('click', () => {
+        studentGrid.querySelectorAll('input[name="selected_students"]').forEach(input => {
+            input.checked = true;
+            selectedStudentIds.add(input.value);
+            input.closest('.student-card').classList.add('selected');
+        });
+        updateSelectedStudentCount();
+    });
+    document.getElementById('clear-students').addEventListener('click', () => {
+        studentGrid.querySelectorAll('input[name="selected_students"]').forEach(input => {
+            input.checked = false;
+            selectedStudentIds.delete(input.value);
+            input.closest('.student-card').classList.remove('selected');
+        });
+        updateSelectedStudentCount();
+    });
+    const teacherCheckboxes = document.querySelectorAll('#field-selected_teachers input[name="selected_teachers"]');
+    document.getElementById('select-all-teachers').addEventListener('click', () => {
+        teacherCheckboxes.forEach(checkbox => { checkbox.checked = true; });
+    });
+    document.getElementById('clear-teachers').addEventListener('click', () => {
+        teacherCheckboxes.forEach(checkbox => { checkbox.checked = false; });
+    });
+    const officeStaffSelect = document.getElementById('id_selected_office_staff');
+    document.getElementById('select-all-office-staff').addEventListener('click', () => {
+        Array.from(officeStaffSelect.options).forEach(option => { option.selected = true; });
+    });
+    document.getElementById('clear-office-staff').addEventListener('click', () => {
+        Array.from(officeStaffSelect.options).forEach(option => { option.selected = false; });
+    });
+    loadStudentsForClass();
+</script>
+</body>
+</html>

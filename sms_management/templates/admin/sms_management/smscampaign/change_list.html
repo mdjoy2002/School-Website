@@ -1,0 +1,8 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+{% block object-tools-items %}
+    {% if perms.sms_management.access_sms_dashboard %}
+        <li><a href="{% url 'sms_management:dashboard' %}">SMS dashboard</a></li>
+    {% endif %}
+    {{ block.super }}
+{% endblock %}

@@ -27,13 +27,26 @@
         .header-logo { cursor: pointer; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .header-logo:hover { transform: rotate(10deg) scale(1.1); }
         
-        .navbar { border-bottom: 3px solid #ffc107; }
+        .navbar { min-height: 86px; padding-top: .8rem; padding-bottom: .8rem; border-bottom: 3px solid #ffc107; animation: school-header-in .5s ease-out both; }
+        .navbar-brand .header-logo { width: 62px; }
         
         footer { 
             background: linear-gradient(180deg, #212529 0%, #1a1e21 100%); 
             color: #fff; 
-            padding-top: 60px; 
+            padding-top: 78px;
             margin-top: auto;
+            animation: school-footer-in .55s .08s ease-out both;
+        }
+        footer > .container { padding-top: 10px; }
+        @keyframes school-header-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes school-footer-in { from { opacity: 0; } to { opacity: 1; } }
+        @media (max-width: 576px) {
+            .navbar { min-height: 72px; }
+            .navbar-brand .header-logo { width: 50px; }
+            footer { padding-top: 54px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
         }
         .text-warning { color: #ffc107 !important; }
     </style>

@@ -14,6 +14,33 @@ from myteacher.views import get_student_result_summary, mark_entry_view
 from students.models import Student, StudentResultPublication
 
 
+class DashboardWithoutTeacherProfileTests(TestCase):
+    def test_superuser_without_teacher_profile_gets_admin_dashboard(self):
+        user = get_user_model().objects.create_superuser(
+            username='school-admin',
+            email='admin@example.com',
+            password='test-password',
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('myteacher:dashboard'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'School Administration')
+        self.assertContains(response, reverse('sms_management:dashboard'))
+
+    def test_regular_user_without_teacher_profile_is_forbidden(self):
+        user = get_user_model().objects.create_user(
+            username='student-user',
+            password='test-password',
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('myteacher:dashboard'))
+
+        self.assertEqual(response.status_code, 403)
+
+
 class ResultSummarySubjectCodeTests(TestCase):
     def test_result_summary_uses_configured_subject_code(self):
         student = Student.objects.create(

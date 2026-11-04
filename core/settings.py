@@ -5,7 +5,11 @@ Django settings for core project.
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.environ.get(
     'SECRET_KEY',
@@ -31,7 +35,37 @@ INSTALLED_APPS = [
     'main_app',
     'myteacher',
     'students',
+    'sms_management',
 ]
+
+HTTPSMS_API_KEY = os.environ.get('HTTPSMS_API_KEY', '')
+HTTPSMS_PHONE_NUMBER = os.environ.get(
+    'HTTPSMS_PHONE_NUMBER',
+    os.environ.get('HTTPSMS_FROM_NUMBER', ''),
+)
+HTTPSMS_FROM_NUMBER = HTTPSMS_PHONE_NUMBER
+HTTPSMS_WEBHOOK_SIGNING_KEY = os.environ.get('HTTPSMS_WEBHOOK_SIGNING_KEY', '')
+
+SMS_GATEWAY_API_KEY = os.environ.get('SMS_GATEWAY_API_KEY', '')
+SMS_GATEWAY_SENDER_ID = os.environ.get('SMS_GATEWAY_SENDER_ID', '')
+SMS_GATEWAY_CONTENT_ID = os.environ.get('SMS_GATEWAY_CONTENT_ID', '')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'sms_console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'sms_management': {
+            'handlers': ['sms_console'],
+            'level': os.environ.get('SMS_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+    },
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -136,7 +170,7 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
-# এগুলো False করা হয়েছে যাতে পাইথনএন্ডহায়ারে লগইন করার সময় সেশন কুকি ব্লক না করে
+# এগুলো False করা হয়েছে যাতে পাইথনএন্ডহায়ারে লগইন করার সময় সেশন কুকি ব্লক না করে
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 

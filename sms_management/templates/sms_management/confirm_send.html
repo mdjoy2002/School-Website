@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="bn">
+<head>
+    {% load static %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SMS পাঠানো নিশ্চিত করুন</title>
+    <link rel="stylesheet" href="{% static 'css/global-fonts.css' %}">
+    <style>
+        :root { --ink:#172a3a; --muted:#647587; --line:#e2eaf0; --green:#07875d; --canvas:#f3f7fa; --amber:#fff6df; --red:#fff0ee; }
+        * { box-sizing:border-box; }
+        body { margin:0; background:var(--canvas); color:var(--ink); font:16px/1.6 "Times New Roman","Kalpurush",serif; }
+        main { width:min(1020px,calc(100% - 28px)); margin:22px auto 55px; }
+        .top { display:flex; min-height:82px; align-items:center; justify-content:space-between; gap:14px; margin-bottom:18px; animation:rise-in .45s ease-out both; }
+        .top a { color:var(--muted); text-decoration:none; }
+        .top-brand { display:flex; align-items:center; gap:13px; font-size:1.04rem; font-weight:750; }
+        .top-brand img { width:58px; height:58px; object-fit:contain; border-radius:14px; background:#fff; }
+        .card { padding:clamp(22px,5vw,42px); border:1px solid var(--line); border-radius:24px; background:white; box-shadow:0 12px 36px rgba(27,55,75,.07); animation:rise-in .5s .06s ease-out both; }
+        h1 { margin:0; font-size:clamp(1.5rem,4vw,2.1rem); line-height:1.3; }
+        .intro { margin:6px 0 20px; color:var(--muted); }
+        .warning { margin:16px 0; padding:13px 15px; border:1px solid #f0dda4; border-radius:13px; background:var(--amber); color:#76550d; }
+        .warning strong { display:block; margin-bottom:2px; }
+        .metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:18px 0; }
+        .metric { padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:#fbfdfe; }
+        .metric span { display:block; color:var(--muted); font-size:.78rem; }
+        .metric strong { display:block; margin-top:3px; font-size:1.1rem; }
+        label { display:block; margin:16px 0 6px; font-weight:750; }
+        textarea { width:100%; min-height:94px; padding:12px; border:1px solid var(--line); border-radius:12px; background:#f8fafc; color:var(--ink); font:inherit; }
+        .table-wrap { overflow:auto; margin:14px 0 20px; border:1px solid var(--line); border-radius:12px; }
+        table { width:100%; border-collapse:collapse; font-size:.87rem; }
+        th,td { min-width:125px; padding:11px 13px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+        th { background:#f5f8fa; color:var(--muted); font-size:.76rem; }
+        td:last-child { min-width:220px; white-space:pre-wrap; overflow-wrap:anywhere; }
+        tr:last-child td { border-bottom:0; }
+        .actions { display:flex; flex-wrap:wrap; align-items:center; gap:11px; }
+        button,.cancel { display:inline-flex; min-height:45px; justify-content:center; align-items:center; padding:9px 16px; border:0; border-radius:11px; font:inherit; font-weight:750; text-decoration:none; cursor:pointer; }
+        button { background:var(--green); color:white; }
+        button:hover { background:#056b49; }
+        .cancel { border:1px solid var(--line); background:white; color:var(--ink); }
+        .page-footer { margin-top:22px; padding:clamp(24px,4vw,38px); border-radius:20px; background:linear-gradient(130deg,#172a3a,#24485a); color:#e7eef3; animation:rise-in .5s .12s ease-out both; }
+        .page-footer strong { display:block; margin-bottom:5px; color:#fff; font-size:clamp(1.2rem,2.4vw,1.55rem); }
+        .page-footer span { color:#bfccd5; }
+        @keyframes rise-in { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+        @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; } }
+        @media(max-width:560px) { main { margin-top:10px; } .top { min-height:68px; align-items:flex-start; } .top-brand { font-size:.86rem; } .top-brand img { width:46px; height:46px; } .top>a { max-width:42%; text-align:right; font-size:.85rem; } .metrics { grid-template-columns:1fr; gap:7px; } .metric { display:flex; justify-content:space-between; align-items:center; } .metric strong { margin:0; } .table-wrap { margin-inline:-8px; } th,td { min-width:105px; padding:9px; } td:last-child { min-width:190px; } }
+    </style>
+</head>
+<body>
+<main>
+    <header class="top">
+        <div class="top-brand"><img src="{% static 'images/logo.png' %}" alt=""><span>খন্দকার নাসের উদ্দিন মাধ্যমিক বিদ্যালয়<br>School SMS Center</span></div>
+        <a href="{% url 'sms_management:dashboard' %}">← SMS ড্যাশবোর্ডে ফিরে যান</a>
+    </header>
+    <section class="card">
+        <h1>{% if is_reviewing_pending %}Pending SMS পুনরায় যাচাই করুন{% else %}পাঠানোর আগে একবার যাচাই করুন{% endif %}</h1>
+        <p class="intro">{% if is_reviewing_pending %}শুধু এখনো provider-এ জমা না হওয়া pending SMS-গুলো দেখানো হচ্ছে।{% else %}প্রাপকের তালিকা ও বার্তা ঠিক থাকলে নিচের বোতামে চাপুন।{% endif %}</p>
+        <div class="warning"><strong>SMS পাঠানোর চূড়ান্ত নিশ্চিতকরণ</strong>নিশ্চিত করলে তালিকাভুক্ত প্রত্যেক নম্বরে নির্বাচিত gateway-তে একটি personalized SMS request যাবে। আগে submitted, accepted, sent, delivered অথবা unknown SMS এখানে পুনরায় পাঠানো হবে না। Provider request গ্রহণ করলেই SMS delivered হয়েছে—এমন নয়।</div>
+        <div class="metrics">
+            <div class="metric"><span>প্রাপক</span><strong>{{ recipients|length }} জন</strong></div>
+            <div class="metric"><span>বাদ পড়েছে (নম্বর নেই/ভুল)</span><strong>{{ excluded_count }} জন</strong></div>
+            <div class="metric"><span>একই নম্বর একত্র করা হয়েছে</span><strong>{{ duplicate_count }}টি</strong></div>
+        </div>
+        <p><strong>ক্যাম্পেইন:</strong> {{ campaign.title }}</p>
+        <p><strong>SMS Gateway:</strong> {{ campaign.get_gateway_display }}</p>
+        <p><strong>কারা পাবেন:</strong> {{ campaign.get_audience_display }}</p>
+        {% if campaign.scheduled_at %}<p><strong>পাঠানোর নির্ধারিত সময়:</strong> {{ campaign.scheduled_at|date:"d M Y, h:i A" }}</p>{% endif %}
+        {% if campaign.gateway == 'sms_net_bd' and recipients|length > 1 and not bulk_content_id_ready %}
+            <div class="warning"><strong>Bulk SMS এখনো প্রস্তুত নয়</strong><code>SMS_GATEWAY_CONTENT_ID</code>-তে SMS.NET.BD-এর approved Content ID কনফিগার না করা পর্যন্ত পাঠানো যাবে না।</div>
+        {% endif %}
+        {% if campaign.gateway == 'sms_net_bd' %}
+            {% if balance %}<p><strong>সর্বশেষ জানা ব্যালেন্স:</strong> {{ balance.amount }} ({{ balance.checked_at }})</p>{% else %}<p class="intro">এই পৃষ্ঠায় live balance দেখানো হয়নি। পাঠানোর আগে ড্যাশবোর্ড থেকে balance পরীক্ষা করুন।</p>{% endif %}
+        {% else %}
+            <p class="intro">httpSMS আপনার সংযুক্ত Android ফোনের SIM ব্যবহার করবে। ফোনটি online ও httpSMS app connected থাকতে হবে।</p>
+        {% endif %}
+        <label for="message-preview">বার্তার নমুনা</label>
+        <textarea id="message-preview" readonly>{% if recipients %}{{ recipients.0.message }}{% else %}{{ campaign.content }}{% endif %}</textarea>
+        <label>প্রাপকের তালিকা ও ব্যক্তিগত বার্তা</label>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>প্রাপক</th><th>ধরন</th><th>মোবাইল নম্বর</th><th>ব্যক্তিগত বার্তা</th></tr></thead>
+                <tbody>
+                {% for recipient in recipients %}
+                    <tr><td>{{ recipient.recipient_name }}</td><td>{{ recipient.get_recipient_type_display }}</td><td>{{ recipient.phone_number }}</td><td><small>{{ recipient.message|length }} characters</small><br>{{ recipient.message }}</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <form method="post" action="{% url 'sms_management:confirm_send' campaign.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="confirmation_token" value="{{ campaign.confirmation_token }}">
+            <label><input type="checkbox" name="confirm_send" value="yes" required {% if campaign.gateway == 'sms_net_bd' and recipients|length > 1 and not bulk_content_id_ready %}disabled{% endif %}> আমি প্রাপকসংখ্যা, নম্বর ও বার্তা যাচাই করেছি এবং পাঠানোর অনুমতি দিচ্ছি।</label>
+            <div class="actions">
+                <button type="submit" {% if campaign.gateway == 'sms_net_bd' and recipients|length > 1 and not bulk_content_id_ready %}disabled{% endif %}>✓ নিশ্চিত করে SMS request পাঠান</button>
+                <a class="cancel" href="{% url 'sms_management:dashboard' %}">এখনই নয়</a>
+            </div>
+        </form>
+    </section>
+    <footer class="page-footer">
+        <strong>খন্দকার নাসের উদ্দিন মাধ্যমিক বিদ্যালয়</strong>
+        <span>SMS যোগাযোগ কেন্দ্র · পাঠানোর আগে প্রাপক ও message আবার যাচাই করুন।</span>
+    </footer>
+</main>
+</body>
+</html>

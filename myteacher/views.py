@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Student, TeacherSubjectAssignment, Mark, Subject, ExamRoutine, TeacherClassAssignment, Teacher, Testimonial
 from students.models import StudentAdmitCard, StudentResultPublication
+from sms_management.access import user_can_access_sms
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.template.loader import get_template, render_to_string
 from django.urls import reverse
@@ -108,8 +109,22 @@ def teacher_profile(request):
 
 @login_required
 def dashboard_view(request):
-    teacher = request.user.teacher
+    teacher = getattr(request.user, 'teacher', None)
     is_head_teacher = is_head_or_admin(teacher, request.user)
+    can_manage_sms = user_can_access_sms(request.user, teacher)
+
+    if teacher is None:
+        if not can_manage_sms:
+            return HttpResponseForbidden("A teacher profile or SMS administrator permission is required.")
+        return render(request, 'myteacher/dashboard.html', {
+            'teacher': None,
+            'assignments': [],
+            'class_students': None,
+            'assigned_classes': [],
+            'can_manage_routine': False,
+            'is_head_teacher': False,
+            'can_manage_sms': True,
+        })
 
     # Get all assignments for this teacher (subject-level class assignments for view only)
     assignments = TeacherSubjectAssignment.objects.filter(teacher=teacher)
@@ -133,6 +148,7 @@ def dashboard_view(request):
         'assigned_classes': assigned_classes,
         'can_manage_routine': teacher.is_class_teacher or is_head_teacher,
         'is_head_teacher': is_head_teacher,
+        'can_manage_sms': can_manage_sms,
     })
 
 @login_required
@@ -1120,7 +1136,9 @@ def seat_plan_view(request):
 
 
 def is_head_or_admin(teacher, user):
-    return user.is_superuser or teacher.designation in ['Headmaster', 'Assistant Headmaster']
+    return user.is_superuser or bool(
+        teacher and teacher.designation in ['Headmaster', 'Assistant Headmaster']
+    )
 
 
 def get_teacher_allowed_classes(teacher):

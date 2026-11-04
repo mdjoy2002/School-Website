@@ -17,9 +17,11 @@
     .header-gradient {
         background: linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%);
         color: #ffffff;
-        padding: 2rem;
+        min-height: 180px;
+        padding: clamp(2rem, 5vw, 3.25rem);
         border-radius: 20px;
         margin-bottom: 2rem;
+        animation: dashboard-enter .5s ease-out both;
     }
 
     .table-custom { border-radius: 15px; border: 1px solid #e9ecef; }
@@ -36,8 +38,13 @@
     }
 
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes dashboard-enter { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @media (prefers-reduced-motion: reduce) {
+        .dashboard-container, .header-gradient { animation: none; }
+    }
 </style>
 
+{% if teacher %}
 <div class="container py-4 dashboard-container">
     <div class="header-gradient shadow-sm d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
@@ -92,6 +99,11 @@
                     {% if can_manage_routine %}
                         <a href="{% url 'myteacher:manage_routine' %}" class="btn btn-outline-primary py-3 rounded-pill fw-bold shadow-sm">
                             <i class="fas fa-calendar-alt me-2"></i>Manage Routine
+                        </a>
+                    {% endif %}
+                    {% if can_manage_sms %}
+                        <a href="{% url 'sms_management:dashboard' %}" class="btn btn-outline-success py-3 rounded-pill fw-bold shadow-sm">
+                            <i class="fas fa-comment-sms me-2"></i>SMS Management
                         </a>
                     {% endif %}
                     {% if is_head_teacher %}
@@ -174,4 +186,20 @@
         {% endif %}
     </div>
 </div>
+{% else %}
+<div class="container py-5 dashboard-container">
+    <div class="card profile-card p-4 p-md-5 text-center">
+        <div class="header-gradient shadow-sm mb-4">
+            <h2 class="fw-bold mb-1">School Administration</h2>
+            <p class="mb-0 text-white-50">Welcome, {{ request.user.get_username }}</p>
+        </div>
+        <p class="text-muted">This account can access school SMS management without a teacher profile.</p>
+        {% if can_manage_sms %}
+        <a href="{% url 'sms_management:dashboard' %}" class="btn btn-success py-3 rounded-pill fw-bold shadow-sm align-self-center">
+            <i class="fas fa-comment-sms me-2"></i>SMS Management
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
 {% endblock %}
