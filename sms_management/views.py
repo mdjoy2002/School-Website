@@ -126,10 +126,7 @@ def dashboard(request):
         row['recipient_type']: row['total']
         for row in SMSRecipient.objects.values('recipient_type').annotate(total=Count('id'))
     }
-    test_delivered = SMSRecipient.objects.filter(
-        campaign__audience='test',
-        status__in=('sent', 'delivered'),
-    ).exists()
+    test_delivered = SMSCampaign.gateway_has_successful_test_sms('sms_net_bd') or SMSCampaign.gateway_has_successful_test_sms('httpsms')
     campaign_stats = SMSCampaign.objects.aggregate(
         total=Count('id'),
         recipients=Sum('recipient_count'),
@@ -320,11 +317,8 @@ def confirm_send(request, campaign_id):
         messages.error(request, 'Please explicitly confirm the recipient list and message before sending.')
         return redirect('sms_management:dashboard')
 
-    if campaign.audience != 'test' and not SMSRecipient.objects.filter(
-        campaign__audience='test',
-        campaign__gateway=campaign.gateway,
-        status__in=('sent', 'delivered', 'accepted'),
-    ).exists():
+    # আপডেট করা চেক: মডেলে তৈরি করা হেল্পার মেথড ব্যবহার করে যাচাই করা হচ্ছে
+    if campaign.audience != 'test' and not SMSCampaign.gateway_has_successful_test_sms(campaign.gateway):
         messages.error(
             request,
             'Bulk SMS is locked until a test SMS has a Sent, Delivered, or Accepted status on the selected gateway.',

@@ -82,6 +82,18 @@ class SMSCampaign(models.Model):
     def __str__(self):
         return f'SMS campaign {self.pk} ({self.get_status_display()})'
 
+    @classmethod
+    def gateway_has_successful_test_sms(cls, gateway_name):
+        """
+        যাচাই করে নির্দিষ্ট গেটওয়েতে অন্তত একটি টেস্ট এসএমএস 
+        Sent, Delivered বা Accepted হয়েছে কি না।
+        """
+        return cls.objects.filter(
+            gateway=gateway_name,
+            recipients__recipient_type='test',
+            recipients__status__in=['sent', 'delivered', 'accepted']
+        ).exists()
+
 
 class SMSRecipient(models.Model):
     TYPE_CHOICES = [
