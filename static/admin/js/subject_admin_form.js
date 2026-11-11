@@ -13,11 +13,10 @@
             const classLevel = classSelect.value;
             const isMiddleClass = ['6', '7', '8'].includes(classLevel);
             const isSeniorClass = ['9', '10'].includes(classLevel);
-            const isEditing = document.body.classList.contains('change-form');
             const allGroups = groupSelect.querySelector('option[value="ALL"]');
 
-            middleField.closest('.form-row').hidden = isEditing || !isMiddleClass;
-            seniorField.closest('.form-row').hidden = isEditing || !isSeniorClass;
+            middleField.closest('.form-row').hidden = !isMiddleClass;
+            seniorField.closest('.form-row').hidden = !isSeniorClass;
             if (allGroups) {
                 allGroups.hidden = !isSeniorClass;
                 if (!isSeniorClass && groupSelect.value === 'ALL') {
