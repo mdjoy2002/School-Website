@@ -960,6 +960,25 @@ class RoutineOnlySubjectAdminTests(TestCase):
         self.assertIn('senior_routine_subject', form.fields)
         self.assertIn('subject_admin_form.js', str(form.media))
 
+    def test_subject_change_admin_page_renders_routine_fields(self):
+        user = get_user_model().objects.create_superuser(
+            username='subject-admin',
+            email='subject-admin@example.com',
+            password='test-password',
+        )
+        subject = Subject.objects.create(
+            subject_name='Bangla',
+            subject_type='1',
+            class_level='6',
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('admin:myteacher_subject_change', args=[subject.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id_middle_routine_subject')
+        self.assertContains(response, 'id_senior_routine_subject')
+
     def test_all_group_creates_each_group_and_routine_only_practical_entries(self):
         form = self.save_subject_form(self.subject_form_data(
             '9',

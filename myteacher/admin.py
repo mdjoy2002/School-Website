@@ -141,10 +141,7 @@ class SubjectAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.instance.pk:
-            self.fields.pop('middle_routine_subject')
-            self.fields.pop('senior_routine_subject')
-        else:
+        if not self.instance.pk:
             self.fields['group_name'].choices = [
                 *Subject._meta.get_field('group_name').choices,
                 (self.GROUP_ALL, 'All (Science, Commerce, Arts)'),
