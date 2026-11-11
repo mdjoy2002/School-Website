@@ -960,7 +960,7 @@ class RoutineOnlySubjectAdminTests(TestCase):
         self.assertIn('senior_routine_subject', form.fields)
         self.assertIn('subject_admin_form.js', str(form.media))
 
-    def test_subject_change_admin_page_renders_routine_fields(self):
+    def test_subject_change_admin_page_does_not_render_routine_creation_fields(self):
         user = get_user_model().objects.create_superuser(
             username='subject-admin',
             email='subject-admin@example.com',
@@ -976,8 +976,49 @@ class RoutineOnlySubjectAdminTests(TestCase):
         response = self.client.get(reverse('admin:myteacher_subject_change', args=[subject.pk]))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'id_middle_routine_subject')
-        self.assertContains(response, 'id_senior_routine_subject')
+        self.assertNotContains(response, 'id_middle_routine_subject')
+        self.assertNotContains(response, 'id_senior_routine_subject')
+
+    def test_routine_only_subject_change_page_hides_mark_fields(self):
+        user = get_user_model().objects.create_superuser(
+            username='routine-subject-admin',
+            email='routine-subject-admin@example.com',
+            password='test-password',
+        )
+        subject = Subject.objects.create(
+            subject_name='Agricultural Studies Practical',
+            subject_code='134',
+            subject_type='0',
+            class_level='7',
+            is_routine_only=True,
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('admin:myteacher_subject_change', args=[subject.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id_subject_name')
+        self.assertContains(response, 'id_subject_code')
+        self.assertNotContains(response, 'id_subject_type')
+        self.assertNotContains(response, 'id_has_practical')
+        self.assertNotContains(response, 'id_full_mark')
+        self.assertNotContains(response, 'id_middle_routine_subject')
+        self.assertNotContains(response, 'id_senior_routine_subject')
+
+    def test_subject_add_page_places_routine_field_under_main_subject(self):
+        user = get_user_model().objects.create_superuser(
+            username='subject-add-admin',
+            email='subject-add-admin@example.com',
+            password='test-password',
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('admin:myteacher_subject_add'))
+        content = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertLess(content.index('id_subject_name'), content.index('id_middle_routine_subject'))
+        self.assertLess(content.index('id_middle_routine_subject'), content.index('id_subject_code'))
 
     def test_all_group_creates_each_group_and_routine_only_practical_entries(self):
         form = self.save_subject_form(self.subject_form_data(
@@ -997,6 +1038,10 @@ class RoutineOnlySubjectAdminTests(TestCase):
             list(subjects.filter(is_routine_only=True).values_list('group_name', flat=True)),
             ['Arts', 'Commerce', 'Science'],
         )
+        self.assertEqual(
+            list(subjects.filter(is_routine_only=True).values_list('subject_code', flat=True)),
+            ['136', '136', '136'],
+        )
 
     def test_class_six_to_eight_combined_practical_is_routine_only(self):
         self.save_subject_form(self.subject_form_data(
@@ -1007,6 +1052,7 @@ class RoutineOnlySubjectAdminTests(TestCase):
         practical = Subject.objects.get(subject_name='Science + Practical')
         self.assertTrue(practical.is_routine_only)
         self.assertEqual(practical.class_level, '6')
+        self.assertEqual(practical.subject_code, '136')
         self.assertFalse(Subject.objects.filter(
             subject_name='Science + Practical',
             is_routine_only=False,

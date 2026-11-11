@@ -115,12 +115,12 @@ class SubjectAdminForm(forms.ModelForm):
     middle_routine_subject = forms.CharField(
         required=False,
         label='Subject + Practical (Routine only)',
-        help_text='For classes 6–8 only. This entry appears in routines, not mark entry.',
+        help_text='For classes 6–8 only. The main subject code is copied automatically; this entry is not used for marks.',
     )
     senior_routine_subject = forms.CharField(
         required=False,
         label='Practical Subject (Routine only)',
-        help_text='For classes 9–10 only. This entry appears in routines, not mark entry.',
+        help_text='For classes 9–10 only. The main subject code is copied automatically; this entry is not used for marks.',
     )
 
     class Meta:
@@ -181,6 +181,19 @@ class SubjectAdmin(admin.ModelAdmin):
     list_filter = ('religion', 'class_level', 'group_name', 'has_practical', 'is_routine_only', 'subject_type')
     search_fields = ('subject_name', 'subject_code')
 
+    def get_fields(self, request, obj=None):
+        fields = super().get_fields(request, obj)
+        if obj:
+            hidden_fields = {'middle_routine_subject', 'senior_routine_subject'}
+            if obj.is_routine_only:
+                hidden_fields.update({'subject_type', 'religion', 'has_practical', 'full_mark'})
+            return [field for field in fields if field not in hidden_fields]
+
+        subject_fields = ['subject_name', 'middle_routine_subject', 'senior_routine_subject']
+        ordered_fields = [field for field in subject_fields if field in fields]
+        ordered_fields.extend(field for field in fields if field not in subject_fields)
+        return ordered_fields
+
     def save_model(self, request, obj, form, change):
         with transaction.atomic():
             groups = ['Science', 'Commerce', 'Arts'] if getattr(form, 'create_all_groups', False) else [form.cleaned_data.get('group_name') or '']
@@ -208,6 +221,7 @@ class SubjectAdmin(admin.ModelAdmin):
                 if routine_name:
                     Subject.objects.create(
                         subject_name=routine_name,
+                        subject_code=obj.subject_code,
                         subject_type='0',
                         religion='None',
                         class_level=obj.class_level,
