@@ -8,7 +8,9 @@ from django.test import RequestFactory, TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
-from myteacher.admin import ExamRoutineAdminForm
+from django.contrib import admin
+
+from myteacher.admin import ExamRoutineAdminForm, SubjectAdmin, SubjectAdminForm
 from myteacher.models import ExamRoutine, Mark, Subject, Teacher, TeacherSubjectAssignment
 from myteacher.views import get_student_result_summary, mark_entry_view
 from students.models import Student, StudentResultPublication
@@ -795,11 +797,17 @@ class RoutineSubjectSelectionTests(TestCase):
 
     def test_routine_form_renders_subjects_with_class_and_group_data(self):
         subject = self.create_subject('Science')
+        routine_only_subject = self.create_subject('Science')
+        routine_only_subject.subject_name = 'Physics Practical'
+        routine_only_subject.is_routine_only = True
+        routine_only_subject.save()
 
         response = self.client.get(reverse('myteacher:manage_routine'))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, f'value="{subject.pk}"')
+        self.assertContains(response, f'value="{routine_only_subject.pk}"')
+        self.assertContains(response, 'Physics Practical')
         self.assertContains(response, 'data-class-level="9"')
         self.assertContains(response, 'data-group-name="Science"')
         self.assertContains(response, 'data-code="109"')
@@ -920,3 +928,112 @@ class RoutineAdminSubjectSelectionTests(TestCase):
 
         self.assertFalse(form.is_valid())
         self.assertIn('subject_option', form.errors)
+
+
+class RoutineOnlySubjectAdminTests(TestCase):
+    def save_subject_form(self, data):
+        form = SubjectAdminForm(data=data)
+        self.assertTrue(form.is_valid(), form.errors)
+        subject = form.save(commit=False)
+        subject_admin = SubjectAdmin(Subject, admin.site)
+        subject_admin.save_model(RequestFactory().post('/admin/myteacher/subject/add/'), subject, form, False)
+        return form
+
+    def subject_form_data(self, class_level, group_name='', **extra):
+        return {
+            'subject_name': 'Physics',
+            'subject_code': '136',
+            'subject_type': '1',
+            'religion': 'None',
+            'class_level': class_level,
+            'group_name': group_name,
+            'has_practical': '',
+            'full_mark': '',
+            **extra,
+        }
+
+    def test_subject_form_has_group_all_and_class_specific_routine_fields(self):
+        form = SubjectAdminForm()
+
+        self.assertIn(('ALL', 'All (Science, Commerce, Arts)'), form.fields['group_name'].choices)
+        self.assertIn('middle_routine_subject', form.fields)
+        self.assertIn('senior_routine_subject', form.fields)
+        self.assertIn('subject_admin_form.js', str(form.media))
+
+    def test_all_group_creates_each_group_and_routine_only_practical_entries(self):
+        form = self.save_subject_form(self.subject_form_data(
+            '9',
+            'ALL',
+            senior_routine_subject='Physics Practical',
+        ))
+
+        self.assertTrue(form.create_all_groups)
+        subjects = Subject.objects.order_by('group_name', 'is_routine_only')
+        self.assertEqual(subjects.count(), 6)
+        self.assertEqual(
+            list(subjects.filter(is_routine_only=False).values_list('group_name', flat=True)),
+            ['Arts', 'Commerce', 'Science'],
+        )
+        self.assertEqual(
+            list(subjects.filter(is_routine_only=True).values_list('group_name', flat=True)),
+            ['Arts', 'Commerce', 'Science'],
+        )
+
+    def test_class_six_to_eight_combined_practical_is_routine_only(self):
+        self.save_subject_form(self.subject_form_data(
+            '6',
+            middle_routine_subject='Science + Practical',
+        ))
+
+        practical = Subject.objects.get(subject_name='Science + Practical')
+        self.assertTrue(practical.is_routine_only)
+        self.assertEqual(practical.class_level, '6')
+        self.assertFalse(Subject.objects.filter(
+            subject_name='Science + Practical',
+            is_routine_only=False,
+        ).exists())
+
+    def test_all_groups_option_is_rejected_for_class_six_to_eight(self):
+        form = SubjectAdminForm(data=self.subject_form_data('6', 'ALL'))
+
+        self.assertFalse(form.is_valid())
+        self.assertIn('group_name', form.errors)
+
+    def test_routine_only_subjects_are_not_available_for_mark_entry(self):
+        user = get_user_model().objects.create_user(
+            username='routine-only-teacher',
+            password='test-password',
+        )
+        teacher = Teacher.objects.create(
+            user=user,
+            teacher_id='RO001',
+            teacher_name='Routine Only Teacher',
+            designation='Assistant Teacher',
+            mobile='01700000000',
+            email='routine-only-teacher@example.com',
+            assigned_class='6',
+            teacher_img='',
+        )
+        regular_subject = Subject.objects.create(
+            subject_name='Bangla',
+            subject_type='1',
+            class_level='6',
+        )
+        routine_subject = Subject.objects.create(
+            subject_name='Bangla + Practical',
+            subject_type='0',
+            class_level='6',
+            is_routine_only=True,
+        )
+        TeacherSubjectAssignment.objects.create(teacher=teacher, subject=regular_subject)
+        TeacherSubjectAssignment.objects.create(teacher=teacher, subject=routine_subject)
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('myteacher:mark_entry'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            list(response.context['assignments'].values_list('subject__subject_name', flat=True)),
+            ['Bangla'],
+        )
+        self.assertNotContains(response, 'Bangla + Practical')

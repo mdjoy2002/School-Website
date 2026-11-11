@@ -42,6 +42,11 @@ class Subject(models.Model):
     subject_type = models.CharField(max_length=1, choices=TYPE_CHOICES, verbose_name="Type")
     religion = models.CharField(max_length=10, choices=RELIGION_CHOICES, default='None', verbose_name="Religion")
     class_level = models.CharField(max_length=2, choices=CLASS_CHOICES, verbose_name="Class")
+    is_routine_only = models.BooleanField(
+        default=False,
+        verbose_name="Routine only",
+        help_text="Routine-only subjects are excluded from mark entry.",
+    )
     group_name = models.CharField(
         max_length=20,
         choices=ACADEMIC_GROUP_CHOICES,
@@ -274,6 +279,8 @@ class Teacher(models.Model):
         return TeacherSubjectAssignment.objects.filter(
             teacher=self, 
             subject__class_level=class_level
+        ).filter(
+            subject__is_routine_only=False
         ).values_list('subject', flat=True).distinct()
 
 # 4. Teacher Class Assignment Model (NEW)

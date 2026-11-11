@@ -127,9 +127,15 @@ def dashboard_view(request):
         })
 
     # Get all assignments for this teacher (subject-level class assignments for view only)
-    assignments = TeacherSubjectAssignment.objects.filter(teacher=teacher)
+    assignments = TeacherSubjectAssignment.objects.filter(
+        teacher=teacher,
+        subject__is_routine_only=False,
+    )
     class_assign_qs = TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)
-    subj_class_qs = TeacherSubjectAssignment.objects.filter(teacher=teacher).values_list('subject__class_level', flat=True)
+    subj_class_qs = TeacherSubjectAssignment.objects.filter(
+        teacher=teacher,
+        subject__is_routine_only=False,
+    ).values_list('subject__class_level', flat=True)
     assigned_classes = sorted(set(list(class_assign_qs) + list(subj_class_qs)), key=lambda x: int(x))
 
     # Determine dashboard student list
@@ -154,10 +160,13 @@ def dashboard_view(request):
 @login_required
 def mark_entry_view(request):
     teacher = request.user.teacher
-    assignments = TeacherSubjectAssignment.objects.filter(teacher=teacher)
+    assignments = TeacherSubjectAssignment.objects.filter(
+        teacher=teacher,
+        subject__is_routine_only=False,
+    )
     
     # Get assigned classes for this teacher
-    assigned_classes = list(set(list(TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)) + list(TeacherSubjectAssignment.objects.filter(teacher=teacher).values_list('subject__class_level', flat=True))))
+    assigned_classes = list(set(list(TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)) + list(TeacherSubjectAssignment.objects.filter(teacher=teacher, subject__is_routine_only=False).values_list('subject__class_level', flat=True))))
     
     selected_class = request.GET.get('class_level')
     selected_subject = request.GET.get('subject_id')
@@ -338,8 +347,11 @@ def mark_entry_view(request):
 @login_required
 def mark_entry_history_view(request):
     teacher = request.user.teacher
-    assignments = TeacherSubjectAssignment.objects.filter(teacher=teacher)
-    assigned_classes = list(set(list(TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)) + list(TeacherSubjectAssignment.objects.filter(teacher=teacher).values_list('subject__class_level', flat=True))))
+    assignments = TeacherSubjectAssignment.objects.filter(
+        teacher=teacher,
+        subject__is_routine_only=False,
+    )
+    assigned_classes = list(set(list(TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)) + list(TeacherSubjectAssignment.objects.filter(teacher=teacher, subject__is_routine_only=False).values_list('subject__class_level', flat=True))))
 
     selected_class = request.GET.get('class_level')
     selected_subject = request.GET.get('subject_id')
@@ -355,7 +367,10 @@ def mark_entry_history_view(request):
         if selected_class not in assigned_classes:
             return HttpResponseForbidden("You are not authorized to access this class.")
 
-        marks = Mark.objects.filter(student__current_class=selected_class)
+        marks = Mark.objects.filter(
+            student__current_class=selected_class,
+            subject__is_routine_only=False,
+        )
 
         if selected_subject:
             selected_subject_obj = get_object_or_404(Subject, id=selected_subject)
@@ -1142,11 +1157,11 @@ def is_head_or_admin(teacher, user):
 
 
 def get_teacher_allowed_classes(teacher):
-    return list(set(list(TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)) + list(TeacherSubjectAssignment.objects.filter(teacher=teacher).values_list('subject__class_level', flat=True))))
+    return list(set(list(TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)) + list(TeacherSubjectAssignment.objects.filter(teacher=teacher, subject__is_routine_only=False).values_list('subject__class_level', flat=True))))
 
 
 def get_teacher_class_teacher_classes(teacher):
-    assigned_classes = list(set(list(TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)) + list(TeacherSubjectAssignment.objects.filter(teacher=teacher).values_list('subject__class_level', flat=True))))
+    assigned_classes = list(set(list(TeacherClassAssignment.objects.filter(teacher=teacher).values_list('class_level', flat=True)) + list(TeacherSubjectAssignment.objects.filter(teacher=teacher, subject__is_routine_only=False).values_list('subject__class_level', flat=True))))
     if not assigned_classes and teacher.is_class_teacher and teacher.class_teacher_of:
         assigned_classes = [teacher.class_teacher_of]
     return assigned_classes
