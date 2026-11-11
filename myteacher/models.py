@@ -47,6 +47,15 @@ class Subject(models.Model):
         verbose_name="Routine only",
         help_text="Routine-only subjects are excluded from mark entry.",
     )
+    routine_parent = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='routine_practical_subjects',
+        limit_choices_to={'is_routine_only': False},
+        verbose_name="Main Subject",
+    )
     group_name = models.CharField(
         max_length=20,
         choices=ACADEMIC_GROUP_CHOICES,

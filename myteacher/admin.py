@@ -141,6 +141,15 @@ class SubjectAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if self.instance.pk and not self.instance.is_routine_only:
+            routine_subject = self.instance.routine_practical_subjects.first()
+            if routine_subject:
+                field_name = (
+                    'middle_routine_subject'
+                    if self.instance.class_level in ('6', '7', '8')
+                    else 'senior_routine_subject'
+                )
+                self.initial[field_name] = routine_subject.subject_name
         if not self.instance.pk:
             self.fields['group_name'].choices = [
                 *Subject._meta.get_field('group_name').choices,
@@ -184,9 +193,21 @@ class SubjectAdmin(admin.ModelAdmin):
     def get_fields(self, request, obj=None):
         fields = super().get_fields(request, obj)
         if obj:
-            hidden_fields = {'middle_routine_subject', 'senior_routine_subject'}
             if obj.is_routine_only:
-                hidden_fields.update({'subject_type', 'religion', 'has_practical', 'full_mark'})
+                hidden_fields = {
+                    'middle_routine_subject',
+                    'senior_routine_subject',
+                    'subject_type',
+                    'religion',
+                    'has_practical',
+                    'full_mark',
+                }
+            else:
+                hidden_fields = {
+                    'senior_routine_subject'
+                    if obj.class_level in ('6', '7', '8')
+                    else 'middle_routine_subject'
+                }
             return [field for field in fields if field not in hidden_fields]
 
         subject_fields = ['subject_name', 'middle_routine_subject', 'senior_routine_subject']
@@ -196,12 +217,16 @@ class SubjectAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         with transaction.atomic():
-            groups = ['Science', 'Commerce', 'Arts'] if getattr(form, 'create_all_groups', False) else [form.cleaned_data.get('group_name') or '']
+            if change:
+                groups = [obj.group_name or '']
+            else:
+                groups = ['Science', 'Commerce', 'Arts'] if getattr(form, 'create_all_groups', False) else [form.cleaned_data.get('group_name') or '']
             obj.group_name = groups[0]
             super().save_model(request, obj, form, change)
 
+            group_subjects = {groups[0]: obj}
             for group_name in groups[1:]:
-                Subject.objects.create(
+                group_subjects[group_name] = Subject.objects.create(
                     subject_name=obj.subject_name,
                     subject_code=obj.subject_code,
                     subject_type=obj.subject_type,
@@ -219,15 +244,30 @@ class SubjectAdmin(admin.ModelAdmin):
             ).strip()
             for group_name in groups:
                 if routine_name:
-                    Subject.objects.create(
-                        subject_name=routine_name,
-                        subject_code=obj.subject_code,
-                        subject_type='0',
-                        religion='None',
-                        class_level=obj.class_level,
-                        group_name=group_name,
-                        is_routine_only=True,
-                    )
+                    parent_subject = group_subjects[group_name]
+                    routine_subject = parent_subject.routine_practical_subjects.first()
+                    if routine_subject:
+                        routine_subject.subject_name = routine_name
+                        routine_subject.subject_code = parent_subject.subject_code
+                        routine_subject.class_level = parent_subject.class_level
+                        routine_subject.group_name = group_name
+                        routine_subject.save(update_fields=(
+                            'subject_name',
+                            'subject_code',
+                            'class_level',
+                            'group_name',
+                        ))
+                    else:
+                        Subject.objects.create(
+                            subject_name=routine_name,
+                            subject_code=parent_subject.subject_code,
+                            subject_type='0',
+                            religion='None',
+                            class_level=parent_subject.class_level,
+                            group_name=group_name,
+                            is_routine_only=True,
+                            routine_parent=parent_subject,
+                        )
 
 
 # Mark Admin

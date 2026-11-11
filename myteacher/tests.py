@@ -960,7 +960,7 @@ class RoutineOnlySubjectAdminTests(TestCase):
         self.assertIn('senior_routine_subject', form.fields)
         self.assertIn('subject_admin_form.js', str(form.media))
 
-    def test_subject_change_admin_page_does_not_render_routine_creation_fields(self):
+    def test_subject_change_admin_page_renders_existing_routine_subject(self):
         user = get_user_model().objects.create_superuser(
             username='subject-admin',
             email='subject-admin@example.com',
@@ -968,16 +968,70 @@ class RoutineOnlySubjectAdminTests(TestCase):
         )
         subject = Subject.objects.create(
             subject_name='Bangla',
+            subject_code='101',
             subject_type='1',
             class_level='6',
+        )
+        Subject.objects.create(
+            subject_name='Bangla + Practical',
+            subject_code='101',
+            subject_type='0',
+            class_level='6',
+            is_routine_only=True,
+            routine_parent=subject,
         )
         self.client.force_login(user)
 
         response = self.client.get(reverse('admin:myteacher_subject_change', args=[subject.pk]))
 
         self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, 'id_middle_routine_subject')
+        self.assertContains(response, 'id_middle_routine_subject')
+        self.assertContains(response, 'Bangla + Practical')
         self.assertNotContains(response, 'id_senior_routine_subject')
+
+    def test_subject_change_updates_existing_routine_subject(self):
+        user = get_user_model().objects.create_superuser(
+            username='subject-edit-admin',
+            email='subject-edit-admin@example.com',
+            password='test-password',
+        )
+        subject = Subject.objects.create(
+            subject_name='Agricultural Studies',
+            subject_code='134',
+            subject_type='1',
+            class_level='7',
+        )
+        routine_subject = Subject.objects.create(
+            subject_name='Agricultural Studies + Practical',
+            subject_code='134',
+            subject_type='0',
+            class_level='7',
+            is_routine_only=True,
+            routine_parent=subject,
+        )
+        self.client.force_login(user)
+
+        response = self.client.post(
+            reverse('admin:myteacher_subject_change', args=[subject.pk]),
+            {
+                'subject_name': 'Agricultural Studies',
+                'subject_code': '134',
+                'subject_type': '1',
+                'religion': 'None',
+                'class_level': '7',
+                'group_name': '',
+                'has_practical': '',
+                'full_mark': '',
+                'middle_routine_subject': 'Agricultural Studies and Practical',
+                '_save': 'Save',
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        routine_subject.refresh_from_db()
+        self.assertEqual(routine_subject.subject_name, 'Agricultural Studies and Practical')
+        self.assertEqual(routine_subject.subject_code, '134')
+        self.assertEqual(routine_subject.routine_parent, subject)
 
     def test_routine_only_subject_change_page_hides_mark_fields(self):
         user = get_user_model().objects.create_superuser(
