@@ -194,6 +194,8 @@ def mark_entry_view(request):
             ).order_by('class_roll')
         else:
             students = Student.objects.filter(current_class=selected_class).order_by('class_roll')
+        if selected_subject_obj.group_name and selected_class in ['9', '10']:
+            students = students.filter(group=selected_subject_obj.group_name)
         subject_full_mark = selected_subject_obj.full_mark_value
         
         for student in students:
@@ -229,6 +231,8 @@ def mark_entry_view(request):
         students_to_mark = Student.objects.filter(current_class=s_class)
         if selected_subject_obj.is_religion_based:
             students_to_mark = students_to_mark.filter(religion=selected_subject_obj.effective_religion)
+        if selected_subject_obj.group_name and s_class in ['9', '10']:
+            students_to_mark = students_to_mark.filter(group=selected_subject_obj.group_name)
 
         subject_full_mark = selected_subject_obj.full_mark_value or Decimal('0.00')
         parsed_marks = []
@@ -1199,6 +1203,8 @@ def get_student_result_summary(student, exam_type, exam_year=None):
     for mark in marks:
         if mark.subject.is_religion_based and mark.subject.effective_religion != mark.student.religion:
             continue
+        if not mark.subject.is_available_for_student(mark.student):
+            continue
         filtered_marks.append(mark)
     marks = filtered_marks
     subject_results = []
@@ -1476,6 +1482,8 @@ def get_student_result_summary(student, exam_type, exam_year=None):
         for mark in candidate_marks:
             if mark.subject.is_religion_based and mark.subject.effective_religion != candidate_student.religion:
                 continue
+            if not mark.subject.is_available_for_student(candidate_student):
+                continue
             filtered_candidate_marks.append(mark)
 
         candidate_total = Decimal('0.00')
@@ -1494,6 +1502,8 @@ def get_student_result_summary(student, exam_type, exam_year=None):
         filtered_candidate_marks = []
         for mark in candidate_marks:
             if mark.subject.is_religion_based and mark.subject.effective_religion != candidate_student.religion:
+                continue
+            if not mark.subject.is_available_for_student(candidate_student):
                 continue
             filtered_candidate_marks.append(mark)
 

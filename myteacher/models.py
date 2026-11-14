@@ -128,6 +128,13 @@ class Subject(models.Model):
         parts.append(f"(Class {self.class_level})")
         return ' '.join(parts)
 
+    def is_available_for_student(self, student):
+        return not (
+            self.class_level in ['9', '10']
+            and self.group_name
+            and self.group_name != student.group
+        )
+
     class Meta:
         verbose_name = "Subject"
         verbose_name_plural = "Subjects"
@@ -175,6 +182,12 @@ class Mark(models.Model):
             raise ValidationError({
                 'student': f"Student religion must match subject religion ({subject_religion}).",
                 'subject': f"Subject religion must match student religion ({self.student.religion}).",
+            })
+
+        if not self.subject.is_available_for_student(self.student):
+            raise ValidationError({
+                'student': f"This subject is only available to {self.subject.group_name} students.",
+                'subject': f"This subject is not available to {self.student.group or 'General'} students.",
             })
 
         if self.subject.is_religion_based:

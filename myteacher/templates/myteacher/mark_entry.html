@@ -49,7 +49,7 @@
                         {% for a in assignments %}
                             {% if a.subject.class_level == selected_class %}
                                 <option value="{{ a.subject.id }}" {% if selected_subject == a.subject.id|stringformat:"s" %}selected{% endif %}>
-                                    {{ a.subject.subject_name }} {% if a.subject.subject_type != '0' %}{{ a.subject.get_subject_type_display }}{% endif %}
+                                    {{ a.subject.subject_name }} {% if a.subject.subject_type != '0' %}{{ a.subject.get_subject_type_display }}{% endif %}{% if a.subject.group_name %} ({{ a.subject.group_name }}){% endif %}
                                 </option>
                             {% endif %}
                         {% endfor %}
@@ -85,6 +85,13 @@
     <div class="alert alert-info border-info-subtle rounded-4 mb-4">
         <strong>Religion filter:</strong> Only <span class="text-capitalize">{{ selected_subject_obj.religion }}</span> students are shown for <strong>{{ selected_subject_obj.subject_name }}</strong>.
     </div>
+    {% endif %}
+    {% if selected_subject_obj and selected_subject_obj.group_name %}
+    {% if selected_class == '9' or selected_class == '10' %}
+    <div class="alert alert-info border-info-subtle rounded-4 mb-4">
+        <strong>Group filter:</strong> Only {{ selected_subject_obj.group_name }} students are shown for <strong>{{ selected_subject_obj.subject_name }}</strong>.
+    </div>
+    {% endif %}
     {% endif %}
 
     {% if students %}

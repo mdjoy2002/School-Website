@@ -159,7 +159,12 @@ class Student(models.Model):
 
     def get_result_cards(self):
         Mark = apps.get_model('myteacher', 'Mark')
-        return Mark.objects.filter(student=self).select_related('subject').order_by('-exam_year', 'exam_type', 'subject__subject_name')
+        marks = Mark.objects.filter(student=self).select_related('subject').filter(
+            Q(subject__class_level__in=['6', '7', '8']) |
+            Q(subject__class_level__in=['9', '10'], subject__group_name='') |
+            Q(subject__class_level__in=['9', '10'], subject__group_name=self.group)
+        )
+        return marks.order_by('-exam_year', 'exam_type', 'subject__subject_name')
 
     def get_admit_cards(self):
         return self.saved_admit_cards.order_by('-exam_year', 'exam_type')

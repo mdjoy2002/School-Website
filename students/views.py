@@ -146,6 +146,10 @@ def student_profile(request, student_id):
     # Result cards grouping (reuse logic from dashboard)
     Mark = apps.get_model('myteacher', 'Mark')
     marks = Mark.objects.filter(student=student).select_related('subject').order_by('-exam_year', 'exam_type', 'subject__subject_name')
+    marks = [
+        mark for mark in marks
+        if mark.subject.is_available_for_student(student)
+    ]
 
     grouped_results = []
     for (class_level, exam_type, exam_year), group in groupby(

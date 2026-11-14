@@ -153,7 +153,7 @@ class SubjectAdminForm(forms.ModelForm):
         if not self.instance.pk:
             self.fields['group_name'].choices = [
                 *Subject._meta.get_field('group_name').choices,
-                (self.GROUP_ALL, 'All (Science, Commerce, Arts)'),
+                (self.GROUP_ALL, 'All groups (Science, Arts, Commerce)'),
             ]
 
     def clean_group_name(self):

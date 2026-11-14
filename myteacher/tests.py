@@ -2,6 +2,7 @@ from decimal import Decimal
 from types import SimpleNamespace
 
 from django.contrib.messages.storage.fallback import FallbackStorage
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.template.loader import render_to_string
 from django.test import RequestFactory, TestCase
@@ -955,7 +956,7 @@ class RoutineOnlySubjectAdminTests(TestCase):
     def test_subject_form_has_group_all_and_class_specific_routine_fields(self):
         form = SubjectAdminForm()
 
-        self.assertIn(('ALL', 'All (Science, Commerce, Arts)'), form.fields['group_name'].choices)
+        self.assertIn(('ALL', 'All groups (Science, Arts, Commerce)'), form.fields['group_name'].choices)
         self.assertIn('middle_routine_subject', form.fields)
         self.assertIn('senior_routine_subject', form.fields)
         self.assertIn('subject_admin_form.js', str(form.media))
@@ -1097,6 +1098,40 @@ class RoutineOnlySubjectAdminTests(TestCase):
             ['136', '136', '136'],
         )
 
+    def test_class_ten_add_page_offers_all_groups_and_saves_subject_for_each(self):
+        user = get_user_model().objects.create_superuser(
+            username='all-groups-admin',
+            email='all-groups-admin@example.com',
+            password='test-password',
+        )
+        self.client.force_login(user)
+
+        add_page = self.client.get(reverse('admin:myteacher_subject_add'))
+        self.assertEqual(add_page.status_code, 200)
+        self.assertContains(add_page, 'All groups (Science, Arts, Commerce)')
+        self.assertContains(add_page, 'subject_admin_form.js')
+
+        response = self.client.post(
+            reverse('admin:myteacher_subject_add'),
+            self.subject_form_data(
+                '10',
+                'ALL',
+                subject_name='Agricultural Studies',
+                subject_code='134',
+                subject_type='1',
+            ),
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            list(Subject.objects.filter(
+                subject_name='Agricultural Studies',
+                class_level='10',
+                is_routine_only=False,
+            ).order_by('group_name').values_list('group_name', flat=True)),
+            ['Arts', 'Commerce', 'Science'],
+        )
+
     def test_class_six_to_eight_combined_practical_is_routine_only(self):
         self.save_subject_form(self.subject_form_data(
             '6',
@@ -1156,3 +1191,134 @@ class RoutineOnlySubjectAdminTests(TestCase):
             ['Bangla'],
         )
         self.assertNotContains(response, 'Bangla + Practical')
+
+
+class GroupSpecificSubjectTests(TestCase):
+    def setUp(self):
+        user = get_user_model().objects.create_user(
+            username='group-subject-teacher',
+            password='test-password',
+        )
+        self.teacher = Teacher.objects.create(
+            user=user,
+            teacher_id='GS001',
+            teacher_name='Group Subject Teacher',
+            designation='Assistant Teacher',
+            mobile='01700000000',
+            email='group-subject-teacher@example.com',
+            assigned_class='9',
+            teacher_img='',
+        )
+        self.user = user
+        self.arts_student = self.create_student('7000001', 'Arts')
+        self.commerce_student = self.create_student('7000002', 'Commerce')
+        self.science_student = self.create_student('7000003', 'Science')
+        self.arts_subject = self.create_subject('Arts Subject', 'Arts')
+        self.general_subject = self.create_subject('General Subject')
+        TeacherSubjectAssignment.objects.create(teacher=self.teacher, subject=self.arts_subject)
+        TeacherSubjectAssignment.objects.create(teacher=self.teacher, subject=self.general_subject)
+
+    def create_student(self, student_id, group):
+        return Student.objects.create(
+            photo='',
+            full_name=f'{group} Student',
+            father_name='Father',
+            mother_name='Mother',
+            student_id=student_id,
+            gender='Male',
+            date_of_birth='2008-01-01',
+            current_class='9',
+            class_roll=int(student_id[-1]),
+            shift='Day',
+            mobile_num='01700000000',
+            group=group,
+            religion='Islam',
+        )
+
+    def create_subject(self, subject_name, group_name=''):
+        return Subject.objects.create(
+            subject_name=subject_name,
+            subject_type='1',
+            religion='None',
+            class_level='9',
+            group_name=group_name,
+        )
+
+    def test_mark_entry_only_lists_and_saves_group_specific_students(self):
+        self.client.force_login(self.user)
+        url = reverse('myteacher:mark_entry')
+        params = {
+            'class_level': '9',
+            'subject_id': self.arts_subject.id,
+            'exam_type': 'Annual',
+            'exam_year': '2026',
+        }
+
+        response = self.client.get(url, params)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(list(response.context['students']), [self.arts_student])
+        self.assertContains(response, 'Only Arts students are shown')
+
+        response = self.client.post(url, {
+            **params,
+            'subject_id': str(self.arts_subject.id),
+            'class_level': '9',
+            'exam_type': 'Annual',
+            'exam_year': '2026',
+            f'obj_{self.arts_student.id}': '20',
+            f'obj_{self.commerce_student.id}': '80',
+        })
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Mark.objects.filter(student=self.arts_student, subject=self.arts_subject).exists())
+        self.assertFalse(Mark.objects.filter(student=self.commerce_student, subject=self.arts_subject).exists())
+
+    def test_general_subject_is_available_to_every_group(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse('myteacher:mark_entry'), {
+            'class_level': '9',
+            'subject_id': self.general_subject.id,
+            'exam_type': 'Annual',
+            'exam_year': '2026',
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            set(response.context['students']),
+            {self.arts_student, self.commerce_student, self.science_student},
+        )
+
+    def test_other_group_subjects_are_excluded_from_result_cards_and_mark_validation(self):
+        commerce_subject = self.create_subject('Commerce Subject', 'Commerce')
+        marks = [
+            Mark(
+                mark_id=f'71000{index}',
+                student=self.arts_student,
+                subject=subject,
+                exam_type='Annual',
+                exam_year=2026,
+                objective_mark=Decimal('20.00'),
+            )
+            for index, subject in enumerate(
+                [self.arts_subject, commerce_subject, self.general_subject],
+                start=1,
+            )
+        ]
+        Mark.objects.bulk_create(marks)
+
+        summary = get_student_result_summary(self.arts_student, 'Annual', 2026)
+        result_subject_names = {row['subject_name'] for row in summary['marks']}
+        result_card_subject_ids = set(self.arts_student.get_result_cards().values_list('subject_id', flat=True))
+
+        self.assertEqual(result_subject_names, {'Arts Subject 1st', 'General Subject 1st'})
+        self.assertEqual(result_card_subject_ids, {self.arts_subject.id, self.general_subject.id})
+        with self.assertRaises(ValidationError):
+            Mark.objects.create(
+                student=self.arts_student,
+                subject=commerce_subject,
+                exam_type='Annual',
+                exam_year=2026,
+                objective_mark=Decimal('20.00'),
+            )
