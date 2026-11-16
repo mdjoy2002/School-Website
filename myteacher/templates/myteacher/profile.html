@@ -69,6 +69,11 @@
                 </div>
                 
                 <div class="mt-4">
+                    {% if teacher.designation == 'Headmaster' or teacher.designation == 'Assistant Headmaster' %}
+                    <a href="{% url 'myteacher:manual_asr' %}" class="btn btn-success btn-custom shadow-sm me-2 mb-2">
+                        <i class="fas fa-wand-magic-sparkles me-2"></i>Manual ASR
+                    </a>
+                    {% endif %}
                     <a href="{% url 'myteacher:dashboard' %}" class="btn btn-outline-primary btn-custom shadow-sm">
                         <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
                     </a>

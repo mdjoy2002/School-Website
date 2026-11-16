@@ -1,386 +1,963 @@
-{% extends 'myteacher/base.html' %}
+
+
+{% load static %}
+
 {% block content %}
+
 <style>
-    body { font-family: var(--card-font, 'Times New Roman'), Times, serif; background-color: #e0e0e0; }
-    .page-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-    .control-panel { background: #fff; padding: 15px 25px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 20px; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08); flex-wrap: wrap; }
-    .control-panel select, .control-panel button { font-size: 14px; }
-    .control-panel .download-selected { background-color: #27ae60; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-    .control-panel .class-select { padding: 10px 14px; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; }
-
-    /* Advanced Section-wise & Font-Pattern Customizer Panel */
-    .customizer-panel { background: #ffffff; padding: 15px 25px; border-radius: 8px; margin-bottom: 30px; display: flex; gap: 15px; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08); flex-wrap: wrap; border-left: 5px solid #f37021; }
-    .customizer-panel label { font-size: 12px; font-weight: bold; color: #1a2a6c; display: flex; align-items: center; gap: 5px; }
-    .customizer-panel input[type="color"] { border: none; width: 24px; height: 24px; cursor: pointer; border-radius: 4px; background: none; }
-    .customizer-panel select { padding: 5px 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 12px; }
-
-    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 26px; }
-    .card-holder { position: relative; }
-    .card-checkbox { position: absolute; top: -10px; left: -10px; z-index: 10; transform: scale(1.3); }
-
-    .id-card {
-        width: 210px;
-        height: 332px;
-        background-color: var(--card-bg, #ffffff);
-        background-image: var(--card-pattern, none);
-        font-family: var(--card-font, 'Times New Roman'), Times, serif;
-        border-radius: 8px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-        border: 2px solid var(--card-border-color, #1a2a6c);
-        overflow: hidden;
-        position: relative;
-        box-sizing: border-box;
+    :root {
+        --maroon: #650d35;
+        --maroon-dark: #4b0928;
+        --orange: #f47721;
+        --green: #159b68;
+        --gold: #f5d52e;
+        --ink: #20202a;
+        --card-font: "Times New Roman", Times, serif;
     }
 
-    .header { background: linear-gradient(135deg, var(--card-header-bg1, #1a2a6c), var(--card-header-bg2, #2c3e92)); height: 42px; display: flex; align-items: center; gap: 8px; padding: 0 10px; color: #ffffff; }
-    .logo-circle { width: 30px; height: 30px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #f37021; flex-shrink: 0; overflow: hidden; }
-    .logo-circle img { width: 100%; height: 100%; object-fit: contain; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; }
-    .school-name { font-size: 10px; font-weight: 800; line-height: 1.1; text-transform: uppercase; }
-    .slogan-bar { background: var(--slogan-bg, #f77728); color: var(--slogan-text, white); font-size: 8px; text-align: center; padding: 3px 0; font-weight: 700; }
-    .id-card-label { background-color: var(--label-badge-bg, #000); color: var(--label-badge-text, white); text-align: center; font-size: 8px; font-weight: 700; padding: 2px 0; margin: 4px auto 0; width: 58%; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
-    .photo-area { display: flex; justify-content: center; margin: 6px 0 2px; }
-    .profile-photo { width: 54px; height: 54px; border: 1px solid var(--card-border-color, #1a2a6c); border-radius: 4px; overflow: hidden; background-color: #f0f0f0; }
+    body {
+        font-family: var(--card-font, "Times New Roman", Times, serif);
+        background: #eef0f4;
+    }
+
+    .page-container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+    .control-panel, .customizer-panel {
+        background: #fff; padding: 16px 22px; border-radius: 12px;
+        margin-bottom: 18px; display: flex; gap: 16px; align-items: center;
+        box-shadow: 0 5px 18px rgba(35, 25, 45, .07); flex-wrap: wrap;
+    }
+    .control-panel select, .control-panel button { font-size: 14px; }
+    .back-button {
+        display: inline-flex; align-items: center; padding: 9px 12px;
+        border: 1px solid var(--maroon); border-radius: 7px;
+        color: var(--maroon); background: #fff; font-size: 14px;
+        font-weight: 700; text-decoration: none;
+    }
+    .back-button:hover { color: #fff; background: var(--maroon); }
+    .control-panel .download-selected {
+        background: #159b68; color: #fff; border: 0; padding: 10px 18px;
+        border-radius: 8px; cursor: pointer; font-weight: 700;
+    }
+    .control-panel .download-selected:disabled { opacity: .5; cursor: not-allowed; }
+    .control-panel .class-select {
+        padding: 9px 12px; border-radius: 7px; border: 1px solid #d7dce4;
+        background: #f8fafc;
+    }
+    .customizer-panel { border-left: 5px solid var(--orange); margin-bottom: 28px; }
+    .customizer-panel label {
+        font-size: 12px; font-weight: 700; color: var(--maroon);
+        display: flex; align-items: center; gap: 5px;
+    }
+    .customizer-panel input[type="color"] {
+        border: 0; width: 25px; height: 25px; cursor: pointer; background: none;
+    }
+    .customizer-panel select {
+        padding: 6px 8px; border-radius: 6px; border: 1px solid #d7dce4; font-size: 12px;
+    }
+
+    .card-grid {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        gap: 28px;
+    }
+    .card-holder { position: relative; overflow-x: auto; padding: 4px 2px 8px; }
+    .card-checkbox { position: absolute; top: -4px; left: -4px; z-index: 10; transform: scale(1.3); }
+    .id-card-pair { display: flex; gap: 14px; width: max-content; }
+
+    .id-card {
+        width: 210px; min-width: 210px; max-width: 210px;
+        height: 332px; min-height: 332px; max-height: 332px; flex: 0 0 210px;
+        background: var(--card-bg, #fff);
+        background-image: var(--card-pattern, none);
+        font-family: var(--card-font, "Times New Roman", Times, serif);
+        border-radius: 5px; box-shadow: 0 8px 22px rgba(35, 15, 30, .16);
+        border: 1.5px solid var(--card-border-color, var(--maroon));
+        overflow: hidden; position: relative; box-sizing: border-box; color: var(--ink);
+    }
+    .id-card > :not(.card-watermark) { position: relative; z-index: 2; }
+    .id-card > .footer-container, .id-card > .back-website, .id-card > .bottom-border {
+        position: absolute;
+    }
+
+    /* FRONT */
+    .id-card-front { background: #fff; }
+    .id-card-front::before {
+        content: ""; position: absolute; z-index: 1; top: 0; left: 0;
+        width: 100%; height: 76px;
+        background: linear-gradient(145deg, var(--card-header-bg1, var(--maroon-dark)), var(--card-header-bg2, var(--maroon)));
+        border-radius: 0 0 50% 50% / 0 0 18% 18%;
+    }
+    .id-card-front::after {
+        content: ""; position: absolute; z-index: 0; top: 58px; left: 0;
+        width: 100%; height: 22px;
+        background: linear-gradient(180deg, var(--slogan-bg, var(--orange)), #ffad52);
+        border-radius: 0 0 50% 50% / 0 0 72% 72%;
+    }
+    .header {
+        height: 54px; box-sizing: border-box; display: flex; align-items: center; gap: 4px;
+        padding: 4px; color: #fff; background: transparent;
+    }
+    .logo-circle {
+        width: 44px; height: 44px; box-sizing: border-box; background: #fff; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        border: 2px solid var(--orange); flex-shrink: 0; overflow: hidden;
+    }
+    .logo-circle img { width: 100%; height: 100%; object-fit: contain; }
+    .school-heading { min-width: 0; flex: 1; padding-top: 0; text-align: center; }
+    .school-name {
+        font-size: 10.5px; font-weight: 900; line-height: 1.05;
+        text-transform: uppercase; color: var(--gold); letter-spacing: 0; white-space: nowrap;
+        text-shadow: 0 1px 1px rgba(0,0,0,.4);
+    }
+    .school-subtitle {
+        margin-top: 2px; font-size: 6.5px; color: #fff; font-weight: 700;
+        letter-spacing: .15px; line-height: 1.1;
+    }
+    .slogan-bar {
+        position: absolute !important; top: 58px; left: 0; right: 0;
+        background: transparent; color: #ffe65a; font-size: 6px;
+        text-align: center; padding: 0 8px; font-weight: 800; letter-spacing: .25px;
+    }
+    .id-card-label {
+        background: var(--label-badge-bg, var(--maroon)); color: #fff;
+        border: 1px solid var(--slogan-bg, var(--orange));
+        text-align: center; font-size: 7pt; font-weight: 800; letter-spacing: .3px;
+        padding: 3px 14px; margin: 8px auto 0; width: max-content; min-width: 96px;
+        border-radius: 999px; box-shadow: 0 2px 6px rgba(101,13,53,.2), inset 0 1px 0 rgba(255,255,255,.15);
+    }
+    .photo-area {
+        display: flex; justify-content: center; margin: -10px 0 1px;
+    }
+    .profile-photo {
+        width: 62px; height: 62px; border: 2px solid #fff;
+        outline: 1.5px solid var(--slogan-bg, var(--orange));
+        border-radius: 50%; overflow: hidden; background: #f1f5f9;
+        box-shadow: 0 3px 9px rgba(0,0,0,.16);
+    }
     .profile-photo img { width: 100%; height: 100%; object-fit: cover; }
-    .student-id-text { text-align: center; font-size: 8.5pt; font-weight: 700; margin-bottom: 2px; color: var(--id-text-color, #2c3e92); }
-    .name-bar { background-color: var(--namebar-bg, #2c3e92); color: var(--namebar-text, white); text-align: center; font-size: 9pt; font-weight: 800; padding: 3px 0; text-transform: uppercase; margin: 2px 10px 6px; border-radius: 4px; }
-
-    .details-container { padding: 0 10px; font-size: var(--card-font-size, 7.2pt); color: var(--info-text-color, #222222); line-height: 1.2; }
-    .info-row { display: flex; align-items: flex-start; margin-bottom: 2px; }
-    .label { width: 44px; min-width: 44px; font-weight: 700; color: var(--info-label-color, #2c3e92); font-size: inherit; text-align: left; }
-    .colon { width: 10px; min-width: 10px; text-align: center; font-weight: 700; color: #f37021; }
-    .value { font-weight: 700; flex: 1; color: var(--info-value-color, #2a2a2a); font-size: inherit; word-break: break-word; white-space: normal; line-height: 1.15; }
-
-    .footer-container { position: absolute; bottom: 8px; width: 100%; display: flex; justify-content: flex-end; padding: 0 10px; box-sizing: border-box; }
+    .photo-placeholder {
+        display: flex; width: 100%; height: 100%; align-items: center;
+        justify-content: center; color: #64748b; font-size: 7pt; font-weight: 700;
+    }
+    .student-id-text {
+        text-align: center; font-size: 7.5pt; font-weight: 800;
+        line-height: 1.05; margin: 1px 0 2px; color: #b51f45;
+    }
+    .name-bar {
+        background: transparent; color: var(--namebar-bg, var(--maroon));
+        text-align: center; font-size: 10pt; font-weight: 900; line-height: 1.08;
+        padding: 1px 5px 2px; text-transform: uppercase; white-space: nowrap;
+        overflow: hidden; margin: 0 8px 1px;
+        border-radius: 0;
+    }
+    .name-text { display: inline-block; white-space: nowrap; transform-origin: center; }
+    .id-card-front .student-id-text {
+        margin: 0 0 4px; color: #b51f45; font-size: 7.5pt;
+        letter-spacing: .25px;
+    }
+    .details-container {
+        margin: 0 8px; padding: 2px 7px 1px;
+        border: 1px solid #b9e1d3; border-radius: 13px 4px 13px 4px;
+        font-size: var(--card-font-size, 7.2pt); color: #222;
+        line-height: .98; background: rgba(255,255,255,.88);
+    }
+    .info-row { display: flex; align-items: flex-start; margin-bottom: 1.5px; }
+    .label {
+        width: 60px; min-width: 60px; font-weight: 800; white-space: nowrap;
+        color: var(--info-label-color, var(--maroon)); text-align: left;
+    }
+    .colon { width: 9px; min-width: 9px; text-align: center; font-weight: 800; color: var(--orange); }
+    .value {
+        font-weight: 700; flex: 1; color: var(--info-value-color, #26232a);
+        word-break: break-word; white-space: normal; line-height: 1;
+    }
+    .footer-container {
+        bottom: 18px; right: 0; width: 100%; display: flex;
+        justify-content: flex-end; padding: 0 10px; box-sizing: border-box;
+        z-index: 3 !important;
+    }
     .signature-box { text-align: center; display: flex; flex-direction: column; align-items: center; }
-    .sig-image { width: 65px; height: auto; display: block; margin-bottom: -5px; mix-blend-mode: multiply; }
-    .sig-line { width: 58px; border-top: 0.8px solid #000; margin-bottom: 1px; }
-    .sig-text { font-size: 6.5pt; font-weight: 700; color: var(--sig-text-color, #1a2a6c); }
-    .bottom-border { position: absolute; bottom: 0; width: 100%; height: 5px; background: var(--bottom-bar-bg, #f37021); }
+    .sig-image {
+        width: 38px; height: auto; object-fit: contain;
+        display: block; margin-bottom: -2px; transform: translateY(-4px);
+    }
+    .sig-line { width: 80px; border-top: 1px solid #333; margin-bottom: 2px; }
+    .sig-text { font-size: 6.5pt; font-weight: 800; color: var(--sig-text-color, var(--maroon)); line-height: 1; }
+    .sig-text + .sig-text { margin-top: 1px; }
+    .id-card-front .bottom-border {
+        bottom: 0; left: 0; width: 100%; height: 18px;
+        background: linear-gradient(12deg, var(--card-header-bg1, var(--maroon)) 0 67%, var(--slogan-bg, var(--orange)) 67% 73%, transparent 73%);
+        z-index: 1 !important;
+    }
+
+    /* BACK */
+    .id-card-back { background: linear-gradient(180deg, #fff 0%, #fff 80%, #fff8f1 100%); }
+    .id-card-back::after {
+        content: ""; position: absolute; z-index: 0; left: -28px; bottom: -40px;
+        width: 266px; height: 82px;
+        background: linear-gradient(180deg, #f4e3ea 0 33%, var(--card-header-bg1, var(--maroon)) 34% 100%);
+        border-radius: 50% 50% 0 0 / 35% 35% 0 0;
+    }
+    .back-header {
+        height: 56px; box-sizing: border-box; background: var(--card-header-bg1, var(--maroon));
+        justify-content: flex-start; align-items: center; gap: 6px; text-align: center;
+        padding: 4px 8px;
+    }
+    .back-header .school-heading { display: flex; flex-direction: column; justify-content: center; }
+    .back-header .school-name { font-size: 9px; line-height: 1.05; text-align: center; }
+    .back-header .school-subtitle { text-align: center; }
+    .back-emblem {
+        display: flex; justify-content: center; margin: 0; flex-shrink: 0;
+        width: 36px; height: 36px; box-sizing: border-box; border-radius: 50%; padding: 2px;
+        align-items: center; overflow: hidden;
+        background: #fff; border: 1.5px solid var(--slogan-bg, var(--orange));
+        box-shadow: 0 2px 6px rgba(0,0,0,.12);
+    }
+    .back-emblem img {
+        display: block; width: 100%; height: 100%; max-width: 100%; max-height: 100%;
+        border-radius: 50%; object-fit: contain;
+    }
+    .back-content { padding: 0 10px 12px; color: #1e293b; }
+    .back-family {
+        padding: 4px 6px; border: 1px solid #d7e5df; border-radius: 7px;
+        background: rgba(255,255,255,.96); margin-top: 2px;
+    }
+    .back-family-row { display: flex; align-items: flex-start; gap: 3px; margin: 2px 0; font-size: 7pt; line-height: 1.12; }
+    .back-family-label { width: 78px; min-width: 78px; font-weight: 800; color: var(--info-label-color, var(--maroon)); }
+    .back-family-value {
+        display: -webkit-box; flex: 1; min-width: 0; font-weight: 700;
+        overflow-wrap: anywhere; line-height: 1.12; overflow: hidden;
+        -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+    }
+    .back-section-title {
+        margin: 4px 0 3px; padding: 2px 4px; background: var(--slogan-bg, var(--orange));
+        color: #fff; text-align: center; font-size: 7.2pt; line-height: 1.12; font-weight: 800; border-radius: 3px;
+    }
+    .back-return-message {
+        margin: 4px 2px 5px; padding: 3px 4px; text-align: center;
+        color: #c62828; background: #fff1f2; border-radius: 3px;
+        font-size: 8.2pt; font-weight: 800; line-height: 1.15;
+    }
+    .back-address { margin-top: 4px; text-align: center; font-size: 6.8pt; line-height: 1.15; font-weight: 700; }
+    .back-qr-row {
+        display: flex; justify-content: center; margin: 4px 0 0;
+    }
+    .student-qr {
+        width: 76px; height: 76px; flex: 0 0 76px;
+        padding: 5px; box-sizing: border-box; background: #fff;
+    }
+    .student-qr img, .student-qr canvas {
+        display: block; width: 66px !important; height: 66px !important;
+    }
+    .back-contact {
+        margin: 2px 0 0; padding: 0; background: transparent;
+        color: var(--maroon-dark); text-align: center; font-size: 4.8pt;
+        line-height: 1.15; white-space: nowrap; font-weight: 800;
+    }
+    .back-website {
+        bottom: 5px; left: 0; width: 100%; text-align: center;
+        color: #fff; font-size: 6.5pt; font-weight: 800; z-index: 3;
+        padding: 2px 0; background: var(--card-header-bg1, var(--maroon));
+    }
+    .id-card-back .bottom-border {
+        bottom: 0; left: 0; width: 100%; height: 4px;
+        background: var(--slogan-bg, var(--orange)); z-index: 3;
+    }
+    .card-watermark {
+        position: absolute; top: 53%; left: 50%; width: 145px; height: 145px;
+        transform: translate(-50%, -50%); object-fit: contain; opacity: .045;
+        pointer-events: none; z-index: 0;
+    }
 
     .download-action { margin-top: 12px; display: flex; justify-content: center; }
-    .download-button { background: #27ae60; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 700; }
+    .download-button {
+        background: var(--maroon); color: #fff; border: 0; padding: 8px 16px;
+        border-radius: 7px; cursor: pointer; font-weight: 700;
+    }
+    .download-button:hover, .control-panel .download-selected:hover { filter: brightness(1.08); }
     .note-box { margin-top: 10px; font-size: 12px; color: #334155; }
-    @media print { .control-panel, .customizer-panel, .download-action { display: none; } .page-container { padding: 0; } }
+
+    @media (max-width: 600px) {
+        .page-container { padding: 12px; }
+        .card-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+        @page { size: A4; margin: 10mm; }
+        body { background: #fff; }
+        .control-panel, .customizer-panel, .download-action, .card-checkbox { display: none !important; }
+        .page-container { max-width: none; padding: 0; }
+        .card-grid { display: block; }
+        .card-holder { overflow: visible; margin: 0 0 8mm; page-break-inside: avoid; break-inside: avoid; }
+        .id-card-pair { gap: 4mm; }
+        .id-card { box-shadow: none; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
 </style>
 
 <div class="page-container">
+
     <div class="control-panel">
+
+        <a class="back-button" href="{% url 'myteacher:student_corner' %}?class_level={{ selected_class }}">Back to Student Corner</a>
+
         <div>
+
             <label class="fw-bold me-2">Select Class:</label>
+
             <select id="classSelector" class="class-select" onchange="location.href='?class_level=' + this.value">
+
                 {% for class_level in assigned_classes %}
+
                 <option value="{{ class_level }}" {% if selected_class == class_level %}selected{% endif %}>Class {{ class_level }}</option>
+
                 {% endfor %}
+
             </select>
+
         </div>
+
+        <label class="fw-bold">Card expiry date:
+
+            <input id="expiryDateInput" class="class-select" type="date" value="{{ default_expiry_date|date:'Y-m-d' }}" required onchange="updateExpiryDate()">
+
+        </label>
+
         <button class="download-selected" onclick="downloadSelectedCards()" {% if not can_download %}disabled{% endif %}>
+
             Download Selected ID Cards
+
         </button>
+
         {% if not can_download %}
+
         <div class="note-box">Only the assigned class teacher or head/admin may download ID cards for this class.</div>
+
         {% endif %}
+
     </div>
+
+
 
     <!-- Advanced Font, Pattern & Color Customizer Panel -->
+
     <div class="customizer-panel">
-        <span style="font-weight: bold; color: #1a2a6c;">🎨 Customizer:</span>
+
+        <span style="font-weight: bold; color: #650d35;">🎨 Customizer:</span>
+
         <label>Font:
+
             <select id="fontFamilySelector" onchange="updateCardTheme()">
                 <option value="'Times New Roman', Times, serif" selected>Times New Roman</option>
-                <option value="Arial, sans-serif">Arial</option>
-                <option value="Georgia, serif">Georgia</option>
-                <option value="'Courier New', monospace">Courier New</option>
-                <option value="Verdana, sans-serif">Verdana</option>
+
             </select>
+
         </label>
+
         <label>Pattern:
+
             <select id="cardPatternSelector" onchange="updateCardTheme()">
+
                 <option value="none" selected>Plain (Solid)</option>
+
                 <option value="stripes">Diagonal Stripes</option>
+
                 <option value="dots">Dot Grid</option>
+
             </select>
+
         </label>
-        <label>H1: <input type="color" id="primaryColorPicker" value="#1a2a6c" oninput="updateCardTheme()"></label>
-        <label>H2: <input type="color" id="secondaryColorPicker" value="#2c3e92" oninput="updateCardTheme()"></label>
-        <label>Slogan: <input type="color" id="sloganBgPicker" value="#f77728" oninput="updateCardTheme()"></label>
-        <label>Badge: <input type="color" id="badgeBgPicker" value="#000000" oninput="updateCardTheme()"></label>
-        <label>Name Bar: <input type="color" id="nameBarPicker" value="#2c3e92" oninput="updateCardTheme()"></label>
-        <label>Text: <input type="color" id="textColorPicker" value="#2a2a2a" oninput="updateCardTheme()"></label>
+
+        <label>H1: <input type="color" id="primaryColorPicker" value="#650d35" oninput="updateCardTheme()"></label>
+
+        <label>H2: <input type="color" id="secondaryColorPicker" value="#4b0928" oninput="updateCardTheme()"></label>
+
+        <label>Slogan: <input type="color" id="sloganBgPicker" value="#f47721" oninput="updateCardTheme()"></label>
+
+        <label>Badge: <input type="color" id="badgeBgPicker" value="#650d35" oninput="updateCardTheme()"></label>
+
+        <label>Name Bar: <input type="color" id="nameBarPicker" value="#4b0928" oninput="updateCardTheme()"></label>
+
+        <label>Text: <input type="color" id="textColorPicker" value="#26232a" oninput="updateCardTheme()"></label>
+
         <label>BG: <input type="color" id="cardBgPicker" value="#ffffff" oninput="updateCardTheme()"></label>
+
         <label>Size:
+
             <select id="fontSizeSelector" onchange="updateCardTheme()">
-                <option value="6.5pt">Small</option>
+                <option value="6.8pt">Small</option>
                 <option value="7.2pt" selected>Normal</option>
-                <option value="8pt">Large</option>
+                <option value="7.4pt">Large</option>
+
             </select>
+
         </label>
+
     </div>
+
+
 
     <div class="card-grid">
+
         {% for student in students %}
+
         <div class="card-holder">
+
             {% if can_download %}
-            <input type="checkbox" class="card-checkbox" data-id="card-{{ student.id }}" data-name="{{ student.full_name }}">
+
+            <input type="checkbox" class="card-checkbox" data-id="{{ student.id }}" data-name="{{ student.full_name|slugify }}">
+
             {% endif %}
-            <div class="id-card" id="card-{{ student.id }}">
-                <div class="header">
-                    <div class="logo-circle"><img src="/static/images/logo.png" alt="Logo"></div>
-                    <div class="school-name">Khondoker Naser<br>Uddin High School</div>
-                </div>
-                <div class="slogan-bar">A HOME OF QUALITY & MORALITY</div>
-                <div class="id-card-label">STUDENT ID CARD</div>
-                <div class="photo-area">
-                    <div class="profile-photo">
-                        <img src="{{ student.photo.url }}" alt="{{ student.full_name }}">
+
+            <div class="id-card-pair">
+
+                <div class="id-card id-card-front" id="card-front-{{ student.id }}">
+
+                    <div class="header">
+                        <div class="logo-circle"><img src="/static/images/logo.png" alt="School Logo"></div>
+                        <div class="school-heading">
+                            <div class="school-name">Khondoker Naser Uddin<br>High School</div>
+                        </div>
                     </div>
-                </div>
-                <div class="student-id-text">ID: {{ student.student_id }}</div>
-                <div class="name-bar">{{ student.full_name }}</div>
-                <div class="details-container">
-                    <div class="info-row"><span class="label">Father</span><span class="colon">:</span><span class="value">{{ student.father_name }}</span></div>
-                    <div class="info-row"><span class="label">Mother</span><span class="colon">:</span><span class="value">{{ student.mother_name }}</span></div>
-                    <div class="info-row"><span class="label">Roll</span><span class="colon">:</span><span class="value">{{ student.class_roll }}</span></div>
-                    <div class="info-row"><span class="label">Class</span><span class="colon">:</span><span class="value">{{ student.current_class }}</span></div>
-                    <div class="info-row"><span class="label">Shift</span><span class="colon">:</span><span class="value">{{ student.shift }}</span></div>
-                    <div class="info-row"><span class="label">Group</span><span class="colon">:</span><span class="value">{{ student.group|default:'General' }}</span></div>
-                    <div class="info-row"><span class="label">DOB</span><span class="colon">:</span><span class="value">{{ student.date_of_birth|date:"d M Y" }}</span></div>
-                    <div class="info-row"><span class="label">Religion</span><span class="colon">:</span><span class="value">{{ student.religion|default:'Islam' }}</span></div>
-                    <div class="info-row"><span class="label">Year</span><span class="colon">:</span><span class="value">{{ current_year }}</span></div>
-                </div>
-                <div class="footer-container">
-                    <div class="signature-box">
-                        <img src="/static/images/sign.png" class="sig-image" alt="Signature">
-                        <div class="sig-line"></div>
-                        <div class="sig-text">Headmaster</div>
-                        <div class="sig-text">Mob: 01714939122</div>
+
+                    <div class="photo-area">
+
+                        <div class="profile-photo">
+
+                            {% if student.photo %}
+
+                                <img src="{{ student.photo.url }}" alt="{{ student.full_name }}">
+
+                            {% else %}
+
+                                <span class="photo-placeholder">Photo</span>
+
+                            {% endif %}
+
+                        </div>
+
                     </div>
+
+                    <div class="id-card-label">STUDENT ID CARD</div>
+
+                    <div class="name-bar"><span class="name-text">{{ student.full_name }}</span></div>
+
+                    <div class="student-id-text">ID NO: {{ student.student_id }}</div>
+
+                    <div class="details-container">
+
+                        <div class="info-row"><span class="label">Class</span><span class="colon">:</span><span class="value">Class {{ student.current_class }}</span></div>
+
+                        <div class="info-row"><span class="label">Roll</span><span class="colon">:</span><span class="value">{{ student.class_roll }}</span></div>
+
+                        <div class="info-row"><span class="label">Shift</span><span class="colon">:</span><span class="value">{{ student.shift }}</span></div>
+
+                        <div class="info-row"><span class="label">DOB</span><span class="colon">:</span><span class="value">{{ student.date_of_birth|date:"d M Y"|default:"N/A" }}</span></div>
+
+                        <div class="info-row"><span class="label">Blood Group</span><span class="colon">:</span><span class="value">{{ student.blood_group|default:"N/A" }}</span></div>
+
+                        <div class="info-row"><span class="label">Group</span><span class="colon">:</span><span class="value">{{ student.group|default:"General" }}</span></div>
+
+                        <div class="info-row"><span class="label">Religion</span><span class="colon">:</span><span class="value">{{ student.religion|default:"N/A" }}</span></div>
+
+                        <div class="info-row"><span class="label">Year</span><span class="colon">:</span><span class="value">{{ current_year }}</span></div>
+
+                    </div>
+
+                    <div class="footer-container">
+
+                        <div class="signature-box">
+
+                            <img src="/static/images/sign-cropped.png" class="sig-image" alt="Signature">
+
+                            <div class="sig-line"></div>
+
+                            <div class="sig-text">Headmaster</div>
+
+                            <div class="sig-text">MD. SALIM SARDER</div>
+
+                            <div class="sig-text">Mob: 01714939122</div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="bottom-border"></div>
+
                 </div>
-                <div class="bottom-border"></div>
+
+
+
+                <div class="id-card id-card-back" id="card-back-{{ student.id }}">
+
+                    <img class="card-watermark" src="/static/images/logo.png" alt="">
+
+                    <div class="header back-header">
+                        <div class="back-emblem"><img src="/static/images/logo.png" alt="School logo"></div>
+                        <div class="school-heading">
+                            <div class="school-name">Khondoker Naser Uddin<br>High School</div>
+
+                        </div>
+                    </div>
+
+                    <div class="back-content">
+
+                        <div class="back-family">
+
+                            <div class="back-family-row"><span class="back-family-label">Father's Name</span><span>:</span><span class="back-family-value">{{ student.father_name|default:"N/A" }}</span></div>
+
+                            <div class="back-family-row"><span class="back-family-label">Mother's Name</span><span>:</span><span class="back-family-value">{{ student.mother_name|default:"N/A" }}</span></div>
+
+                            <div class="back-family-row"><span class="back-family-label">Guardian Mobile</span><span>:</span><span class="back-family-value">{{ student.mobile_num|default:"N/A" }}</span></div>
+
+                        </div>
+
+                        <div class="back-section-title">Valid Until: <span class="expiry-date">{{ default_expiry_date|date:"d M Y" }}</span></div>
+
+                        <p class="back-return-message">If found, please return this ID card to the school.</p>
+
+                        <div class="back-section-title">Return Address</div>
+
+                        <div class="back-address">
+
+                            Khondoker Naser Uddin High School<br>
+
+                            Hazi Foyez Uddin Cross Road, Boyra,<br>GPO-9000, Khulna
+
+                        </div>
+
+                        <div class="back-qr-row">
+                            <div
+                                class="student-qr"
+                                data-student-name="{{ student.full_name }}"
+                                data-student-father="{{ student.father_name }}"
+                                data-student-mother="{{ student.mother_name }}"
+                                data-student-class="{{ student.current_class }}"
+                                aria-label="QR code with student and school information"
+                            ></div>
+                        </div>
+                        <div class="back-contact">School Phone: 01714939122&nbsp;|&nbsp;Email: knuhighschool1994@gmail.com</div>
+
+                    </div>
+
+                    <div class="back-website">Website: knuhighschool.pythonanywhere.com</div>
+
+                    <div class="bottom-border"></div>
+
+                </div>
+
             </div>
+
             {% if can_download %}
+
             <div class="download-action">
-                <button class="download-button" onclick="downloadCardImage('card-{{ student.id }}', '{{ student.full_name|slugify }}')">Download</button>
+
+                <button class="download-button" onclick="downloadCardImages('{{ student.id }}', '{{ student.full_name|slugify }}')">Download Front + Back</button>
+
             </div>
+
             {% endif %}
+
         </div>
+
         {% empty %}
+
         <div class="note-box">No students found for this class.</div>
+
         {% endfor %}
+
     </div>
+
 </div>
 
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 <script>
+
     function updateCardTheme() {
+
         const primaryColor = document.getElementById('primaryColorPicker').value;
+
         const secondaryColor = document.getElementById('secondaryColorPicker').value;
+
         const sloganBg = document.getElementById('sloganBgPicker').value;
+
         const badgeBg = document.getElementById('badgeBgPicker').value;
+
         const nameBarBg = document.getElementById('nameBarPicker').value;
+
         const textColor = document.getElementById('textColorPicker').value;
+
         const cardBg = document.getElementById('cardBgPicker').value;
+
         const fontSize = document.getElementById('fontSizeSelector').value;
+
         const fontFamily = document.getElementById('fontFamilySelector').value;
+
         const patternType = document.getElementById('cardPatternSelector').value;
 
+
+
         let patternCSS = 'none';
+
         if (patternType === 'stripes') {
+
             patternCSS = `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.02) 10px, rgba(0,0,0,0.02) 20px)`;
+
         } else if (patternType === 'dots') {
+
             patternCSS = `radial-gradient(rgba(0,0,0,0.06) 1px, transparent 1px)`;
+
         }
+
+
 
         const cards = document.querySelectorAll('.id-card');
+
         cards.forEach(card => {
+
             card.style.setProperty('--card-border-color', primaryColor);
+
             card.style.setProperty('--card-bg', cardBg);
+
             card.style.setProperty('--card-font', fontFamily);
+
             card.style.setProperty('--card-font-size', fontSize);
+
             card.style.setProperty('--card-pattern', patternCSS);
+
             if(patternType === 'dots') {
+
                 card.style.backgroundSize = '12px 12px';
+
             } else {
+
                 card.style.backgroundSize = 'auto';
+
             }
+
+
 
             const header = card.querySelector('.header');
+
             if (header) header.style.background = `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`;
 
+
+
             const slogan = card.querySelector('.slogan-bar');
+
             if (slogan) slogan.style.backgroundColor = sloganBg;
 
+
+
             const badge = card.querySelector('.id-card-label');
+
             if (badge) badge.style.backgroundColor = badgeBg;
 
+
+
             const studentIdText = card.querySelector('.student-id-text');
+
             if (studentIdText) studentIdText.style.color = secondaryColor;
 
+
+
             const nameBar = card.querySelector('.name-bar');
-            if (nameBar) nameBar.style.backgroundColor = nameBarBg;
+
+            if (nameBar) { nameBar.style.backgroundColor = nameBarBg; nameBar.style.color = '#ffffff'; }
+
+
 
             const values = card.querySelectorAll('.value');
+
             values.forEach(v => v.style.color = textColor);
 
+
+
             const labels = card.querySelectorAll('.label');
+
             labels.forEach(l => l.style.color = secondaryColor);
 
+
+
             const sigTexts = card.querySelectorAll('.sig-text');
+
             sigTexts.forEach(st => st.style.color = primaryColor);
 
+
+
             const bottomBorder = card.querySelector('.bottom-border');
-            if (bottomBorder) bottomBorder.style.background = sloganBg;
+
+            if (bottomBorder) {
+                bottomBorder.style.background = card.classList.contains('id-card-front')
+                    ? `linear-gradient(12deg, ${primaryColor} 0 67%, ${sloganBg} 67% 73%, transparent 73%)`
+                    : sloganBg;
+            }
+
+            const backAccent = card.querySelectorAll('.back-section-title');
+
+            backAccent.forEach(item => item.style.backgroundColor = sloganBg);
+
+            const backContact = card.querySelector('.back-contact');
+
+            if (backContact) backContact.style.backgroundColor = primaryColor;
+
+            const backWebsite = card.querySelector('.back-website');
+
+            if (backWebsite) backWebsite.style.color = secondaryColor;
+
+        });
+
+        fitStudentNames();
+
+    }
+
+    function fitStudentNames() {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+
+        document.querySelectorAll('.name-bar').forEach(nameBar => {
+            const nameText = nameBar.querySelector('.name-text');
+            if (!nameText) return;
+
+            const nameStyle = getComputedStyle(nameText);
+            const baseFontSize = parseFloat(nameStyle.fontSize);
+            const nameBarStyle = getComputedStyle(nameBar);
+            const availableWidth = nameBar.clientWidth
+                - parseFloat(nameBarStyle.paddingLeft)
+                - parseFloat(nameBarStyle.paddingRight);
+            const fontFamily = nameStyle.fontFamily;
+            const fontWeight = nameStyle.fontWeight;
+            const text = nameText.textContent.trim().toLocaleUpperCase();
+            let fontSize = baseFontSize;
+
+            context.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+            while (fontSize > 8 && context.measureText(text).width > availableWidth) {
+                fontSize -= 0.25;
+                context.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+            }
+
+            const textWidth = context.measureText(text).width;
+            nameText.style.fontSize = `${fontSize}px`;
+            nameText.style.transform = textWidth > availableWidth
+                ? `scaleX(${availableWidth / textWidth})`
+                : 'none';
         });
     }
+
+
+        function updateExpiryDate() {
+
+            const input = document.getElementById('expiryDateInput');
+
+            if (!input || !input.value) return false;
+
+            const [year, month, day] = input.value.split('-').map(Number);
+
+            const date = new Date(Date.UTC(year, month - 1, day));
+
+            const formatted = new Intl.DateTimeFormat('en-GB', {
+
+                day: '2-digit',
+
+                month: 'short',
+
+                year: 'numeric',
+
+                timeZone: 'UTC'
+
+            }).format(date);
+
+            document.querySelectorAll('.expiry-date').forEach(element => {
+
+                element.textContent = formatted;
+
+            });
+
+            return true;
+
+        }
+
+
 
     async function renderCardToBlob(cardId) {
+        fitStudentNames();
         const element = document.getElementById(cardId);
+        if (!element) throw new Error("ID card element was not found.");
 
-        const images = element.querySelectorAll('img');
-        const imagePromises = Array.from(images).map(async (img) => {
-            try {
-                if (img.src.startsWith('data:')) return;
-                const response = await fetch(img.src, { mode: 'cors' });
-                const blob = await response.blob();
-                return new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        img.dataset.originalSrc = img.src;
-                        img.src = reader.result;
-                        resolve();
-                    };
-                    reader.readAsDataURL(blob);
-                });
-            } catch (e) {
-                console.warn('Image convert failed:', e);
+        const images = Array.from(element.querySelectorAll("img"));
+        await Promise.all(images.map(img => {
+            if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+            return new Promise(resolve => {
+                img.onload = resolve;
+                img.onerror = resolve;
+            });
+        }));
+
+        const canvas = await html2canvas(element, {
+            scale: 8,
+            useCORS: true,
+            allowTaint: false,
+            backgroundColor: "#ffffff",
+            logging: false,
+            width: 210,
+            height: 332,
+            onclone: clonedDocument => {
+                const clonedCard = clonedDocument.getElementById(cardId);
+                const signature = clonedCard && clonedCard.querySelector('.sig-image');
+                if (signature) signature.style.transform = 'translateY(-4px)';
             }
         });
 
-        await Promise.all(imagePromises);
-
-        const clone = element.cloneNode(true);
-        clone.style.margin = '0';
-        clone.style.boxShadow = 'none';
-
-        const wrapper = document.createElement('div');
-        wrapper.style.position = 'fixed';
-        wrapper.style.left = '-9999px';
-        wrapper.style.top = '0';
-        wrapper.style.width = '210px';
-        wrapper.style.height = '332px';
-        wrapper.appendChild(clone);
-        document.body.appendChild(wrapper);
-
-        const htmlString = new XMLSerializer().serializeToString(clone);
-        document.body.removeChild(wrapper);
-
-        images.forEach((img) => {
-            if (img.dataset.originalSrc) {
-                img.src = img.dataset.originalSrc;
-                delete img.dataset.originalSrc;
-            }
+        return new Promise((resolve, reject) => {
+            canvas.toBlob(blob => {
+                if (blob) resolve(blob);
+                else reject(new Error("Could not create the card image."));
+            }, "image/png", 1);
         });
+    }
 
-        const patternType = document.getElementById('cardPatternSelector').value;
-        let patternCSS = 'none';
-        let bgSizeAttr = 'auto';
-        if (patternType === 'stripes') {
-            patternCSS = `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.02) 10px, rgba(0,0,0,0.02) 20px)`;
-        } else if (patternType === 'dots') {
-            patternCSS = `radial-gradient(rgba(0,0,0,0.06) 1px, transparent 1px)`;
-            bgSizeAttr = '12px 12px';
+    async function downloadCardImages(studentId, studentSlug) {
+
+        if (!updateExpiryDate()) {
+
+            alert('Please select a card expiry date.');
+
+            return;
+
         }
 
-        const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="210" height="332">
-            <foreignObject width="100%" height="100%">
-                <div xmlns="http://www.w3.org/1999/xhtml">
-                    <style>
-                        body { font-family: ${document.getElementById('fontFamilySelector').value}; margin: 0; padding: 0; }
-                        .id-card { width: 210px; height: 332px; background-color: ${document.getElementById('cardBgPicker').value}; background-image: ${patternCSS}; background-size: ${bgSizeAttr}; font-family: ${document.getElementById('fontFamilySelector').value}; border-radius: 8px; border: 2px solid ${document.getElementById('primaryColorPicker').value}; overflow: hidden; position: relative; box-sizing: border-box; }
-                        .header { background: linear-gradient(135deg, ${document.getElementById('primaryColorPicker').value}, ${document.getElementById('secondaryColorPicker').value}); height: 42px; display: flex; align-items: center; gap: 8px; padding: 0 10px; color: #ffffff; }
-                        .logo-circle { width: 30px; height: 30px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #f37021; flex-shrink: 0; overflow: hidden; }
-                        .logo-circle img { width: 100%; height: 100%; object-fit: contain; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; }
-                        .school-name { font-size: 10px; font-weight: 800; line-height: 1.1; text-transform: uppercase; }
-                        .slogan-bar { background: ${document.getElementById('sloganBgPicker').value}; color: white; font-size: 8px; text-align: center; padding: 3px 0; font-weight: 700; }
-                        .id-card-label { background-color: ${document.getElementById('badgeBgPicker').value}; color: white; text-align: center; font-size: 8px; font-weight: 700; padding: 2px 0; margin: 4px auto 0; width: 58%; border-radius: 20px; }
-                        .photo-area { display: flex; justify-content: center; margin: 6px 0 2px; }
-                        .profile-photo { width: 54px; height: 54px; border: 1px solid ${document.getElementById('primaryColorPicker').value}; border-radius: 4px; overflow: hidden; background-color: #f0f0f0; }
-                        .profile-photo img { width: 100%; height: 100%; object-fit: cover; }
-                        .student-id-text { text-align: center; font-size: 8.5pt; font-weight: 700; margin-bottom: 2px; color: ${document.getElementById('secondaryColorPicker').value}; }
-                        .name-bar { background-color: ${document.getElementById('nameBarPicker').value}; color: white; text-align: center; font-size: 9pt; font-weight: 800; padding: 3px 0; text-transform: uppercase; margin: 2px 10px 6px; border-radius: 4px; }
-                        .details-container { padding: 0 10px; font-size: ${document.getElementById('fontSizeSelector').value}; color: #222222; line-height: 1.2; }
-                        .info-row { display: flex; align-items: flex-start; margin-bottom: 2px; }
-                        .label { width: 44px; min-width: 44px; font-weight: 700; color: ${document.getElementById('secondaryColorPicker').value}; font-size: inherit; text-align: left; }
-                        .colon { width: 10px; min-width: 10px; text-align: center; font-weight: 700; color: #f37021; }
-                        .value { font-weight: 700; flex: 1; color: ${document.getElementById('textColorPicker').value}; font-size: inherit; word-break: break-word; white-space: normal; line-height: 1.15; }
-                        .footer-container { position: absolute; bottom: 8px; width: 100%; display: flex; justify-content: flex-end; padding: 0 10px; box-sizing: border-box; }
-                        .signature-box { text-align: center; display: flex; flex-direction: column; align-items: center; }
-                        .sig-image { width: 65px; height: auto; display: block; margin-bottom: -5px; }
-                        .sig-line { width: 58px; border-top: 0.8px solid #000; margin-bottom: 1px; }
-                        .sig-text { font-size: 6.5pt; font-weight: 700; color: ${document.getElementById('primaryColorPicker').value}; }
-                        .bottom-border { position: absolute; bottom: 0; width: 100%; height: 5px; background: ${document.getElementById('sloganBgPicker').value}; }
-                    </style>
-                    ${htmlString}
-                </div>
-            </foreignObject>
-        </svg>`;
+        try {
 
-        const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-        const URL = window.URL || window.webkitURL || window;
-        const blobURL = URL.createObjectURL(blob);
+            const [front, back] = await Promise.all([
 
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                // Ultra HD 4x Scaling for maximum clarity
-                const scale = 10;
-                canvas.width = 210 * scale;
-                canvas.height = 332 * scale;
-                const ctx = canvas.getContext('2d');
-                ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = 'high';
-                ctx.scale(scale, scale);
-                ctx.drawImage(img, 0, 0);
-                URL.revokeObjectURL(blobURL);
-                canvas.toBlob((pngBlob) => {
-                    resolve(pngBlob);
-                }, 'image/png', 1.0);
-            };
-            img.src = blobURL;
-        });
+                renderCardToBlob(`card-front-${studentId}`),
+
+                renderCardToBlob(`card-back-${studentId}`)
+
+            ]);
+
+            if (!front || !back) throw new Error('Could not render both card sides.');
+
+            const zip = new JSZip();
+
+            const name = studentSlug || 'student';
+
+            zip.file(`${name}_ID_Card_Front.png`, front);
+
+            zip.file(`${name}_ID_Card_Back.png`, back);
+
+            saveAs(await zip.generateAsync({ type: 'blob' }), `${name}_ID_Card.zip`);
+
+        } catch (error) {
+
+            console.error('ID card download failed:', error);
+
+            alert('Could not download both sides of the ID card. Please try again.');
+
+        }
+
     }
 
-    function downloadCardImage(cardId, studentSlug) {
-        renderCardToBlob(cardId).then(blob => {
-            if (!blob) {
-                alert('Download failed. Please try again.');
-                return;
-            }
-            saveAs(blob, `${studentSlug}_ID_Card.png`);
-        });
-    }
+
 
     async function downloadSelectedCards() {
+
         const zipButton = document.querySelector('.download-selected');
+
         if (zipButton && zipButton.disabled) return;
 
-        const selected = document.querySelectorAll('.card-checkbox:checked');
-        if (!selected.length) { alert('Please select at least one card.'); return; }
+        if (!updateExpiryDate()) {
 
-        const zip = new JSZip();
-        for (let i = 0; i < selected.length; i++) {
-            const checkbox = selected[i];
-            const id = checkbox.getAttribute('data-id');
-            const name = checkbox.getAttribute('data-name').replace(/\s+/g, '_');
-            const blob = await renderCardToBlob(id);
-            if (blob) {
-                zip.file(`${name}_${i+1}_ID_Card.png`, blob);
-            }
+            alert('Please select a card expiry date.');
+
+            return;
+
         }
 
-        const content = await zip.generateAsync({ type: 'blob' });
-        saveAs(content, 'student_id_cards.zip');
+
+
+        const selected = document.querySelectorAll('.card-checkbox:checked');
+
+        if (!selected.length) { alert('Please select at least one card.'); return; }
+
+
+
+        const zip = new JSZip();
+
+        try {
+
+            for (let i = 0; i < selected.length; i++) {
+
+                const checkbox = selected[i];
+
+                const id = checkbox.getAttribute('data-id');
+
+                const name = checkbox.getAttribute('data-name') || `student_${i + 1}`;
+
+                const [front, back] = await Promise.all([
+
+                    renderCardToBlob(`card-front-${id}`),
+
+                    renderCardToBlob(`card-back-${id}`)
+
+                ]);
+
+                if (!front || !back) throw new Error(`Could not render both card sides for ${name}.`);
+
+                const folder = zip.folder(`${name}_${i + 1}`);
+
+                folder.file(`${name}_ID_Card_Front.png`, front);
+
+                folder.file(`${name}_ID_Card_Back.png`, back);
+
+            }
+
+            const content = await zip.generateAsync({ type: 'blob' });
+
+            saveAs(content, 'student_id_cards.zip');
+
+        } catch (error) {
+
+            console.error('Selected ID card download failed:', error);
+
+            alert('Could not download the selected ID cards. Please try again.');
+
+        }
+
     }
+
+
+
+    document.querySelectorAll('.student-qr').forEach(qrElement => {
+        const student = qrElement.dataset;
+        const qrContent = [
+            'School: Khondoker Naser Uddin High School',
+            `Student: ${student.studentName}`,
+            `Father: ${student.studentFather}`,
+            `Mother: ${student.studentMother}`,
+            `Class: ${student.studentClass}`,
+            'Phone: 01714939122',
+            'Website: https://knuhighschool.pythonanywhere.com/'
+        ].join('\n');
+
+        new QRCode(qrElement, {
+            text: qrContent,
+            width: 264,
+            height: 264,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+        });
+    });
+
+    fitStudentNames();
+    updateExpiryDate();
+
 </script>
+
 {% endblock %}

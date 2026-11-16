@@ -12,10 +12,13 @@ from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbid
 from django.template.loader import get_template, render_to_string
 from django.urls import reverse
 from django.db.models import Max, Q
+from django.db import transaction
 from decimal import Decimal, InvalidOperation
 from io import BytesIO
+from types import SimpleNamespace
 import datetime
 import os
+import secrets
 import shutil
 import subprocess
 import tempfile
@@ -26,7 +29,12 @@ from pathlib import Path
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Student, TeacherSubjectAssignment, Mark, Subject, ExamRoutine, TeacherClassAssignment, Teacher
-from students.models import StudentAdmitCard, StudentResultPublication
+from students.models import (
+    ManualASRBatch,
+    ManualASRStudent,
+    StudentAdmitCard,
+    StudentResultPublication,
+)
 from django.http import HttpResponse, HttpResponseForbidden
 from django.template.loader import get_template
 from django.urls import reverse
@@ -1018,6 +1026,7 @@ def id_cards_view(request):
 
     can_download = selected_class in class_teacher_classes or is_head_teacher
     current_year = datetime.date.today().year
+    default_expiry_date = datetime.date(current_year, 12, 31)
 
     return render(request, 'myteacher/id_cards.html', {
         'teacher': teacher,
@@ -1026,6 +1035,7 @@ def id_cards_view(request):
         'students': students,
         'can_download': can_download,
         'current_year': current_year,
+        'default_expiry_date': default_expiry_date,
         'is_head_teacher': is_head_teacher,
     })
 
@@ -1869,6 +1879,496 @@ def generate_seat_plan(request):
             'logo_url': '/static/images/logo.png',
         })
     return render(request, 'myteacher/error.html', {'message': 'Invalid Request'})
+
+
+def _manual_asr_allowed(request):
+    teacher = getattr(request.user, 'teacher', None)
+    return is_head_or_admin(teacher, request.user)
+
+
+def _manual_asr_context(request, action):
+    get_value = lambda key, default='': request.GET.get(key, request.POST.get(key, default))
+    class_level = get_value('class_level').strip()
+    valid_classes = dict(Student.CLASS_CHOICES)
+    if class_level not in valid_classes:
+        class_level = ''
+
+    exam_type = get_value('exam_type').strip()
+    valid_exams = dict(ExamRoutine.EXAM_CHOICES)
+    if exam_type not in valid_exams:
+        exam_type = ''
+
+    exam_year = get_value('exam_year').strip() or str(datetime.date.today().year)
+    try:
+        exam_year = str(int(exam_year))
+    except ValueError:
+        exam_year = str(datetime.date.today().year)
+
+    group = request.GET.get(
+        'group',
+        request.POST.get('routine_group', request.POST.get('group', '')),
+    ).strip()
+    if group not in dict(Subject._meta.get_field('group_name').choices):
+        group = ''
+    religion = request.GET.get(
+        'religion',
+        request.POST.get('routine_religion', request.POST.get('religion', '')),
+    ).strip()
+    if religion not in dict(Student.RELIGION_CHOICES):
+        religion = ''
+
+    routines = ExamRoutine.objects.none()
+    subjects = Subject.objects.none()
+    if class_level:
+        routine_filters = {'class_name': class_level, 'exam_year': int(exam_year)}
+        if exam_type:
+            routine_filters['exam_type'] = exam_type
+        routines = ExamRoutine.objects.filter(**routine_filters).order_by('exam_date')
+        if class_level in ('9', '10'):
+            if group:
+                routines = routines.filter(
+                    Q(group_name=group) | Q(group_name='') | Q(group_name__isnull=True)
+                )
+            else:
+                routines = routines.filter(
+                    Q(group_name='') | Q(group_name__isnull=True)
+                )
+        if religion:
+            routine_rows = list(routines)
+            routine_subjects = Subject.objects.filter(
+                class_level=class_level,
+                subject_name__in={routine.subject_name for routine in routine_rows},
+            )
+            matching_routines = []
+            for routine in routine_rows:
+                matching_subjects = [
+                    subject for subject in routine_subjects
+                    if subject.subject_name == routine.subject_name
+                ]
+                exact_code_subjects = [
+                    subject for subject in matching_subjects
+                    if subject.subject_code == routine.subject_code
+                ]
+                if exact_code_subjects:
+                    matching_subjects = exact_code_subjects
+                group_subjects = [
+                    subject for subject in matching_subjects
+                    if (subject.group_name or '') == (routine.group_name or '')
+                ]
+                if group_subjects:
+                    matching_subjects = group_subjects
+                religions = {
+                    subject.effective_religion
+                    for subject in matching_subjects
+                    if subject.effective_religion != 'None'
+                }
+                if not religions:
+                    subject_name = routine.subject_name.strip().lower()
+                    religions = {
+                        value for keyword, value in (
+                            ('islam', 'Islam'),
+                            ('hindu', 'Hindu'),
+                            ('buddhist', 'Buddhist'),
+                            ('christian', 'Christian'),
+                        )
+                        if keyword in subject_name
+                    }
+                if not religions or religion in religions:
+                    matching_routines.append(routine)
+            routines = matching_routines
+        subjects = Subject.objects.filter(
+            class_level=class_level,
+            is_routine_only=False,
+        ).order_by('subject_name')
+        if class_level in ('9', '10'):
+            if group:
+                subjects = subjects.filter(Q(group_name='') | Q(group_name=group))
+            else:
+                subjects = subjects.filter(group_name='')
+        if religion:
+            subjects = [
+                subject for subject in subjects
+                if not subject.is_religion_based or subject.effective_religion == religion
+            ]
+
+    return {
+        'action': action,
+        'class_choices': Student.CLASS_CHOICES,
+        'exam_choices': ExamRoutine.EXAM_CHOICES,
+        'group_choices': Subject._meta.get_field('group_name').choices,
+        'religion_choices': Student.RELIGION_CHOICES,
+        'selected_class': class_level,
+        'selected_exam': exam_type,
+        'selected_year': exam_year,
+        'selected_group': group,
+        'selected_religion': religion,
+        'routines': routines,
+        'subjects': subjects,
+        'loaded': bool(class_level),
+    }
+
+
+def _manual_asr_photo(uploaded):
+    if not uploaded:
+        return None
+    if uploaded.size > 5 * 1024 * 1024:
+        raise ValueError('ছবির সাইজ ৫ MB-এর কম হতে হবে।')
+
+    from PIL import Image, UnidentifiedImageError
+
+    try:
+        image = Image.open(uploaded)
+        if image.format not in ('JPEG', 'PNG', 'WEBP'):
+            raise ValueError('শুধু JPG, PNG অথবা WEBP ছবি ব্যবহার করুন।')
+        image.verify()
+    except (UnidentifiedImageError, OSError):
+        raise ValueError('আপলোড করা ফাইলটি বৈধ ছবি নয়।')
+
+    uploaded.seek(0)
+    return uploaded
+
+
+def _manual_asr_post_value(request, name, index):
+    values = request.POST.getlist(name)
+    if index < len(values):
+        return values[index].strip()
+    return request.POST.get(name, '').strip()
+
+
+def _manual_asr_entry_data(request, index, uploaded_photo):
+    religions = request.POST.getlist('student_religion')
+    groups = request.POST.getlist('student_group')
+    entry = {
+        'full_name': _manual_asr_post_value(request, 'full_name', index),
+        'student_id': _manual_asr_post_value(request, 'student_id', index),
+        'father_name': _manual_asr_post_value(request, 'father_name', index),
+        'mother_name': _manual_asr_post_value(request, 'mother_name', index),
+        'roll_no': _manual_asr_post_value(request, 'class_roll', index),
+        'section': _manual_asr_post_value(request, 'section', index),
+        'session': _manual_asr_post_value(request, 'student_session', index),
+        'religion': religions[index].strip() if index < len(religions) else request.POST.get('religion', '').strip(),
+        'group': groups[index].strip() if index < len(groups) else request.POST.get('group', '').strip(),
+        'photo': _manual_asr_photo(uploaded_photo),
+    }
+    for field in ('full_name', 'father_name', 'mother_name'):
+        if len(entry[field]) > 100:
+            raise ValueError(f'{field.replace("_", " ").title()} ১০০ অক্ষরের মধ্যে লিখুন।')
+    if len(entry['student_id']) > 50 or len(entry['roll_no']) > 30:
+        raise ValueError('Student ID ৫০ এবং Roll No ৩০ অক্ষরের মধ্যে লিখুন।')
+    if len(entry['section']) > 50 or len(entry['session']) > 20:
+        raise ValueError('Section ৫০ এবং Session ২০ অক্ষরের মধ্যে লিখুন।')
+    return entry
+
+
+def _manual_asr_mark_values(request, subjects, student_index):
+    mark_values = {}
+    for subject in subjects:
+        values = []
+        for field in ('subjective', 'objective', 'practical', 'class_test'):
+            raw_value = request.POST.get(
+                f'mark_{student_index}_{subject.pk}_{field}',
+                request.POST.get(f'mark_{subject.pk}_{field}', ''),
+            ).strip() or '0'
+            try:
+                value = Decimal(raw_value)
+            except InvalidOperation:
+                raise ValueError(f'{subject.subject_name}: নম্বর সঠিকভাবে লিখুন।')
+            if not value.is_finite():
+                raise ValueError(f'{subject.subject_name}: নম্বর সঠিকভাবে লিখুন।')
+            if value < 0:
+                raise ValueError(f'{subject.subject_name}: নম্বর ঋণাত্মক হতে পারবে না।')
+            values.append(value)
+        subjective, objective, practical, class_test = values
+        obtained = sum(values, Decimal('0.00'))
+        if obtained > subject.full_mark_value:
+            raise ValueError(f'{subject.subject_name}: প্রাপ্ত নম্বর পূর্ণ নম্বরের বেশি হতে পারবে না।')
+        mark_values[subject.pk] = {
+            'subject': subject,
+            'subjective_mark': subjective,
+            'objective_mark': objective,
+            'practical_mark': practical,
+            'class_test_mark': class_test,
+        }
+    return mark_values
+
+
+def _manual_asr_result_student(entry, batch, routines):
+    return SimpleNamespace(
+        full_name=entry.full_name,
+        student_id=entry.student_id,
+        father_name=entry.father_name,
+        mother_name=entry.mother_name,
+        class_roll=entry.roll_no,
+        section=entry.section,
+        session=entry.session or batch.exam_year,
+        religion=entry.religion,
+        current_class=batch.class_level,
+        group=entry.group,
+        shift='Day',
+        photo=entry.photo,
+        get_routines=lambda: routines,
+    )
+
+
+def _manual_asr_temporary_student(entry, batch):
+    student_id = str(secrets.randbelow(10_000_000)).zfill(7)
+    while Student.objects.filter(student_id=student_id).exists():
+        student_id = str(secrets.randbelow(10_000_000)).zfill(7)
+    try:
+        class_roll = int(entry.roll_no)
+    except (TypeError, ValueError):
+        class_roll = 0
+    if class_roll < 0:
+        class_roll = 0
+    return Student.objects.create(
+        full_name=entry.full_name,
+        father_name=entry.father_name,
+        mother_name=entry.mother_name,
+        student_id=student_id,
+        gender='Other',
+        current_class=batch.class_level,
+        class_roll=class_roll,
+        shift='Day',
+        mobile_num='',
+        group=entry.group or None,
+        religion=entry.religion or 'Islam',
+        login_enabled=False,
+        photo=entry.photo.name if entry.photo else '',
+    )
+
+
+@login_required
+def manual_asr_view(request):
+    if not _manual_asr_allowed(request):
+        return HttpResponseForbidden("Only headmaster or assistant headmaster can use Manual ASR.")
+
+    action = request.POST.get('action', '') if request.method == 'POST' else request.GET.get('action', '')
+    if action not in ('seat', 'admit', 'result'):
+        action = ''
+
+    context = _manual_asr_context(request, action)
+    if request.method == 'POST':
+        if not action:
+            return HttpResponseBadRequest('Select a Manual ASR document type.')
+        class_level = request.POST.get('class_level', '').strip()
+        if class_level not in dict(Student.CLASS_CHOICES):
+            context['error'] = 'শ্রেণি নির্বাচন করুন।'
+            return render(request, 'myteacher/manual_asr.html', context)
+
+        try:
+            student_count = len(request.POST.getlist('full_name'))
+            if not student_count:
+                context['error'] = 'কমপক্ষে একজন শিক্ষার্থীর এন্ট্রি যোগ করুন।'
+                return render(request, 'myteacher/manual_asr.html', context)
+            photos = [
+                _manual_asr_photo(request.FILES.get(f'photo_{index}'))
+                for index in range(student_count)
+            ]
+            entry_data = [
+                _manual_asr_entry_data(request, index, photos[index])
+                for index in range(student_count)
+            ]
+            subjects = list(context['subjects'])
+            mark_values = [
+                _manual_asr_mark_values(request, subjects, index)
+                for index in range(student_count)
+            ] if action == 'result' else []
+        except ValueError as error:
+            context['error'] = str(error)
+            return render(request, 'myteacher/manual_asr.html', context)
+
+        exam_name = request.POST.get('exam_name', '').strip() or context['selected_exam'] or 'Examination'
+        if len(exam_name) > 100:
+            context['error'] = 'Exam name ১০০ অক্ষরের মধ্যে লিখুন।'
+            return render(request, 'myteacher/manual_asr.html', context)
+        routine_snapshot = [
+            {
+                'exam_date': routine.exam_date.isoformat(),
+                'subject_name': routine.subject_name,
+                'subject_code': routine.subject_code,
+                'exam_time': routine.exam_time,
+            }
+            for routine in context['routines']
+        ]
+        with transaction.atomic():
+            batch = ManualASRBatch.objects.create(
+                created_by=request.user,
+                action=action,
+                class_level=class_level,
+                exam_type=context['selected_exam'],
+                exam_name=exam_name,
+                exam_year=int(context['selected_year']),
+            )
+            saved_students = [
+                ManualASRStudent.objects.create(
+                    batch=batch,
+                    position=index + 1,
+                    routine_snapshot=routine_snapshot,
+                    **data,
+                )
+                for index, data in enumerate(entry_data)
+            ]
+
+            if action == 'seat':
+                students = [
+                    _manual_asr_result_student(
+                        entry,
+                        batch,
+                        _manual_asr_restore_routines(entry.routine_snapshot),
+                    )
+                    for entry in saved_students
+                ]
+                return render(request, 'myteacher/seat_plan_template.html', {
+                    'students': students,
+                    'exam_name': exam_name,
+                    'exam_year': context['selected_year'],
+                    'logo_url': '/static/images/logo.png',
+                    'manual_asr': True,
+                    'saved_batch': batch,
+                })
+            if action == 'admit':
+                students = [
+                    _manual_asr_result_student(
+                        entry,
+                        batch,
+                        _manual_asr_restore_routines(entry.routine_snapshot),
+                    )
+                    for entry in saved_students
+                ]
+                return render(request, 'myteacher/admit_card_template.html', {
+                    'students': students,
+                    'exam_title': f"{exam_name} - {context['selected_year']}",
+                    'exam_year': context['selected_year'],
+                    'saved_batch': batch,
+                })
+
+            result_exam_type = {
+                'Half Yearly': 'Half Yearly',
+                'Annual Exam': 'Annual',
+                'Pre Test Exam': 'Pretest',
+                'Test Exam': 'Test',
+            }.get(context['selected_exam'], 'Half Yearly')
+            temporary_students = []
+            for entry, student_marks in zip(saved_students, mark_values):
+                temporary_student = _manual_asr_temporary_student(entry, batch)
+                temporary_students.append(temporary_student)
+                Mark.objects.bulk_create([
+                    Mark(
+                        student=temporary_student,
+                        subject=mark_values_for_subject['subject'],
+                        exam_type=result_exam_type,
+                        exam_year=batch.exam_year,
+                        objective_mark=mark_values_for_subject['objective_mark'],
+                        subjective_mark=mark_values_for_subject['subjective_mark'],
+                        practical_mark=mark_values_for_subject['practical_mark'],
+                        class_test_mark=mark_values_for_subject['class_test_mark'],
+                    )
+                    for mark_values_for_subject in student_marks.values()
+                ])
+
+            results = []
+            for entry, temporary_student in zip(saved_students, temporary_students):
+                result_data = get_student_result_summary(
+                    temporary_student,
+                    result_exam_type,
+                    batch.exam_year,
+                )
+                result_data['student'].student_id = entry.student_id
+                result_data['student'].class_roll = entry.roll_no
+                entry.result_snapshot = {
+                    key: value for key, value in result_data.items()
+                    if key != 'student'
+                }
+                entry.save(update_fields=['result_snapshot'])
+                results.append(result_data)
+
+            Student.objects.filter(pk__in=[student.pk for student in temporary_students]).delete()
+            return render(request, 'myteacher/manual_asr_result.html', {
+                'results': results,
+                'selected_exam': exam_name,
+                'selected_year': context['selected_year'],
+                'saved_batch': batch,
+            })
+
+    return render(request, 'myteacher/manual_asr.html', context)
+
+
+def _manual_asr_restore_routines(snapshot):
+    return [
+        SimpleNamespace(
+            exam_date=datetime.date.fromisoformat(item['exam_date']),
+            subject_name=item['subject_name'],
+            display_subject_name=item['subject_name'],
+            subject_code=item['subject_code'],
+            exam_time=item['exam_time'],
+        )
+        for item in snapshot
+    ]
+
+
+@login_required
+def manual_asr_saved_view(request):
+    if not _manual_asr_allowed(request):
+        return HttpResponseForbidden("Only headmaster or assistant headmaster can access saved Manual ASR documents.")
+    batches = ManualASRBatch.objects.prefetch_related('students')
+    return render(request, 'myteacher/manual_asr_saved.html', {'batches': batches})
+
+
+@login_required
+def manual_asr_saved_print_view(request, batch_id, student_id=None):
+    if not _manual_asr_allowed(request):
+        return HttpResponseForbidden("Only headmaster or assistant headmaster can print saved Manual ASR documents.")
+    batch = get_object_or_404(ManualASRBatch, pk=batch_id)
+    students = batch.students.all()
+    if student_id is not None:
+        students = students.filter(pk=student_id)
+        if not students.exists():
+            return HttpResponseBadRequest('The selected student is not part of this saved batch.')
+
+    entries = list(students)
+    if batch.action == 'result' and any(not entry.result_snapshot for entry in entries):
+        return HttpResponse('Saved result data is unavailable for this batch.', status=500)
+
+    if batch.action == 'result':
+        results = []
+        for entry in entries:
+            result_data = dict(entry.result_snapshot)
+            result_data['student'] = _manual_asr_result_student(
+                entry,
+                batch,
+                _manual_asr_restore_routines(entry.routine_snapshot),
+            )
+            results.append(result_data)
+        return render(request, 'myteacher/manual_asr_result.html', {
+            'results': results,
+            'selected_exam': batch.exam_name or batch.exam_type or 'Examination',
+            'selected_year': batch.exam_year,
+            'saved_batch': batch,
+        })
+
+    print_students = [
+        _manual_asr_result_student(
+            entry,
+            batch,
+            _manual_asr_restore_routines(entry.routine_snapshot),
+        )
+        for entry in entries
+    ]
+    if batch.action == 'seat':
+        return render(request, 'myteacher/seat_plan_template.html', {
+            'students': print_students,
+            'exam_name': batch.exam_name or batch.exam_type or 'Examination',
+            'exam_year': batch.exam_year,
+            'logo_url': '/static/images/logo.png',
+            'manual_asr': True,
+            'saved_batch': batch,
+        })
+    return render(request, 'myteacher/admit_card_template.html', {
+        'students': print_students,
+        'exam_title': f"{batch.exam_name or batch.exam_type or 'Examination'} - {batch.exam_year}",
+        'exam_year': batch.exam_year,
+        'saved_batch': batch,
+    })
 
 # models.py-তে যোগ করুন
 def get_routines(self):

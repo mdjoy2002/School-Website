@@ -1,0 +1,43 @@
+{% extends 'myteacher/base.html' %}
+
+{% block content %}
+<div class="mx-auto max-w-6xl px-4 pb-10">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div>
+            <h1 class="text-3xl font-bold text-slate-900">Saved Manual ASR Documents</h1>
+            <p class="mt-2 text-slate-600">আগে তৈরি করা batch আবার খুলে print/download করুন, অথবা একজনের card আলাদা print করুন।</p>
+        </div>
+        <a href="{% url 'myteacher:manual_asr' %}" class="rounded-lg bg-indigo-700 px-5 py-3 font-semibold text-white">New Manual ASR</a>
+    </div>
+
+    <div class="space-y-5">
+        {% for batch in batches %}
+            <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">{{ batch.get_action_display }} — Class {{ batch.class_level }}</h2>
+                        <p class="mt-1 text-slate-600">{{ batch.exam_name|default:batch.exam_type|default:"Examination" }} {{ batch.exam_year }} · {{ batch.students.count }} student(s)</p>
+                        <p class="mt-1 text-sm text-slate-500">Saved {{ batch.created_at|date:"d M Y, h:i A" }}</p>
+                    </div>
+                    <a href="{% url 'myteacher:manual_asr_saved_print' batch.id %}" class="rounded-lg bg-emerald-700 px-4 py-2 font-semibold text-white">Print / Download batch</a>
+                </div>
+
+                <div class="mt-4 divide-y rounded-lg border">
+                    {% for student in batch.students.all %}
+                        <div class="flex flex-wrap items-center justify-between gap-3 p-3">
+                            <div>
+                                <span class="font-semibold text-slate-800">{{ student.full_name|default:"Unnamed student" }}</span>
+                                {% if student.student_id %}<span class="ml-2 text-sm text-slate-500">ID: {{ student.student_id }}</span>{% endif %}
+                                <span class="ml-2 text-sm text-slate-500">Roll: {{ student.roll_no|default:"-" }}</span>
+                            </div>
+                            <a href="{% url 'myteacher:manual_asr_saved_student_print' batch.id student.id %}" class="rounded-lg border border-indigo-300 px-4 py-2 text-sm font-semibold text-indigo-700">Print this student</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% empty %}
+            <div class="rounded-xl bg-white p-8 text-center text-slate-500 shadow-sm">এখনও কোনো Manual ASR document save করা হয়নি।</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

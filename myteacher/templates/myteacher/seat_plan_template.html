@@ -1,3 +1,5 @@
+{% extends 'myteacher/base.html' %}
+
 {% block content %}
 <style>
     body { margin: 0; padding: 0; background: #f4f4f9; font-family: var(--global-font); }
@@ -57,14 +59,26 @@
     @media print {
         @page { size: A4; margin: 5mm; }
         body { background: #fff; }
-        .no-print { display: none; }
-        .page { margin: 0; page-break-after: always; }
+        .no-print, nav { display: none !important; }
+        .page {
+            width: 200mm;
+            height: 287mm;
+            padding: 0;
+            margin: 0;
+            page-break-after: always;
+            break-after: page;
+            page-break-inside: avoid;
+            break-inside: avoid-page;
+        }
+        .page:last-of-type { page-break-after: auto; break-after: auto; }
+        .seat-card { page-break-inside: avoid; break-inside: avoid; }
     }
 </style>
 
 <div class="no-print">
     <button onclick="window.print()">Print Seat Plan</button>
-    <a href="{% url 'myteacher:student_list' %}">Back to List</a>
+    <a href="{% url 'myteacher:manual_asr' %}?action=seat">Back to Manual ASR</a>
+    {% if saved_batch %}<a href="{% url 'myteacher:manual_asr_saved' %}">Saved Documents</a>{% endif %}
 </div>
 
 {% for student in students %}
@@ -81,7 +95,13 @@
                     <h2 class="school-name">Khondoker Naser Uddin High School</h2>
                     <p class="school-addr">Hazi Foyez Uddin Cross Road, Boyra, GPO-9000, Khulna</p>
                 </div>
-                <img src="{{ student.photo.url|default:logo_url }}" class="student-photo">
+                {% if student.photo and student.photo.url %}
+                    <img src="{{ student.photo.url }}" class="student-photo" alt="Student photo">
+                {% elif not manual_asr %}
+                    <img src="{{ logo_url }}" class="student-photo" alt="School logo">
+                {% else %}
+                    <div class="student-photo" style="display:flex;align-items:center;justify-content:center;font-size:7px;">Photo</div>
+                {% endif %}
             </div>
             <div class="exam-tag">{{ exam_name }} - {{ exam_year }}</div>
         </div>
@@ -90,8 +110,15 @@
             <table class="info-table">
                 <tr><td class="label">Student ID</td><td class="val">: {{ student.student_id }}</td></tr>
                 <tr><td class="label">Name</td><td class="val">: {{ student.full_name }}</td></tr>
+                {% if not manual_asr %}
+                    <tr><td class="label">Father's Name</td><td class="val">: {{ student.father_name }}</td></tr>
+                    <tr><td class="label">Mother's Name</td><td class="val">: {{ student.mother_name }}</td></tr>
+                {% endif %}
                 <tr><td class="label">Class</td><td class="val">: {{ student.current_class }}</td></tr>
                 <tr><td class="label">Roll No</td><td class="val">: {{ student.class_roll }}</td></tr>
+                {% if not manual_asr %}
+                    <tr><td class="label">Religion</td><td class="val">: {{ student.religion }}</td></tr>
+                {% endif %}
                 <tr><td class="label">Section</td><td class="val">: {{ student.section|default:'N/A' }}</td></tr>
                 <tr><td class="label">Session</td><td class="val">: {{ student.session|default:exam_year }}</td></tr>
                 <tr><td class="label">Group</td><td class="val">: {{ student.group|default:'General' }}</td></tr>

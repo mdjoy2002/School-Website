@@ -1,5 +1,6 @@
 from decimal import Decimal
 from types import SimpleNamespace
+import datetime
 
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.core.exceptions import ValidationError
@@ -14,7 +15,7 @@ from django.contrib import admin
 from myteacher.admin import ExamRoutineAdminForm, SubjectAdmin, SubjectAdminForm
 from myteacher.models import ExamRoutine, Mark, Subject, Teacher, TeacherSubjectAssignment
 from myteacher.views import get_student_result_summary, mark_entry_view
-from students.models import Student, StudentResultPublication
+from students.models import ManualASRBatch, Student, StudentResultPublication
 
 
 class DashboardWithoutTeacherProfileTests(TestCase):
@@ -40,6 +41,380 @@ class DashboardWithoutTeacherProfileTests(TestCase):
         self.client.force_login(user)
 
         response = self.client.get(reverse('myteacher:dashboard'))
+
+        self.assertEqual(response.status_code, 403)
+
+
+class IDCardTests(TestCase):
+    def setUp(self):
+        user = get_user_model().objects.create_user(
+            username='headmaster-id-card',
+            password='test-password',
+        )
+        Teacher.objects.create(
+            user=user,
+            teacher_id='HM-ID-1',
+            teacher_name='Headmaster',
+            designation='Headmaster',
+            mobile='01700000000',
+            email='headmaster-id@example.com',
+            teacher_img='',
+            assigned_class='7',
+        )
+        self.client.force_login(user)
+
+    def test_id_card_shows_two_sides_and_expiry_defaults_to_year_end(self):
+        student = Student.objects.create(
+            photo='students/card-photo.jpg',
+            full_name='Card Test Student',
+            father_name='Father Test',
+            mother_name='Mother Test',
+            student_id='7775364',
+            date_of_birth=None,
+            blood_group='',
+            current_class='7',
+            class_roll=21,
+            shift='Day',
+            mobile_num='01714939123',
+            group='Science',
+        )
+
+        response = self.client.get(reverse('myteacher:id_cards'), {'class_level': '7'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Back to Student Corner')
+        self.assertContains(response, reverse('myteacher:student_corner'))
+        self.assertContains(response, f'id="card-front-{student.pk}"')
+        self.assertContains(response, f'id="card-back-{student.pk}"')
+        self.assertContains(response, 'width: 210px; min-width: 210px; max-width: 210px;')
+        self.assertContains(response, 'height: 332px; min-height: 332px; max-height: 332px;')
+        self.assertContains(response, 'white-space: nowrap;')
+        self.assertContains(response, '<span class="name-text">Card Test Student</span>')
+        self.assertContains(response, 'Khondoker Naser Uddin<br>High School')
+        self.assertContains(response, 'height: 54px; box-sizing: border-box; display: flex; align-items: center; gap: 4px;')
+        self.assertContains(response, 'font-size: 10.5px; font-weight: 900; line-height: 1.05;')
+        self.assertContains(response, 'font-size: 10pt; font-weight: 900; line-height: 1.08;')
+        self.assertContains(response, 'font-size: var(--card-font-size, 7.2pt);')
+        self.assertContains(response, '<option value="7.2pt" selected>Normal</option>')
+        self.assertContains(response, 'width: 60px; min-width: 60px; font-weight: 800; white-space: nowrap;')
+        self.assertContains(response, 'background: var(--label-badge-bg, var(--maroon));')
+        self.assertContains(response, 'border-radius: 999px;')
+        self.assertContains(response, 'top: 0; left: 0;')
+        self.assertContains(response, 'width: 100%; height: 76px;')
+        self.assertContains(response, 'border-radius: 0 0 50% 50% / 0 0 18% 18%;')
+        self.assertContains(response, 'top: 58px; left: 0;')
+        self.assertContains(response, 'width: 100%; height: 22px;')
+        self.assertContains(response, 'border-radius: 0 0 50% 50% / 0 0 72% 72%;')
+        self.assertContains(response, 'display: flex; justify-content: center; margin: -10px 0 1px;')
+        self.assertContains(response, 'Blood Group')
+        self.assertNotContains(response, 'A HOME OF QUALITY')
+        self.assertContains(response, '--card-font: "Times New Roman", Times, serif;')
+        self.assertContains(response, '-webkit-line-clamp: 2;')
+        self.assertContains(response, 'font-size: 8.2pt; font-weight: 800; line-height: 1.15;')
+        self.assertContains(response, 'width: 38px; height: auto; object-fit: contain;')
+        self.assertContains(response, 'transform: translateY(-4px);')
+        self.assertContains(response, 'src="/static/images/sign-cropped.png"')
+        self.assertContains(response, "signature.style.transform = 'translateY(-4px)';")
+        self.assertContains(response, 'scale: 8,')
+        self.assertContains(response, 'card.classList.contains(\'id-card-front\')')
+        self.assertContains(response, 'linear-gradient(12deg, ${primaryColor} 0 67%, ${sloganBg} 67% 73%, transparent 73%)')
+        self.assertContains(response, 'font-size: 6.5pt; font-weight: 800;')
+        self.assertContains(response, '.sig-text + .sig-text { margin-top: 1px; }')
+        self.assertEqual(response.content.count(b'class="card-watermark"'), 1)
+        self.assertContains(response, 'Card Test Student')
+        self.assertContains(response, 'N/A')
+        self.assertContains(response, 'Guardian Mobile')
+        self.assertContains(response, '01714939123')
+        self.assertContains(response, 'knuhighschool1994@gmail.com')
+        self.assertContains(response, f'data-student-name="{student.full_name}"')
+        self.assertContains(response, f'data-student-father="{student.father_name}"')
+        self.assertContains(response, f'data-student-mother="{student.mother_name}"')
+        self.assertContains(response, f'data-student-class="{student.current_class}"')
+        self.assertContains(response, 'School Phone: 01714939122&nbsp;|&nbsp;Email: knuhighschool1994@gmail.com')
+        self.assertContains(response, 'qrcodejs/1.0.0/qrcode.min.js')
+        self.assertContains(response, 'Website: https://knuhighschool.pythonanywhere.com/')
+        self.assertContains(response, 'https://knuhighschool.pythonanywhere.com/')
+        card_html = response.content.decode()
+        qr_content_start = card_html.index('const qrContent = [')
+        qr_content_end = card_html.index('].join', qr_content_start)
+        qr_content = card_html[qr_content_start:qr_content_end]
+        self.assertLess(qr_content.index('School: Khondoker Naser Uddin High School'), qr_content.index('Student:'))
+        self.assertLess(qr_content.index('Student:'), qr_content.index('Father:'))
+        self.assertLess(qr_content.index('Father:'), qr_content.index('Mother:'))
+        self.assertLess(qr_content.index('Mother:'), qr_content.index('Class:'))
+        self.assertLess(qr_content.index('Class:'), qr_content.index('Phone: 01714939122'))
+        self.assertLess(qr_content.index('Phone: 01714939122'), qr_content.index('Website:'))
+        self.assertLess(card_html.index('<div class="photo-area">'), card_html.index('<div class="id-card-label">'))
+        self.assertLess(card_html.index('<div class="id-card-label">'), card_html.index('<span class="name-text">'))
+        self.assertLess(card_html.index('<span class="name-text">'), card_html.index('<div class="student-id-text">'))
+        self.assertLess(card_html.index('<div class="student-id-text">'), card_html.index('<div class="details-container">'))
+        self.assertLess(card_html.index('<div class="header back-header">'), card_html.index('<div class="back-emblem">'))
+        self.assertLess(card_html.index('<div class="back-emblem">'), card_html.index("Father's Name"))
+        self.assertLess(card_html.index("Father's Name"), card_html.index('Valid Until:'))
+        self.assertLess(card_html.index('Valid Until:'), card_html.index('If found, please return'))
+        self.assertEqual(
+            response.context['default_expiry_date'],
+            datetime.date(datetime.date.today().year, 12, 31),
+        )
+
+    def test_front_header_uses_full_width_palette_and_overlapping_photo(self):
+        Student.objects.create(
+            full_name='Header Layout Student',
+            father_name='Father',
+            mother_name='Mother',
+            student_id='HDR-1',
+            date_of_birth=None,
+            blood_group='',
+            current_class='7',
+            class_roll=1,
+            shift='Day',
+            mobile_num='',
+            group='General',
+        )
+        response = self.client.get(reverse('myteacher:id_cards'), {'class_level': '7'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'width: 100%; height: 76px;')
+        self.assertContains(response, 'background: linear-gradient(145deg, var(--card-header-bg1, var(--maroon-dark)), var(--card-header-bg2, var(--maroon)));')
+        self.assertContains(response, 'border-radius: 0 0 50% 50% / 0 0 18% 18%;')
+        self.assertContains(response, 'top: 58px; left: 0;')
+        self.assertContains(response, 'border-radius: 0 0 50% 50% / 0 0 72% 72%;')
+        self.assertContains(response, 'margin: -10px 0 1px;')
+        self.assertContains(response, 'height: 56px; box-sizing: border-box; background: var(--card-header-bg1, var(--maroon));')
+        self.assertContains(response, 'width: 36px; height: 36px; box-sizing: border-box; border-radius: 50%; padding: 2px;')
+        self.assertContains(response, 'border-radius: 50%; object-fit: contain;')
+        self.assertContains(response, 'display: flex; align-items: flex-start; margin-bottom: 1.5px;')
+        card_html = response.content.decode()
+        self.assertLess(card_html.index('Headmaster</div>'), card_html.index('MD. SALIM SARDER'))
+        self.assertLess(card_html.index('MD. SALIM SARDER'), card_html.index('Mob: 01714939122'))
+
+
+class ManualASRTests(TestCase):
+    def setUp(self):
+        user = get_user_model().objects.create_user(
+            username='headmaster-manual-asr',
+            password='test-password',
+        )
+        Teacher.objects.create(
+            user=user,
+            teacher_id='HM-ASR-1',
+            teacher_name='Headmaster',
+            designation='Headmaster',
+            mobile='01700000000',
+            email='headmaster-asr@example.com',
+            teacher_img='',
+            assigned_class='6',
+        )
+        self.client.force_login(user)
+        self.year = datetime.date.today().year
+
+    def test_selected_class_loads_its_routine_without_student_records(self):
+        ExamRoutine.objects.create(
+            class_name='7',
+            exam_type='Annual Exam',
+            exam_year=self.year,
+            subject_name='Mathematics',
+            subject_code='M701',
+            exam_date=datetime.date(self.year, 11, 1),
+            exam_time='10:00 AM',
+        )
+
+        response = self.client.get(reverse('myteacher:manual_asr'), {
+            'action': 'admit',
+            'class_level': '7',
+            'exam_type': 'Annual Exam',
+            'exam_year': self.year,
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Mathematics')
+        self.assertContains(response, "Father's Name")
+        self.assertEqual(Student.objects.count(), 0)
+
+    def test_admit_and_seat_cards_render_with_optional_fields_and_photo_blank(self):
+        common_data = {
+            'class_level': '7',
+            'exam_type': 'Annual Exam',
+            'exam_year': str(self.year),
+            'full_name': 'Manual Student',
+            'student_id': '',
+            'father_name': '',
+            'mother_name': '',
+            'class_roll': '',
+            'religion': '',
+            'student_religion': '',
+            'group': '',
+        }
+        for action, expected_text in (('admit', 'ADMIT CARD'), ('seat', 'Print Seat Plan')):
+            response = self.client.post(reverse('myteacher:manual_asr'), {
+                **common_data,
+                'action': action,
+            })
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, expected_text)
+            self.assertContains(response, 'MANUAL STUDENT' if action == 'admit' else 'Manual Student')
+        self.assertEqual(Student.objects.count(), 0)
+
+    def test_manual_seat_plan_only_shows_requested_fields_and_saves_section_session(self):
+        form_response = self.client.get(reverse('myteacher:manual_asr'), {
+            'action': 'seat',
+            'class_level': '7',
+            'exam_type': 'Annual Exam',
+            'exam_year': self.year,
+        })
+        self.assertEqual(form_response.status_code, 200)
+        self.assertContains(form_response, 'Student ID')
+        self.assertContains(form_response, 'Section')
+        self.assertContains(form_response, 'Session')
+        self.assertNotContains(form_response, "Father's Name")
+        self.assertNotContains(form_response, "Mother's Name")
+        self.assertNotContains(form_response, 'Religion')
+
+        response = self.client.post(reverse('myteacher:manual_asr'), {
+            'action': 'seat',
+            'class_level': '7',
+            'exam_type': 'Annual Exam',
+            'exam_year': str(self.year),
+            'full_name': 'Manual Seat Student',
+            'student_id': '7775364',
+            'class_roll': '21',
+            'section': 'A',
+            'student_session': '2025',
+            'student_group': 'General',
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Manual Seat Student')
+        self.assertContains(response, '7775364')
+        self.assertContains(response, 'Section')
+        self.assertContains(response, 'Session')
+        self.assertNotContains(response, "Father's Name")
+        self.assertNotContains(response, "Mother's Name")
+        self.assertNotContains(response, 'Religion')
+        entry = ManualASRBatch.objects.get(action='seat').students.get()
+        self.assertEqual(entry.section, 'A')
+        self.assertEqual(entry.session, '2025')
+
+        saved_response = self.client.get(reverse(
+            'myteacher:manual_asr_saved_student_print',
+            args=[entry.batch_id, entry.pk],
+        ))
+        self.assertContains(saved_response, ': A')
+        self.assertContains(saved_response, ': 2025')
+
+    def test_multiple_students_use_existing_seat_and_admit_page_counts(self):
+        base_data = {
+            'class_level': '7',
+            'exam_type': 'Annual Exam',
+            'exam_year': str(self.year),
+            'full_name': [f'Manual Student {number}' for number in range(1, 10)],
+        }
+
+        seat_response = self.client.post(reverse('myteacher:manual_asr'), {
+            **base_data,
+            'action': 'seat',
+        })
+        self.assertEqual(seat_response.status_code, 200)
+        self.assertEqual(seat_response.content.count(b'class="seat-card"'), 9)
+        self.assertEqual(seat_response.content.count(b'<div class="page">'), 2)
+
+        admit_response = self.client.post(reverse('myteacher:manual_asr'), {
+            **base_data,
+            'full_name': ['Manual Student 1', 'Manual Student 2', 'Manual Student 3'],
+            'action': 'admit',
+        })
+        self.assertEqual(admit_response.status_code, 200)
+        self.assertEqual(admit_response.content.count(b'class="admit-card"'), 3)
+        self.assertEqual(admit_response.content.count(b'<div class="page">'), 2)
+        self.assertEqual(Student.objects.count(), 0)
+
+        seat_batch = ManualASRBatch.objects.get(action='seat')
+        saved_page = self.client.get(reverse('myteacher:manual_asr_saved'))
+        self.assertEqual(saved_page.status_code, 200)
+        self.assertContains(saved_page, 'Manual Student 1')
+        saved_all = self.client.get(reverse(
+            'myteacher:manual_asr_saved_print',
+            args=[seat_batch.pk],
+        ))
+        self.assertEqual(saved_all.status_code, 200)
+        self.assertEqual(saved_all.content.count(b'class="seat-card"'), 9)
+
+        one_student = seat_batch.students.first()
+        saved_single = self.client.get(reverse(
+            'myteacher:manual_asr_saved_student_print',
+            args=[seat_batch.pk, one_student.pk],
+        ))
+        self.assertEqual(saved_single.status_code, 200)
+        self.assertEqual(saved_single.content.count(b'class="seat-card"'), 1)
+
+    def test_manual_result_uses_subject_marks_without_saving_student(self):
+        subject = Subject.objects.create(
+            subject_name='Mathematics',
+            subject_code='M701',
+            subject_type='1',
+            religion='None',
+            class_level='7',
+            has_practical=False,
+            full_mark=Decimal('100.00'),
+        )
+
+        response = self.client.post(reverse('myteacher:manual_asr'), {
+            'action': 'result',
+            'class_level': '7',
+            'exam_type': 'Annual Exam',
+            'exam_year': str(self.year),
+            'full_name': ['Manual Result Student', 'Second Manual Result Student'],
+            f'mark_0_{subject.pk}_subjective': '75',
+            f'mark_0_{subject.pk}_objective': '0',
+            f'mark_0_{subject.pk}_practical': '0',
+            f'mark_0_{subject.pk}_class_test': '0',
+            f'mark_1_{subject.pk}_subjective': '65',
+            f'mark_1_{subject.pk}_objective': '0',
+            f'mark_1_{subject.pk}_practical': '0',
+            f'mark_1_{subject.pk}_class_test': '0',
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Manual Result Student')
+        self.assertContains(response, 'Second Manual Result Student')
+        self.assertContains(response, 'Mathematics 1st')
+        self.assertContains(response, 'A')
+        self.assertEqual(response.content.count(b'class="manual-result-page"'), 2)
+        self.assertEqual(Student.objects.count(), 0)
+        self.assertEqual(Mark.objects.count(), 0)
+        batch = ManualASRBatch.objects.get(action='result')
+        saved_response = self.client.get(reverse(
+            'myteacher:manual_asr_saved_print',
+            args=[batch.pk],
+        ))
+        self.assertEqual(saved_response.status_code, 200)
+        self.assertContains(saved_response, 'Second Manual Result Student')
+        self.assertEqual(saved_response.content.count(b'class="manual-result-page"'), 2)
+        saved_single = self.client.get(reverse(
+            'myteacher:manual_asr_saved_student_print',
+            args=[batch.pk, batch.students.first().pk],
+        ))
+        self.assertEqual(saved_single.status_code, 200)
+        self.assertEqual(saved_single.content.count(b'class="manual-result-page"'), 1)
+
+    def test_non_head_teacher_cannot_open_manual_asr(self):
+        user = get_user_model().objects.create_user(
+            username='regular-teacher-asr',
+            password='test-password',
+        )
+        Teacher.objects.create(
+            user=user,
+            teacher_id='T-ASR-1',
+            teacher_name='Regular Teacher',
+            designation='Assistant Teacher',
+            mobile='01700000001',
+            email='teacher-asr@example.com',
+            teacher_img='',
+            assigned_class='6',
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('myteacher:manual_asr'))
 
         self.assertEqual(response.status_code, 403)
 

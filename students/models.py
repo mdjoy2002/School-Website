@@ -4,6 +4,7 @@ import string
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.db.models import Q
 
@@ -52,6 +53,7 @@ class Student(models.Model):
     student_id = models.CharField(max_length=7, unique=True, verbose_name="Student ID (7 Digits)")
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='Male', verbose_name="Gender")
     date_of_birth = models.DateField(null=True, blank=True, verbose_name="Date of Birth")
+    blood_group = models.CharField(max_length=5, blank=True, default='', verbose_name="Blood Group")
     current_class = models.CharField(max_length=2, choices=CLASS_CHOICES, verbose_name="Class")
     class_roll = models.PositiveIntegerField(verbose_name="Class Roll")
     shift = models.CharField(max_length=10, default='Day', verbose_name="Shift")
@@ -336,6 +338,62 @@ class StudentResultPublication(models.Model):
         verbose_name_plural = 'Student Result Publications'
         unique_together = ('class_level', 'exam_type', 'exam_year')
         ordering = ['-exam_year', 'exam_type', 'class_level']
+
+
+class ManualASRBatch(models.Model):
+    ACTION_CHOICES = [
+        ('seat', 'Seat Plan'),
+        ('admit', 'Admit Card'),
+        ('result', 'Result Card'),
+    ]
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='manual_asr_batches',
+    )
+    action = models.CharField(max_length=10, choices=ACTION_CHOICES)
+    class_level = models.CharField(max_length=2, choices=Student.CLASS_CHOICES)
+    exam_type = models.CharField(max_length=50, blank=True)
+    exam_name = models.CharField(max_length=100, blank=True)
+    exam_year = models.PositiveIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.get_action_display()} — Class {self.class_level} — {self.exam_year}'
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+class ManualASRStudent(models.Model):
+    batch = models.ForeignKey(
+        ManualASRBatch,
+        on_delete=models.CASCADE,
+        related_name='students',
+    )
+    position = models.PositiveIntegerField()
+    full_name = models.CharField(max_length=150, blank=True)
+    student_id = models.CharField(max_length=50, blank=True)
+    father_name = models.CharField(max_length=150, blank=True)
+    mother_name = models.CharField(max_length=150, blank=True)
+    roll_no = models.CharField(max_length=30, blank=True)
+    section = models.CharField(max_length=50, blank=True)
+    session = models.CharField(max_length=20, blank=True)
+    religion = models.CharField(max_length=20, blank=True)
+    group = models.CharField(max_length=20, blank=True)
+    photo = models.ImageField(upload_to='manual_asr/', blank=True)
+    routine_snapshot = models.JSONField(default=list, encoder=DjangoJSONEncoder, blank=True)
+    result_snapshot = models.JSONField(default=dict, encoder=DjangoJSONEncoder, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.full_name or f'Manual student #{self.position}'
+
+    class Meta:
+        ordering = ['position', 'id']
 
 
 class StudentTicker(models.Model):

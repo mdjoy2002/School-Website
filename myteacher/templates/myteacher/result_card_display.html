@@ -238,6 +238,10 @@
                 <td style="padding: 4px; border: 1px solid #000; font-size: 13px; font-weight: bold;">Shift:</td>
                 <td style="padding: 4px; border: 1px solid #000; font-size: 13px;">{{ result_data.student.shift }}</td>
             </tr>
+            <tr>
+                <td style="padding: 4px; border: 1px solid #000; font-size: 13px; font-weight: bold;">Religion:</td>
+                <td colspan="3" style="padding: 4px; border: 1px solid #000; font-size: 13px;">{{ result_data.student.religion|default:'N/A' }}</td>
+            </tr>
         </table>
 
         <table class="subject-table" style="width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 0.85rem; font-size: 15px; border: 1px solid #000;">

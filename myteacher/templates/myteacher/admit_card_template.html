@@ -12,8 +12,19 @@
         @media print {
             body { background: #fff; }
             .no-print { display: none !important; }
-            @page { size: A4 portrait; margin: 10mm; }
+            @page { size: A4 portrait; margin: 5mm; }
             .page { box-shadow: none !important; margin: 0 !important; padding: 0 !important; }
+            .page {
+                width: 200mm !important;
+                height: 287mm !important;
+                page-break-after: always;
+                break-after: page;
+                page-break-inside: avoid;
+                break-inside: avoid-page;
+            }
+            .page:last-of-type { page-break-after: auto; break-after: auto; }
+            .admit-wrapper { flex: 0 0 auto; page-break-inside: avoid; break-inside: avoid; }
+            .admit-card { width: 190mm !important; height: 138mm !important; page-break-inside: avoid; break-inside: avoid; }
         }
 
         .page {
@@ -83,6 +94,9 @@
 <body>
     <div class="no-print">
         <button class="print-button" onclick="window.print()">Print Admit Card</button>
+        {% if saved_batch %}
+            <a class="print-button" href="{% url 'myteacher:manual_asr_saved' %}">Saved Documents</a>
+        {% endif %}
     </div>
 
     {% for s in students %}
@@ -104,7 +118,11 @@
                         <div style="font-size: 10px; font-weight: bold; margin-top: 1px;">{{ exam_title|upper }}</div>
                     </div>
                     <div class="photo-box">
-                        <img src="{{ s.photo.url }}" class="student-photo" alt="{{ s.full_name }}" onerror="this.src='https://ui-avatars.com/api/?name={{ s.full_name|urlencode }}&size=80&background=f1f5f9&color=1e293b&bold=true'">
+                        {% if s.photo and s.photo.url %}
+                            <img src="{{ s.photo.url }}" class="student-photo" alt="{{ s.full_name }}">
+                        {% else %}
+                            <div class="student-photo" style="display:inline-flex;align-items:center;justify-content:center;font-size:10px;">Photo</div>
+                        {% endif %}
                     </div>
                 </div>
 
