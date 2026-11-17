@@ -290,9 +290,14 @@ class ManualASRTests(TestCase):
         self.assertContains(response, '7775364')
         self.assertContains(response, 'Section')
         self.assertContains(response, 'Session')
+        self.assertContains(response, ': 2025')
+        self.assertContains(response, 'SL: 001')
+        self.assertContains(response, 'Headmaster')
         self.assertNotContains(response, "Father's Name")
         self.assertNotContains(response, "Mother's Name")
         self.assertNotContains(response, 'Religion')
+        self.assertNotContains(response, 'school-addr')
+        self.assertNotContains(response, 'student-photo')
         entry = ManualASRBatch.objects.get(action='seat').students.get()
         self.assertEqual(entry.section, 'A')
         self.assertEqual(entry.session, '2025')
@@ -348,6 +353,44 @@ class ManualASRTests(TestCase):
         ))
         self.assertEqual(saved_single.status_code, 200)
         self.assertEqual(saved_single.content.count(b'class="seat-card"'), 1)
+
+    def test_database_seat_plan_shows_only_requested_fields_eight_per_page(self):
+        students = [
+            Student.objects.create(
+                photo='students/seat-plan-test.jpg',
+                full_name=f'Database Seat Student {number}',
+                father_name='Private Father',
+                mother_name='Private Mother',
+                student_id=f'800000{number}',
+                current_class='7',
+                class_roll=number,
+                mobile_num='01700000000',
+                group='Science',
+                religion='Islam',
+            )
+            for number in range(1, 10)
+        ]
+
+        response = self.client.post(reverse('myteacher:generate_seat_plan'), {
+            'student_ids': [str(student.pk) for student in students],
+            'exam_name': 'Annual Exam',
+            'exam_year': str(self.year),
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content.count(b'class="seat-card"'), 9)
+        self.assertEqual(response.content.count(b'<div class="page">'), 2)
+        self.assertContains(response, 'Database Seat Student 1')
+        self.assertContains(response, 'Student ID')
+        self.assertContains(response, 'Roll No')
+        self.assertContains(response, f': {self.year}')
+        self.assertContains(response, 'SL: 001')
+        self.assertContains(response, 'Headmaster')
+        self.assertNotContains(response, "Father's Name")
+        self.assertNotContains(response, "Mother's Name")
+        self.assertNotContains(response, 'Religion')
+        self.assertNotContains(response, 'exam-tag')
+        self.assertNotContains(response, 'student-photo')
 
     def test_manual_result_uses_subject_marks_without_saving_student(self):
         subject = Subject.objects.create(

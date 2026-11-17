@@ -3,75 +3,65 @@
 {% block content %}
 <style>
     body { margin: 0; padding: 0; background: #f4f4f9; font-family: var(--global-font); }
-    
-    .page { 
-        width: 210mm; 
-        height: 297mm; 
-        padding: 5mm; 
-        margin: 5mm auto; 
-        background: #fff; 
-        display: grid; 
-        grid-template-columns: repeat(2, 1fr); 
-        grid-template-rows: repeat(4, 1fr); 
-        gap: 2mm; 
-        box-sizing: border-box; 
+
+    .page {
+        width: 210mm;
+        height: 297mm;
+        padding: 5mm;
+        margin: 5mm auto;
+        background: #fff;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: repeat(4, minmax(0, 1fr));
+        gap: 2mm;
+        box-sizing: border-box;
     }
-    
-    .seat-card { 
-        border: 1.5px solid #000; 
-        padding: 6px; 
-        position: relative; 
-        background: #fff; 
-        display: flex; 
-        flex-direction: column; 
-        justify-content: space-between; 
-        box-sizing: border-box; 
+
+    .seat-card {
+        min-width: 0;
+        min-height: 0;
+        padding: 6px 8px;
+        position: relative;
+        background: #fff;
+        border: 1.5px solid #000;
         border-radius: 5px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-sizing: border-box;
+        break-inside: avoid;
+        page-break-inside: avoid;
     }
-    
-    .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; opacity: 0.05; z-index: 0; }
-    
-    .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 2px; position: relative; z-index: 1; }
-    .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1px; }
-    
-    .main-logo { width: 35px; height: auto; }
-    .student-photo { width: 40px; height: 50px; border: 1px solid #000; object-fit: cover; }
-    
-    .school-name { font-size: 11px; font-weight: 900; margin: 0; text-transform: uppercase; }
-    .school-addr { font-size: 8px; margin: 0; font-weight: 600; }
-    .exam-tag { font-size: 10px; font-weight: bold; background: #eee; border: 1px solid #000; padding: 1px 6px; margin-top: 2px; display: inline-block; }
-    
-    .content { margin-top: 2px; z-index: 1; }
-    .info-table { width: 100%; border-collapse: collapse; }
-    .info-table td { font-size: 12px; padding: 0 0; vertical-align: top; font-weight: 600; }
-    .info-table td.label { width: 75px; font-weight: bold; }
-    .info-table td.val { text-transform: uppercase; }
-    
-    .footer { display: flex; justify-content: space-between; align-items: flex-end; z-index: 1; margin-top: 2px; }
-    .seat-no { font-size: 10px; font-weight: bold; align-self: flex-end; }
-    
+
+    .info-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .info-table td { padding: 2px 0; font-size: 12px; line-height: 1.2; vertical-align: top; font-weight: 600; }
+    .info-table td.label { width: 75px; font-weight: 700; }
+    .info-table td.val { overflow-wrap: anywhere; }
+
+    .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-top: 4px; }
+    .seat-no { font-size: 10px; font-weight: 700; }
     .sign-container { display: flex; flex-direction: column; align-items: center; }
-    .sign-img { width: 70px; height: auto; margin-bottom: 0px; }
-    .sign-box { width: 70px; text-align: center; font-size: 9px; font-weight: bold; border-top: 1px solid #000; }
+    .sign-img { display: block; width: 55px; height: auto; margin-bottom: 0; }
+    .sign-box { width: 78px; text-align: center; font-size: 9px; font-weight: 700; border-top: 1px solid #000; }
 
     .no-print { text-align: center; padding: 20px; }
-    
+
     @media print {
         @page { size: A4; margin: 5mm; }
-        body { background: #fff; }
+        body { width: 200mm; margin: 0; background: #fff; }
         .no-print, nav { display: none !important; }
         .page {
             width: 200mm;
             height: 287mm;
             padding: 0;
-            margin: 0;
+            margin: 0 auto;
+            gap: 2mm;
             page-break-after: always;
             break-after: page;
             page-break-inside: avoid;
-            break-inside: avoid-page;
+            break-inside: avoid;
         }
         .page:last-of-type { page-break-after: auto; break-after: auto; }
-        .seat-card { page-break-inside: avoid; break-inside: avoid; }
     }
 </style>
 
@@ -87,49 +77,20 @@
     {% endif %}
 
     <div class="seat-card">
-        <img src="{{ logo_url }}" class="watermark">
-        <div class="header">
-            <div class="header-top">
-                <img src="{{ logo_url }}" class="main-logo">
-                <div>
-                    <h2 class="school-name">Khondoker Naser Uddin High School</h2>
-                    <p class="school-addr">Hazi Foyez Uddin Cross Road, Boyra, GPO-9000, Khulna</p>
-                </div>
-                {% if student.photo and student.photo.url %}
-                    <img src="{{ student.photo.url }}" class="student-photo" alt="Student photo">
-                {% elif not manual_asr %}
-                    <img src="{{ logo_url }}" class="student-photo" alt="School logo">
-                {% else %}
-                    <div class="student-photo" style="display:flex;align-items:center;justify-content:center;font-size:7px;">Photo</div>
-                {% endif %}
-            </div>
-            <div class="exam-tag">{{ exam_name }} - {{ exam_year }}</div>
-        </div>
-
-        <div class="content">
-            <table class="info-table">
-                <tr><td class="label">Student ID</td><td class="val">: {{ student.student_id }}</td></tr>
-                <tr><td class="label">Name</td><td class="val">: {{ student.full_name }}</td></tr>
-                {% if not manual_asr %}
-                    <tr><td class="label">Father's Name</td><td class="val">: {{ student.father_name }}</td></tr>
-                    <tr><td class="label">Mother's Name</td><td class="val">: {{ student.mother_name }}</td></tr>
-                {% endif %}
-                <tr><td class="label">Class</td><td class="val">: {{ student.current_class }}</td></tr>
-                <tr><td class="label">Roll No</td><td class="val">: {{ student.class_roll }}</td></tr>
-                {% if not manual_asr %}
-                    <tr><td class="label">Religion</td><td class="val">: {{ student.religion }}</td></tr>
-                {% endif %}
-                <tr><td class="label">Section</td><td class="val">: {{ student.section|default:'N/A' }}</td></tr>
-                <tr><td class="label">Session</td><td class="val">: {{ student.session|default:exam_year }}</td></tr>
-                <tr><td class="label">Group</td><td class="val">: {{ student.group|default:'General' }}</td></tr>
-            </table>
-        </div>
+        <table class="info-table">
+            <tr><td class="label">Student ID</td><td class="val">: {{ student.student_id|default:'N/A' }}</td></tr>
+            <tr><td class="label">Name</td><td class="val">: {{ student.full_name|default:'N/A' }}</td></tr>
+            <tr><td class="label">Class</td><td class="val">: {{ student.current_class|default:'N/A' }}</td></tr>
+            <tr><td class="label">Roll No</td><td class="val">: {{ student.class_roll|default:'N/A' }}</td></tr>
+            <tr><td class="label">Section</td><td class="val">: {{ student.section|default:'N/A' }}</td></tr>
+            <tr><td class="label">Session</td><td class="val">: {{ student.session|default:exam_year }}</td></tr>
+            <tr><td class="label">Group</td><td class="val">: {{ student.group|default:'General' }}</td></tr>
+        </table>
 
         <div class="footer">
             <div class="seat-no">SL: {{ forloop.counter|stringformat:"03d" }}</div>
-            
             <div class="sign-container">
-                <img src="/static/images/sign.png" alt="Signature" class="sign-img">
+                <img src="/static/images/sign-cropped.png" alt="Signature" class="sign-img">
                 <div class="sign-box">Headmaster</div>
             </div>
         </div>
