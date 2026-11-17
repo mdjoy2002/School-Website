@@ -46,6 +46,18 @@ class Student(models.Model):
         ('Christian', 'Christian'),
     ]
 
+    BLOOD_GROUP_CHOICES = [
+        ('', 'Select blood group'),
+        ('A+', 'A+'),
+        ('A-', 'A-'),
+        ('B+', 'B+'),
+        ('B-', 'B-'),
+        ('AB+', 'AB+'),
+        ('AB-', 'AB-'),
+        ('O+', 'O+'),
+        ('O-', 'O-'),
+    ]
+
     photo = models.ImageField(upload_to='students/', verbose_name="Student Photo")
     full_name = models.CharField(max_length=100, verbose_name="Full Name")
     father_name = models.CharField(max_length=100, verbose_name="Father's Name")
@@ -53,7 +65,9 @@ class Student(models.Model):
     student_id = models.CharField(max_length=7, unique=True, verbose_name="Student ID (7 Digits)")
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='Male', verbose_name="Gender")
     date_of_birth = models.DateField(null=True, blank=True, verbose_name="Date of Birth")
-    blood_group = models.CharField(max_length=5, blank=True, default='', verbose_name="Blood Group")
+    blood_group = models.CharField(
+        max_length=5, choices=BLOOD_GROUP_CHOICES, blank=True, default='', verbose_name="Blood Group"
+    )
     current_class = models.CharField(max_length=2, choices=CLASS_CHOICES, verbose_name="Class")
     class_roll = models.PositiveIntegerField(verbose_name="Class Roll")
     shift = models.CharField(max_length=10, default='Day', verbose_name="Shift")

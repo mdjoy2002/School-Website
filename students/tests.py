@@ -1,9 +1,52 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.urls import reverse
 
 from myteacher.models import ExamRoutine, Subject
 
 from .models import Student, StudentAdmitCardSetting, StudentPromotionHistory
+
+
+class StudentBloodGroupAdminTests(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.admin_user = User.objects.create_superuser(
+            username='blood-group-admin',
+            email='blood-group-admin@example.com',
+            password='test-password',
+        )
+        self.student = Student.objects.create(
+            photo='',
+            full_name='Existing Student',
+            father_name='Father',
+            mother_name='Mother',
+            student_id='S10003',
+            gender='Male',
+            current_class='6',
+            class_roll=3,
+            shift='Day',
+            mobile_num='01700000003',
+            blood_group='',
+        )
+        self.client.force_login(self.admin_user)
+
+    def test_existing_student_blood_group_is_editable_from_admin_list(self):
+        url = reverse('admin:students_student_changelist')
+        response = self.client.get(url)
+
+        self.assertContains(response, 'name="form-0-blood_group"')
+        response = self.client.post(url, {
+            'form-TOTAL_FORMS': '1',
+            'form-INITIAL_FORMS': '1',
+            'form-MIN_NUM_FORMS': '0',
+            'form-MAX_NUM_FORMS': '1000',
+            'form-0-id': str(self.student.pk),
+            'form-0-blood_group': 'O+',
+            '_save': 'Save',
+        })
+
+        self.student.refresh_from_db()
+        self.assertEqual(self.student.blood_group, 'O+')
 
 
 class StudentPortalTests(TestCase):

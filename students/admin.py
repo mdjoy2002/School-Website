@@ -30,9 +30,10 @@ class StudentAdminForm(forms.ModelForm):
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
     form = StudentAdminForm
-    list_display = ('full_name', 'student_id', 'username', 'current_class', 'class_roll', 'religion', 'mobile_num', 'login_enabled')
+    list_display = ('full_name', 'student_id', 'username', 'current_class', 'class_roll', 'religion', 'blood_group', 'mobile_num', 'login_enabled')
+    list_editable = ('blood_group',)
     search_fields = ('full_name', 'student_id')
-    list_filter = ('current_class', 'shift', 'religion', 'login_enabled')
+    list_filter = ('current_class', 'shift', 'religion', 'blood_group', 'login_enabled')
     actions = ['promote_selected_students', 'generate_student_login_credentials']
 
     @admin.display(description='Username')

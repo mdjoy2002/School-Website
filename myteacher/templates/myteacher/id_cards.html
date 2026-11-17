@@ -8,7 +8,7 @@
     :root {
         --maroon: #650d35;
         --maroon-dark: #4b0928;
-        --orange: #f47721;
+        --orange: #9f4764;
         --green: #159b68;
         --gold: #f5d52e;
         --ink: #20202a;
@@ -75,7 +75,7 @@
         overflow: hidden; position: relative; box-sizing: border-box; color: var(--ink);
     }
     .id-card > :not(.card-watermark) { position: relative; z-index: 2; }
-    .id-card > .footer-container, .id-card > .back-website, .id-card > .bottom-border {
+    .id-card > .footer-container, .id-card > .back-contact, .id-card > .back-website, .id-card > .bottom-border {
         position: absolute;
     }
 
@@ -90,22 +90,22 @@
     .id-card-front::after {
         content: ""; position: absolute; z-index: 0; top: 58px; left: 0;
         width: 100%; height: 22px;
-        background: linear-gradient(180deg, var(--slogan-bg, var(--orange)), #ffad52);
+        background: linear-gradient(180deg, #dfa0b3, #cc8399);
         border-radius: 0 0 50% 50% / 0 0 72% 72%;
     }
     .header {
-        height: 54px; box-sizing: border-box; display: flex; align-items: center; gap: 4px;
+        height: 50px; box-sizing: border-box; display: flex; align-items: center; gap: 4px;
         padding: 4px; color: #fff; background: transparent;
     }
     .logo-circle {
-        width: 44px; height: 44px; box-sizing: border-box; background: #fff; border-radius: 50%;
+        width: 40px; height: 40px; box-sizing: border-box; background: #fff; border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
         border: 2px solid var(--orange); flex-shrink: 0; overflow: hidden;
     }
     .logo-circle img { width: 100%; height: 100%; object-fit: contain; }
     .school-heading { min-width: 0; flex: 1; padding-top: 0; text-align: center; }
     .school-name {
-        font-size: 10.5px; font-weight: 900; line-height: 1.05;
+        font-size: 11.5px; font-weight: 900; line-height: 1.05;
         text-transform: uppercase; color: var(--gold); letter-spacing: 0; white-space: nowrap;
         text-shadow: 0 1px 1px rgba(0,0,0,.4);
     }
@@ -115,7 +115,7 @@
     }
     .slogan-bar {
         position: absolute !important; top: 58px; left: 0; right: 0;
-        background: transparent; color: #ffe65a; font-size: 6px;
+        background: transparent; color: var(--maroon-dark); font-size: 6px;
         text-align: center; padding: 0 8px; font-weight: 800; letter-spacing: .25px;
     }
     .id-card-label {
@@ -199,16 +199,19 @@
         border-radius: 50% 50% 0 0 / 35% 35% 0 0;
     }
     .back-header {
-        height: 56px; box-sizing: border-box; background: var(--card-header-bg1, var(--maroon));
+        height: 50px; box-sizing: border-box; background: var(--card-header-bg1, var(--maroon));
         justify-content: flex-start; align-items: center; gap: 6px; text-align: center;
         padding: 4px 8px;
     }
     .back-header .school-heading { display: flex; flex-direction: column; justify-content: center; }
-    .back-header .school-name { font-size: 9px; line-height: 1.05; text-align: center; }
-    .back-header .school-subtitle { text-align: center; }
+    .back-header .school-name { font-size: 10px; line-height: 1.05; text-align: center; }
+    .school-eiin {
+        margin-top: 2px; color: #ffe3a3; font-size: 8px; line-height: 1;
+        font-weight: 700; letter-spacing: .35px; text-align: center;
+    }
     .back-emblem {
         display: flex; justify-content: center; margin: 0; flex-shrink: 0;
-        width: 36px; height: 36px; box-sizing: border-box; border-radius: 50%; padding: 2px;
+        width: 32px; height: 32px; box-sizing: border-box; border-radius: 50%; padding: 2px;
         align-items: center; overflow: hidden;
         background: #fff; border: 1.5px solid var(--slogan-bg, var(--orange));
         box-shadow: 0 2px 6px rgba(0,0,0,.12);
@@ -222,18 +225,30 @@
         padding: 2px 6px; border: 1px solid #d7e5df; border-radius: 7px;
         background: rgba(255,255,255,.96); margin-top: 2px;
     }
-    .back-family-row { display: flex; align-items: flex-start; gap: 3px; margin: 0; font-size: 7pt; line-height: 1; }
-    .back-family-row.parent-name-row { height: 19px; overflow: hidden; }
-    .back-family-label { width: 78px; min-width: 78px; font-weight: 800; color: var(--info-label-color, var(--maroon)); }
+    .back-family-row {
+        display: grid; grid-template-columns: 78px 8px minmax(0, 1fr);
+        align-items: start; column-gap: 3px; margin: 0; font-size: 7pt; line-height: 1.1;
+    }
+    .back-family-row.parent-name-row {
+        height: auto; overflow: visible;
+    }
+    .back-family-label { font-weight: 800; color: var(--info-label-color, var(--maroon)); }
     .back-family-value {
-        display: -webkit-box; flex: 1; min-width: 0; font-weight: 700;
-        overflow-wrap: anywhere; line-height: 1; overflow: hidden;
+        display: -webkit-box; min-width: 0; font-weight: 700;
+        overflow-wrap: anywhere; line-height: 1.1; overflow: hidden;
         -webkit-box-orient: vertical; -webkit-line-clamp: 2;
     }
+    .parent-name-row .back-family-value {
+        display: block; overflow: visible; line-height: inherit;
+        -webkit-line-clamp: unset; -webkit-box-orient: initial;
+    }
+    .back-family-row:not(.parent-name-row) { align-items: center; white-space: nowrap; }
+    .back-family-row:not(.parent-name-row) .back-family-value { white-space: nowrap; overflow-wrap: normal; }
     .back-section-title {
         margin: 4px 0 3px; padding: 2px 4px; background: var(--slogan-bg, var(--orange));
         color: #fff; text-align: center; font-size: 7.2pt; line-height: 1.12; font-weight: 800; border-radius: 3px;
     }
+    .back-section-title.validity-title { background: #f6e7bf; color: var(--maroon-dark, var(--maroon)); }
     .back-return-message {
         margin: 4px 2px 5px; padding: 3px 4px; text-align: center;
         color: #c62828; background: #fff1f2; border-radius: 3px;
@@ -241,20 +256,23 @@
     }
     .back-address { margin-top: 4px; text-align: center; font-size: 6.8pt; line-height: 1.15; font-weight: 700; }
     .back-qr-row {
-        display: flex; justify-content: center; margin: 4px 0 0;
+        display: flex; justify-content: center; margin: 0;
     }
     .student-qr {
-        width: 76px; height: 76px; flex: 0 0 76px;
-        padding: 5px; box-sizing: border-box; background: #fff;
+        width: 80px; height: 80px; flex: 0 0 80px;
+        padding: 4px; box-sizing: border-box; background: #fff;
+        border: 1px solid #e2d5da; border-radius: 4px;
     }
     .student-qr img, .student-qr canvas {
-        display: block; width: 66px !important; height: 66px !important;
+        display: block; width: 70px !important; height: 70px !important;
     }
     .back-contact {
-        margin: 2px 0 0; padding: 0; background: transparent;
-        color: var(--maroon-dark); text-align: center; font-size: 4.8pt;
-        line-height: 1.15; white-space: nowrap; font-weight: 800;
+        bottom: 20px; left: 0; width: 100%; box-sizing: border-box;
+        display: grid; justify-items: center; gap: 1px; margin: 0; padding: 0 4px;
+        color: var(--maroon-dark); font-size: 6pt; line-height: 1.15; font-weight: 700;
     }
+    .back-contact-row { display: flex; gap: 3px; white-space: nowrap; }
+    .back-contact-label { font-weight: 800; color: var(--info-label-color, var(--maroon)); }
     .back-website {
         bottom: 5px; left: 0; width: 100%; text-align: center;
         color: #fff; font-size: 6.5pt; font-weight: 800; z-index: 3;
@@ -371,7 +389,7 @@
 
         <label>H2: <input type="color" id="secondaryColorPicker" value="#4b0928" oninput="updateCardTheme()"></label>
 
-        <label>Slogan: <input type="color" id="sloganBgPicker" value="#f47721" oninput="updateCardTheme()"></label>
+        <label>Slogan: <input type="color" id="sloganBgPicker" value="#9f4764" oninput="updateCardTheme()"></label>
 
         <label>Badge: <input type="color" id="badgeBgPicker" value="#650d35" oninput="updateCardTheme()"></label>
 
@@ -473,7 +491,7 @@
 
                             <div class="sig-text">Headmaster</div>
 
-                            <div class="sig-text">MD. SALIM SARDER</div>
+                            <div class="sig-text">Md. Salim Sarder</div>
 
                             <div class="sig-text">Mob: 01714939122</div>
 
@@ -495,7 +513,7 @@
                         <div class="back-emblem"><img src="/static/images/logo.png" alt="School logo"></div>
                         <div class="school-heading">
                             <div class="school-name">Khondoker Naser Uddin<br>High School</div>
-
+                            <div class="school-eiin">EIIN: 117407</div>
                         </div>
                     </div>
 
@@ -511,7 +529,7 @@
 
                         </div>
 
-                        <div class="back-section-title">Valid Until: <span class="expiry-date">{{ default_expiry_date|date:"d M Y" }}</span></div>
+                        <div class="back-section-title validity-title">Valid Until: <span class="expiry-date">{{ default_expiry_date|date:"d M Y" }}</span></div>
 
                         <p class="back-return-message">If found, please return this ID card to the school.</p>
 
@@ -529,14 +547,24 @@
                             <div
                                 class="student-qr"
                                 data-student-name="{{ student.full_name }}"
+                                data-student-id="{{ student.student_id }}"
                                 data-student-father="{{ student.father_name }}"
                                 data-student-mother="{{ student.mother_name }}"
                                 data-student-class="{{ student.current_class }}"
+                                data-student-roll="{{ student.class_roll }}"
+                                data-student-shift="{{ student.shift }}"
+                                data-student-dob="{{ student.date_of_birth|date:'d M Y'|default:'N/A' }}"
+                                data-student-blood-group="{{ student.blood_group|default:'N/A' }}"
+                                data-student-group="{{ student.group|default:'General' }}"
+                                data-student-religion="{{ student.religion|default:'N/A' }}"
                                 aria-label="QR code with student and school information"
                             ></div>
                         </div>
-                        <div class="back-contact">School Phone: 01714939122&nbsp;|&nbsp;Email: knuhighschool1994@gmail.com</div>
+                    </div>
 
+                    <div class="back-contact">
+                        <div class="back-contact-row"><span class="back-contact-label">Phone:</span><span>01714939122</span></div>
+                        <div class="back-contact-row"><span class="back-contact-label">Email:</span><span>knuhighschool1994@gmail.com</span></div>
                     </div>
 
                     <div class="back-website">Website: knuhighschool.pythonanywhere.com</div>
@@ -938,12 +966,19 @@
         const student = qrElement.dataset;
         const qrContent = [
             'School: Khondoker Naser Uddin High School',
+            `ID: ${student.studentId}`,
             `Student: ${student.studentName}`,
             `Father: ${student.studentFather}`,
             `Mother: ${student.studentMother}`,
             `Class: ${student.studentClass}`,
+            `Roll: ${student.studentRoll}`,
+            `Shift: ${student.studentShift}`,
+            `DOB: ${student.studentDob}`,
+            `Blood Group: ${student.studentBloodGroup}`,
+            `Group: ${student.studentGroup}`,
+            `Religion: ${student.studentReligion}`,
             'Phone: 01714939122',
-            'Website: https://knuhighschool.pythonanywhere.com/'
+            'Email: knuhighschool1994@gmail.com'
         ].join('\n');
 
         new QRCode(qrElement, {
