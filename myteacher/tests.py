@@ -287,17 +287,21 @@ class ManualASRTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Manual Seat Student')
+        self.assertContains(response, 'class="exam-info"')
+        self.assertContains(response, f'Exam: Annual Exam-{self.year}')
         self.assertContains(response, '7775364')
         self.assertContains(response, 'Section')
         self.assertContains(response, 'Session')
         self.assertContains(response, ': 2025')
         self.assertContains(response, 'SL: 001')
         self.assertContains(response, 'Headmaster')
+        self.assertContains(response, 'Khondoker Naser Uddin High School')
+        self.assertContains(response, 'Hazi Foyez Uddin Cross Road, Boyra, GPO-9000, Khulna')
+        self.assertContains(response, 'class="watermark"')
+        self.assertContains(response, 'student-photo-placeholder')
         self.assertNotContains(response, "Father's Name")
         self.assertNotContains(response, "Mother's Name")
         self.assertNotContains(response, 'Religion')
-        self.assertNotContains(response, 'school-addr')
-        self.assertNotContains(response, 'student-photo')
         entry = ManualASRBatch.objects.get(action='seat').students.get()
         self.assertEqual(entry.section, 'A')
         self.assertEqual(entry.session, '2025')
@@ -383,14 +387,66 @@ class ManualASRTests(TestCase):
         self.assertContains(response, 'Database Seat Student 1')
         self.assertContains(response, 'Student ID')
         self.assertContains(response, 'Roll No')
+        self.assertContains(response, 'class="exam-info"')
+        self.assertContains(response, f'Exam: Annual Exam-{self.year}')
         self.assertContains(response, f': {self.year}')
         self.assertContains(response, 'SL: 001')
         self.assertContains(response, 'Headmaster')
+        self.assertContains(response, 'Khondoker Naser Uddin High School')
+        self.assertContains(response, 'Hazi Foyez Uddin Cross Road, Boyra, GPO-9000, Khulna')
+        self.assertEqual(response.content.count(b'class="watermark"'), 9)
+        self.assertEqual(response.content.count(b'class="student-photo"'), 9)
         self.assertNotContains(response, "Father's Name")
         self.assertNotContains(response, "Mother's Name")
         self.assertNotContains(response, 'Religion')
         self.assertNotContains(response, 'exam-tag')
-        self.assertNotContains(response, 'student-photo')
+
+    def test_database_and_manual_seat_plans_keep_student_sources_separate(self):
+        database_student = Student.objects.create(
+            photo='students/database-seat-student.jpg',
+            full_name='Database Only Seat Student',
+            father_name='Database Father',
+            mother_name='Database Mother',
+            student_id='7654321',
+            current_class='7',
+            class_roll=1,
+            mobile_num='01700000000',
+        )
+        batch = ManualASRBatch.objects.create(
+            created_by=get_user_model().objects.get(username='headmaster-manual-asr'),
+            action='seat',
+            class_level='7',
+            exam_type='Annual Exam',
+            exam_name='Annual Exam',
+            exam_year=self.year,
+        )
+        batch.students.create(
+            position=1,
+            full_name='Manual Only Seat Student',
+            student_id='MANUAL-1',
+            roll_no='2',
+            session=str(self.year),
+            group='General',
+        )
+
+        manual_response = self.client.get(reverse(
+            'myteacher:manual_asr_saved_print',
+            args=[batch.pk],
+        ))
+        self.assertEqual(manual_response.status_code, 200)
+        self.assertContains(manual_response, 'Manual Only Seat Student')
+        self.assertContains(manual_response, f'Exam: Annual Exam-{self.year}')
+        self.assertNotContains(manual_response, 'Database Only Seat Student')
+
+        database_response = self.client.post(reverse('myteacher:generate_seat_plan'), {
+            'student_ids': [str(database_student.pk)],
+            'exam_name': 'Annual Exam',
+            'exam_year': str(self.year),
+        })
+        self.assertEqual(database_response.status_code, 200)
+        self.assertContains(database_response, 'Database Only Seat Student')
+        self.assertContains(database_response, f'Exam: Annual Exam-{self.year}')
+        self.assertNotContains(database_response, 'Manual Only Seat Student')
 
     def test_manual_result_uses_subject_marks_without_saving_student(self):
         subject = Subject.objects.create(

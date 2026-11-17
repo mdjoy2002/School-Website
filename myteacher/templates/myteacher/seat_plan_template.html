@@ -33,9 +33,49 @@
         page-break-inside: avoid;
     }
 
+    .watermark {
+        position: absolute; top: 50%; left: 50%; width: 82px; height: 82px;
+        object-fit: contain; opacity: .06; transform: translate(-50%, -50%);
+        z-index: 0; pointer-events: none;
+    }
+    .seat-card > :not(.watermark) { position: relative; z-index: 1; }
+    .header {
+        display: flex; align-items: center; gap: 5px;
+        padding-bottom: 4px; border-bottom: 1px solid #000;
+    }
+    .main-logo { width: 32px; height: 32px; flex: 0 0 32px; object-fit: contain; }
+    .header-text { flex: 1; min-width: 0; text-align: center; }
+    .school-name { margin: 0; font-size: 13px; line-height: 1.05; font-weight: 900; text-transform: uppercase; }
+    .school-addr { margin: 3px 0 0; font-size: 9px; line-height: 1.1; font-weight: 600; }
+    .exam-info {
+        align-self: center;
+        width: fit-content;
+        max-width: 100%;
+        box-sizing: border-box;
+        margin: 3px 0 0;
+        padding: 2px 8px;
+        border: 1px solid #000;
+        border-radius: 6px;
+        background: #f1f3f5;
+        color: #000;
+        font-size: 14px;
+        line-height: 1.1;
+        font-weight: 700;
+        text-align: center;
+    }
+    .student-photo, .student-photo-placeholder {
+        width: 34px; height: 44px; flex: 0 0 34px;
+        box-sizing: border-box; border: 1px solid #000;
+    }
+    .student-photo { object-fit: cover; }
+    .student-photo-placeholder {
+        display: flex; align-items: center; justify-content: center;
+        background: #f3f4f6; font-size: 7px; text-align: center;
+    }
+    .content { margin-top: 3px; }
     .info-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-    .info-table td { padding: 2px 0; font-size: 12px; line-height: 1.2; vertical-align: top; font-weight: 600; }
-    .info-table td.label { width: 75px; font-weight: 700; }
+    .info-table td { padding: 1px 0; font-size: 14px; line-height: 1.15; vertical-align: top; font-weight: 600; }
+    .info-table td.label { width: 75px; padding-right: 5px; font-weight: 700; }
     .info-table td.val { overflow-wrap: anywhere; }
 
     .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-top: 4px; }
@@ -44,7 +84,42 @@
     .sign-img { display: block; width: 55px; height: auto; margin-bottom: 0; }
     .sign-box { width: 78px; text-align: center; font-size: 9px; font-weight: 700; border-top: 1px solid #000; }
 
-    .no-print { text-align: center; padding: 20px; }
+    .no-print {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 20px;
+    }
+    .no-print button, .no-print a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 40px;
+        padding: 9px 18px;
+        border: 0;
+        border-radius: 7px;
+        color: #fff;
+        font: inherit;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    }
+    .no-print button { background: #4f46e5; }
+    .no-print button:hover { background: #4338ca; }
+    .no-print a { background: #334155; }
+    .no-print a:hover { background: #1e293b; }
+    .no-print .saved-button { background: #0f766e; }
+    .no-print .saved-button:hover { background: #115e59; }
+    .no-print button:hover, .no-print a:hover {
+        box-shadow: 0 4px 10px rgba(15, 23, 42, .2);
+        transform: translateY(-1px);
+    }
+    .no-print button:focus-visible, .no-print a:focus-visible {
+        outline: 3px solid #f59e0b;
+        outline-offset: 3px;
+    }
 
     @media print {
         @page { size: A4; margin: 5mm; }
@@ -67,8 +142,8 @@
 
 <div class="no-print">
     <button onclick="window.print()">Print Seat Plan</button>
-    <a href="{% url 'myteacher:manual_asr' %}?action=seat">Back to Manual ASR</a>
-    {% if saved_batch %}<a href="{% url 'myteacher:manual_asr_saved' %}">Saved Documents</a>{% endif %}
+    <a class="back-button" href="{% url 'myteacher:manual_asr' %}?action=seat">Back to Manual ASR</a>
+    {% if saved_batch %}<a class="saved-button" href="{% url 'myteacher:manual_asr_saved' %}">Saved Documents</a>{% endif %}
 </div>
 
 {% for student in students %}
@@ -77,6 +152,22 @@
     {% endif %}
 
     <div class="seat-card">
+        <img src="{{ logo_url }}" class="watermark" alt="">
+        <div class="header">
+            <img src="{{ logo_url }}" class="main-logo" alt="School logo">
+            <div class="header-text">
+                <h2 class="school-name">Khondoker Naser Uddin High School</h2>
+                <p class="school-addr">Hazi Foyez Uddin Cross Road, Boyra, GPO-9000, Khulna</p>
+            </div>
+            {% if student.photo %}
+                <img src="{{ student.photo.url }}" class="student-photo" alt="{{ student.full_name }}">
+            {% else %}
+                <div class="student-photo-placeholder">Photo</div>
+            {% endif %}
+        </div>
+        <div class="exam-info">Exam: {{ exam_name|default:'Examination' }}-{{ exam_year|default:'N/A' }}</div>
+
+        <div class="content">
         <table class="info-table">
             <tr><td class="label">Student ID</td><td class="val">: {{ student.student_id|default:'N/A' }}</td></tr>
             <tr><td class="label">Name</td><td class="val">: {{ student.full_name|default:'N/A' }}</td></tr>
@@ -86,6 +177,7 @@
             <tr><td class="label">Session</td><td class="val">: {{ student.session|default:exam_year }}</td></tr>
             <tr><td class="label">Group</td><td class="val">: {{ student.group|default:'General' }}</td></tr>
         </table>
+        </div>
 
         <div class="footer">
             <div class="seat-no">SL: {{ forloop.counter|stringformat:"03d" }}</div>
