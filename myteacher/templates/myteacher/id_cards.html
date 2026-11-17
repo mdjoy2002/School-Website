@@ -219,14 +219,15 @@
     }
     .back-content { padding: 0 10px 12px; color: #1e293b; }
     .back-family {
-        padding: 4px 6px; border: 1px solid #d7e5df; border-radius: 7px;
+        padding: 2px 6px; border: 1px solid #d7e5df; border-radius: 7px;
         background: rgba(255,255,255,.96); margin-top: 2px;
     }
-    .back-family-row { display: flex; align-items: flex-start; gap: 3px; margin: 2px 0; font-size: 7pt; line-height: 1.12; }
+    .back-family-row { display: flex; align-items: flex-start; gap: 3px; margin: 0; font-size: 7pt; line-height: 1; }
+    .back-family-row.parent-name-row { height: 19px; overflow: hidden; }
     .back-family-label { width: 78px; min-width: 78px; font-weight: 800; color: var(--info-label-color, var(--maroon)); }
     .back-family-value {
         display: -webkit-box; flex: 1; min-width: 0; font-weight: 700;
-        overflow-wrap: anywhere; line-height: 1.12; overflow: hidden;
+        overflow-wrap: anywhere; line-height: 1; overflow: hidden;
         -webkit-box-orient: vertical; -webkit-line-clamp: 2;
     }
     .back-section-title {
@@ -502,9 +503,9 @@
 
                         <div class="back-family">
 
-                            <div class="back-family-row"><span class="back-family-label">Father's Name</span><span>:</span><span class="back-family-value">{{ student.father_name|default:"N/A" }}</span></div>
+                            <div class="back-family-row parent-name-row"><span class="back-family-label">Father's Name</span><span>:</span><span class="back-family-value">{{ student.father_name|default:"N/A" }}</span></div>
 
-                            <div class="back-family-row"><span class="back-family-label">Mother's Name</span><span>:</span><span class="back-family-value">{{ student.mother_name|default:"N/A" }}</span></div>
+                            <div class="back-family-row parent-name-row"><span class="back-family-label">Mother's Name</span><span>:</span><span class="back-family-value">{{ student.mother_name|default:"N/A" }}</span></div>
 
                             <div class="back-family-row"><span class="back-family-label">Guardian Mobile</span><span>:</span><span class="back-family-value">{{ student.mobile_num|default:"N/A" }}</span></div>
 

@@ -124,6 +124,8 @@ class IDCardTests(TestCase):
         self.assertContains(response, 'Card Test Student')
         self.assertContains(response, 'N/A')
         self.assertContains(response, 'Guardian Mobile')
+        self.assertEqual(response.content.count(b'class="back-family-row parent-name-row"'), 2)
+        self.assertContains(response, '.back-family-row.parent-name-row { height: 19px; overflow: hidden; }')
         self.assertContains(response, '01714939123')
         self.assertContains(response, 'knuhighschool1994@gmail.com')
         self.assertContains(response, f'data-student-name="{student.full_name}"')
