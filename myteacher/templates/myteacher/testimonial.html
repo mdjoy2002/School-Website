@@ -312,6 +312,7 @@
     <link rel="stylesheet" href="{% static 'css/global-fonts.css' %}?v=2">
 </head>
 <body>
+{% if not print_only %}
 <div class="generator-shell no-print px-3">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
         <div>
@@ -364,15 +365,16 @@
             {% endif %}
         </div>
         <div class="mt-4 pt-3 border-top">
-            <h6 class="fw-bold">Download Blank Testimonial</h6>
+            <h6 class="fw-bold">Blank Testimonial</h6>
             <div class="d-flex flex-wrap gap-2">
-                <a href="{% url 'myteacher:testimonial_blank_pdf' 'current' %}" class="btn btn-outline-success">
-                    <i class="fas fa-download me-2"></i>Current Student
+                <a href="{% url 'myteacher:testimonial_blank' 'current' %}" class="btn btn-outline-success" target="_blank" rel="noopener">
+                    <i class="fas fa-print me-2"></i>Current Student
                 </a>
-                <a href="{% url 'myteacher:testimonial_blank_pdf' 'ssc_passed' %}" class="btn btn-outline-primary">
-                    <i class="fas fa-download me-2"></i>SSC Passed
+                <a href="{% url 'myteacher:testimonial_blank' 'ssc_passed' %}" class="btn btn-outline-primary" target="_blank" rel="noopener">
+                    <i class="fas fa-print me-2"></i>SSC Passed
                 </a>
             </div>
+            <small class="text-muted d-block mt-2">পরের পেজে Print / Save PDF চাপুন, তারপর browser dialog থেকে Save to PDF বেছে নিন।</small>
         </div>
     </div>
 
@@ -409,6 +411,7 @@
     </form>
     {% endif %}
 </div>
+{% endif %}
 
 {% if generated %}
 <div class="certificate">

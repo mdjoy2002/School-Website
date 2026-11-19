@@ -1,7 +1,6 @@
 from itertools import groupby
 from django.contrib.auth.decorators import login_required
 
-from django.conf import settings
 from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
@@ -9,7 +8,7 @@ from .models import Student, TeacherSubjectAssignment, Mark, Subject, ExamRoutin
 from students.models import StudentAdmitCard, StudentResultPublication
 from sms_management.access import user_can_access_sms
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
-from django.template.loader import get_template, render_to_string
+from django.template.loader import get_template
 from django.urls import reverse
 from django.db.models import Max, Q
 from django.db import transaction
@@ -17,14 +16,7 @@ from decimal import Decimal, InvalidOperation
 from io import BytesIO
 from types import SimpleNamespace
 import datetime
-import os
 import secrets
-import shutil
-import subprocess
-import tempfile
-import threading
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
 
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
@@ -528,89 +520,6 @@ def testimonial_view(request):
     })
 
 
-def _testimonial_browser_path():
-    configured_path = getattr(settings, 'TESTIMONIAL_PDF_BROWSER', '')
-    candidates = [
-        configured_path,
-        shutil.which('chrome'),
-        shutil.which('msedge'),
-        r'C:\Program Files\Google\Chrome\Application\chrome.exe',
-        r'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe',
-    ]
-    return next((path for path in candidates if path and os.path.isfile(path)), None)
-
-
-def _create_testimonial_pdf(values, filename, blank_template=False, blank_status=''):
-    browser_path = _testimonial_browser_path()
-    if not browser_path:
-        return HttpResponse('A Chrome or Edge browser is required for exact PDF generation.', status=503)
-
-    try:
-        with tempfile.TemporaryDirectory(prefix='testimonial-pdf-') as temp_dir:
-            output_path = os.path.join(temp_dir, 'testimonial.pdf')
-            profile_dir = os.path.join(temp_dir, 'profile')
-            static_root = Path(temp_dir) / 'static' / 'images'
-            static_root.mkdir(parents=True)
-            shutil.copy2(settings.BASE_DIR / 'static' / 'images' / 'logo.png', static_root / 'logo.png')
-            rendered_html = render_to_string('myteacher/testimonial.html', {
-                'generated': True,
-                'pdf_mode': True,
-                'values': values,
-                'blank_template': blank_template,
-                'blank_status': blank_status,
-            })
-            Path(temp_dir, 'index.html').write_text(rendered_html, encoding='utf-8')
-
-            class QuietHandler(SimpleHTTPRequestHandler):
-                def log_message(self, format, *args):
-                    pass
-
-            server = ThreadingHTTPServer(('127.0.0.1', 0), QuietHandler)
-            server_thread = threading.Thread(target=server.serve_forever, daemon=True)
-            server_thread.start()
-            previous_directory = os.getcwd()
-            os.chdir(temp_dir)
-            local_url = f'http://127.0.0.1:{server.server_port}/index.html'
-            command = [
-                browser_path,
-                '--headless=new',
-                '--disable-gpu',
-                '--disable-extensions',
-                '--no-pdf-header-footer',
-                '--run-all-compositor-stages-before-draw',
-                '--virtual-time-budget=2500',
-                f'--user-data-dir={profile_dir}',
-                f'--print-to-pdf={output_path}',
-                local_url,
-            ]
-            try:
-                result = subprocess.run(
-                    command,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    timeout=30,
-                    check=False,
-                    creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0),
-                )
-            finally:
-                os.chdir(previous_directory)
-                server.shutdown()
-                server.server_close()
-                server_thread.join(timeout=2)
-            if result.returncode != 0 or not os.path.isfile(output_path):
-                return HttpResponse('PDF generation failed. Please try again.', status=500)
-            with open(output_path, 'rb') as pdf_file:
-                pdf_content = pdf_file.read()
-    except subprocess.TimeoutExpired:
-        return HttpResponse('PDF generation timed out. Please try again.', status=504)
-    except OSError:
-        return HttpResponse('PDF generation could not start. Please try again.', status=503)
-
-    response = HttpResponse(pdf_content, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
-    return response
-
-
 def testimonial_pdf_view(request):
     token = request.GET.get('token', '')
     try:
@@ -624,7 +533,7 @@ def testimonial_pdf_view(request):
 
     teacher = getattr(user, 'teacher', None)
     if not user.is_superuser and (not teacher or not is_head_or_admin(teacher, user)):
-        return HttpResponseForbidden('Only Headmaster or Admin can generate this PDF.')
+        return HttpResponseForbidden('Only Headmaster or Admin can open this testimonial.')
 
     student = get_object_or_404(Student, pk=payload.get('student_id'))
     testimonial = get_object_or_404(Testimonial, student=student)
@@ -648,15 +557,19 @@ def testimonial_pdf_view(request):
         'candidate_type': testimonial.candidate_type,
         'gpa': testimonial.gpa,
     }
-    return _create_testimonial_pdf(values, f'testimonial_{student.student_id}.pdf')
+    return render(request, 'myteacher/testimonial.html', {
+        'generated': True,
+        'values': values,
+        'print_only': True,
+    })
 
 
 @login_required
-def testimonial_blank_pdf_view(request, status):
+def testimonial_blank_print_view(request, status):
     user = request.user
     teacher = getattr(user, 'teacher', None)
     if not user.is_superuser and (not teacher or not is_head_or_admin(teacher, user)):
-        return HttpResponseForbidden('Only Headmaster or Admin can generate this PDF.')
+        return HttpResponseForbidden('Only Headmaster or Admin can open this testimonial.')
     if status not in ('current', 'ssc_passed'):
         return HttpResponseBadRequest('Choose a valid testimonial type.')
 
@@ -680,12 +593,13 @@ def testimonial_blank_pdf_view(request, status):
         'candidate_type': '',
         'gpa': '',
     }
-    return _create_testimonial_pdf(
-        values,
-        f'testimonial_blank_{status}.pdf',
-        blank_template=True,
-        blank_status=status,
-    )
+    return render(request, 'myteacher/testimonial.html', {
+        'generated': True,
+        'values': values,
+        'blank_template': True,
+        'blank_status': status,
+        'print_only': True,
+    })
 
 
 def testimonial_pdf_page(request, token):
@@ -700,6 +614,7 @@ def testimonial_pdf_page(request, token):
     context = {
         'generated': True,
         'pdf_mode': True,
+        'print_only': True,
         'values': {
             'serial_number': testimonial.serial_number or '',
             'generated_date': testimonial.generated_date.strftime('%d/%m/%Y') if testimonial.generated_date else '',

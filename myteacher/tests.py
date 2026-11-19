@@ -1,12 +1,11 @@
 from decimal import Decimal
 from types import SimpleNamespace
 import datetime
-from unittest.mock import patch
 
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.http import HttpResponse
+from django.core.signing import TimestampSigner
 from django.template.loader import render_to_string
 from django.test import RequestFactory, TestCase
 from django.contrib.auth import get_user_model
@@ -53,6 +52,7 @@ class TestimonialSavedRecordsTests(TestCase):
             username='testimonial-headmaster',
             password='test-password',
         )
+        self.user = user
         Teacher.objects.create(
             user=user,
             teacher_id='TEST-HM-1',
@@ -103,8 +103,8 @@ class TestimonialSavedRecordsTests(TestCase):
         self.assertContains(response, 'Saved Testimonial Name')
         self.assertContains(response, 'value="Saved Father"')
         self.assertContains(response, 'value="Saved Mother"')
-        self.assertContains(response, reverse('myteacher:testimonial_blank_pdf', args=['current']))
-        self.assertContains(response, reverse('myteacher:testimonial_blank_pdf', args=['ssc_passed']))
+        self.assertContains(response, reverse('myteacher:testimonial_blank', args=['current']))
+        self.assertContains(response, reverse('myteacher:testimonial_blank', args=['ssc_passed']))
 
     def test_saving_an_existing_testimonial_edits_instead_of_duplicating(self):
         response = self.client.post(
@@ -138,25 +138,20 @@ class TestimonialSavedRecordsTests(TestCase):
         self.assertNotContains(response, 'Student ID: <strong>')
         self.assertNotContains(response, 'Compared by')
 
-    def test_blank_testimonial_downloads_use_separate_student_statuses(self):
-        with patch(
-            'myteacher.views._create_testimonial_pdf',
-            return_value=HttpResponse(b'%PDF', content_type='application/pdf'),
-        ) as create_pdf:
-            for status in ('current', 'ssc_passed'):
-                with self.subTest(status=status):
-                    response = self.client.get(reverse(
-                        'myteacher:testimonial_blank_pdf',
-                        args=[status],
-                    ))
+    def test_blank_testimonial_print_pages_support_each_student_status(self):
+        for status in ('current', 'ssc_passed'):
+            with self.subTest(status=status):
+                response = self.client.get(reverse(
+                    'myteacher:testimonial_blank',
+                    args=[status],
+                ))
 
-                    self.assertEqual(response.status_code, 200)
-                    pdf_args, pdf_kwargs = create_pdf.call_args
-                    values, filename = pdf_args[:2]
-                    self.assertEqual(values['status'], status)
-                    self.assertTrue(all(not value for key, value in values.items() if key != 'status'))
-                    self.assertEqual(filename, f'testimonial_blank_{status}.pdf')
-                    self.assertTrue(pdf_kwargs['blank_template'])
+                self.assertEqual(response.status_code, 200)
+                self.assertTrue(response.context['print_only'])
+                self.assertTrue(response.context['blank_template'])
+                self.assertEqual(response.context['blank_status'], status)
+                self.assertContains(response, 'Print / Save PDF')
+                self.assertNotContains(response, 'A Chrome or Edge browser is required')
 
         self.assertEqual(Testimonial.objects.count(), 1)
 
@@ -180,21 +175,36 @@ class TestimonialSavedRecordsTests(TestCase):
         self.assertIn('class="handwrite-field field-name"', ssc_html)
         self.assertIn('class="handwrite-field field-date"', current_html)
 
-    def test_non_headmaster_cannot_download_blank_testimonial(self):
+    def test_saved_testimonial_pdf_route_opens_browser_print_page(self):
+        token = TimestampSigner().sign_object({
+            'user_id': self.user.pk,
+            'student_id': self.student.pk,
+        })
+
+        response = self.client.get(
+            reverse('myteacher:testimonial_pdf'),
+            {'token': token},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['print_only'])
+        self.assertContains(response, self.testimonial.name)
+        self.assertContains(response, 'Print / Save PDF')
+        self.assertNotContains(response, 'A Chrome or Edge browser is required')
+
+    def test_non_headmaster_cannot_open_blank_testimonial_print_page(self):
         user = get_user_model().objects.create_user(
             username='regular-testimonial-user',
             password='test-password',
         )
         self.client.force_login(user)
 
-        with patch('myteacher.views._create_testimonial_pdf') as create_pdf:
-            response = self.client.get(reverse(
-                'myteacher:testimonial_blank_pdf',
-                args=['current'],
-            ))
+        response = self.client.get(reverse(
+            'myteacher:testimonial_blank',
+            args=['current'],
+        ))
 
         self.assertEqual(response.status_code, 403)
-        create_pdf.assert_not_called()
 
 
 class IDCardTests(TestCase):
