@@ -149,11 +149,17 @@ def dashboard_view(request):
     # Determine dashboard student list
     class_students = None
     if is_head_teacher:
-        class_students = Student.objects.all().order_by('current_class', 'class_roll')
+        class_students = Student.objects.filter(old_student_year__isnull=True).order_by('current_class', 'class_roll')
     elif teacher.is_class_teacher and teacher.class_teacher_of:
-        class_students = Student.objects.filter(current_class=teacher.class_teacher_of).order_by('class_roll')
+        class_students = Student.objects.filter(
+            current_class=teacher.class_teacher_of,
+            old_student_year__isnull=True,
+        ).order_by('class_roll')
     elif assigned_classes:
-        class_students = Student.objects.filter(current_class__in=assigned_classes).order_by('current_class', 'class_roll')
+        class_students = Student.objects.filter(
+            current_class__in=assigned_classes,
+            old_student_year__isnull=True,
+        ).order_by('current_class', 'class_roll')
 
     return render(request, 'myteacher/dashboard.html', {
         'teacher': teacher,
@@ -199,9 +205,13 @@ def mark_entry_view(request):
             students = Student.objects.filter(
                 current_class=selected_class,
                 religion=selected_subject_obj.effective_religion,
+                old_student_year__isnull=True,
             ).order_by('class_roll')
         else:
-            students = Student.objects.filter(current_class=selected_class).order_by('class_roll')
+            students = Student.objects.filter(
+                current_class=selected_class,
+                old_student_year__isnull=True,
+            ).order_by('class_roll')
         if selected_subject_obj.group_name and selected_class in ['9', '10']:
             students = students.filter(group=selected_subject_obj.group_name)
         subject_full_mark = selected_subject_obj.full_mark_value
@@ -236,7 +246,7 @@ def mark_entry_view(request):
             return HttpResponseForbidden("Unauthorized access!")
         selected_subject_obj = assignment.subject
 
-        students_to_mark = Student.objects.filter(current_class=s_class)
+        students_to_mark = Student.objects.filter(current_class=s_class, old_student_year__isnull=True)
         if selected_subject_obj.is_religion_based:
             students_to_mark = students_to_mark.filter(religion=selected_subject_obj.effective_religion)
         if selected_subject_obj.group_name and s_class in ['9', '10']:
@@ -507,6 +517,7 @@ def testimonial_view(request):
     return render(request, 'myteacher/testimonial.html', {
         'teacher': teacher,
         'query': query,
+        'saved_testimonials': Testimonial.objects.select_related('student').order_by('-generated_date', '-serial_number'),
         'students': students,
         'selected_student': selected_student,
         'values': values,
@@ -529,43 +540,7 @@ def _testimonial_browser_path():
     return next((path for path in candidates if path and os.path.isfile(path)), None)
 
 
-def testimonial_pdf_view(request):
-    token = request.GET.get('token', '')
-    try:
-        payload = TimestampSigner().unsign_object(token, max_age=300)
-    except (BadSignature, SignatureExpired, ValueError):
-        return HttpResponse('PDF link expired or invalid. Generate the testimonial again.', status=400)
-
-    user = request.user
-    if not user.is_authenticated or user.pk != payload.get('user_id'):
-        return HttpResponseForbidden('You are not authorized to generate this PDF.')
-
-    teacher = getattr(user, 'teacher', None)
-    if not user.is_superuser and (not teacher or not is_head_or_admin(teacher, user)):
-        return HttpResponseForbidden('Only Headmaster or Admin can generate this PDF.')
-
-    student = get_object_or_404(Student, pk=payload.get('student_id'))
-    testimonial = get_object_or_404(Testimonial, student=student)
-    values = {
-        'serial_number': testimonial.serial_number or '',
-        'generated_date': testimonial.generated_date.strftime('%d/%m/%Y') if testimonial.generated_date else '',
-        'student_id': student.student_id,
-        'name': testimonial.name,
-        'father_name': testimonial.father_name,
-        'mother_name': testimonial.mother_name,
-        'class_level': testimonial.class_level,
-        'group': testimonial.group,
-        'roll': testimonial.roll,
-        'registration': testimonial.registration,
-        'session': testimonial.session,
-        'date_of_birth': testimonial.date_of_birth,
-        'gender': testimonial.gender,
-        'status': testimonial.status,
-        'ssc_year': testimonial.ssc_year,
-        'ssc_board': testimonial.ssc_board,
-        'candidate_type': testimonial.candidate_type,
-        'gpa': testimonial.gpa,
-    }
+def _create_testimonial_pdf(values, filename, blank_template=False, blank_status=''):
     browser_path = _testimonial_browser_path()
     if not browser_path:
         return HttpResponse('A Chrome or Edge browser is required for exact PDF generation.', status=503)
@@ -581,6 +556,8 @@ def testimonial_pdf_view(request):
                 'generated': True,
                 'pdf_mode': True,
                 'values': values,
+                'blank_template': blank_template,
+                'blank_status': blank_status,
             })
             Path(temp_dir, 'index.html').write_text(rendered_html, encoding='utf-8')
 
@@ -630,8 +607,85 @@ def testimonial_pdf_view(request):
         return HttpResponse('PDF generation could not start. Please try again.', status=503)
 
     response = HttpResponse(pdf_content, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="testimonial_{student.student_id}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
+
+
+def testimonial_pdf_view(request):
+    token = request.GET.get('token', '')
+    try:
+        payload = TimestampSigner().unsign_object(token, max_age=300)
+    except (BadSignature, SignatureExpired, ValueError):
+        return HttpResponse('PDF link expired or invalid. Generate the testimonial again.', status=400)
+
+    user = request.user
+    if not user.is_authenticated or user.pk != payload.get('user_id'):
+        return HttpResponseForbidden('You are not authorized to generate this PDF.')
+
+    teacher = getattr(user, 'teacher', None)
+    if not user.is_superuser and (not teacher or not is_head_or_admin(teacher, user)):
+        return HttpResponseForbidden('Only Headmaster or Admin can generate this PDF.')
+
+    student = get_object_or_404(Student, pk=payload.get('student_id'))
+    testimonial = get_object_or_404(Testimonial, student=student)
+    values = {
+        'serial_number': testimonial.serial_number or '',
+        'generated_date': testimonial.generated_date.strftime('%d/%m/%Y') if testimonial.generated_date else '',
+        'student_id': student.student_id,
+        'name': testimonial.name,
+        'father_name': testimonial.father_name,
+        'mother_name': testimonial.mother_name,
+        'class_level': testimonial.class_level,
+        'group': testimonial.group,
+        'roll': testimonial.roll,
+        'registration': testimonial.registration,
+        'session': testimonial.session,
+        'date_of_birth': testimonial.date_of_birth,
+        'gender': testimonial.gender,
+        'status': testimonial.status,
+        'ssc_year': testimonial.ssc_year,
+        'ssc_board': testimonial.ssc_board,
+        'candidate_type': testimonial.candidate_type,
+        'gpa': testimonial.gpa,
+    }
+    return _create_testimonial_pdf(values, f'testimonial_{student.student_id}.pdf')
+
+
+@login_required
+def testimonial_blank_pdf_view(request, status):
+    user = request.user
+    teacher = getattr(user, 'teacher', None)
+    if not user.is_superuser and (not teacher or not is_head_or_admin(teacher, user)):
+        return HttpResponseForbidden('Only Headmaster or Admin can generate this PDF.')
+    if status not in ('current', 'ssc_passed'):
+        return HttpResponseBadRequest('Choose a valid testimonial type.')
+
+    values = {
+        'serial_number': '',
+        'generated_date': '',
+        'student_id': '',
+        'name': '',
+        'father_name': '',
+        'mother_name': '',
+        'class_level': '',
+        'group': '',
+        'roll': '',
+        'registration': '',
+        'session': '',
+        'date_of_birth': '',
+        'gender': '',
+        'status': status,
+        'ssc_year': '',
+        'ssc_board': '',
+        'candidate_type': '',
+        'gpa': '',
+    }
+    return _create_testimonial_pdf(
+        values,
+        f'testimonial_blank_{status}.pdf',
+        blank_template=True,
+        blank_status=status,
+    )
 
 
 def testimonial_pdf_page(request, token):
@@ -946,7 +1000,12 @@ def student_corner_view(request):
     own_class_teacher_classes = get_teacher_own_class_teacher_classes(teacher)
     
     if is_head_teacher:
-        assigned_classes = list(Student.objects.order_by('current_class').values_list('current_class', flat=True).distinct())
+        assigned_classes = list(
+            Student.objects.filter(old_student_year__isnull=True)
+            .order_by('current_class')
+            .values_list('current_class', flat=True)
+            .distinct()
+        )
     else:
         assigned_classes = get_teacher_allowed_classes(teacher)
         if teacher.class_teacher_of and teacher.class_teacher_of not in assigned_classes:
@@ -963,7 +1022,7 @@ def student_corner_view(request):
     
     if assigned_classes:
         if selected_class == 'all' and is_head_teacher:
-            class_students = Student.objects.all().order_by('current_class', 'class_roll')
+            class_students = Student.objects.filter(old_student_year__isnull=True).order_by('current_class', 'class_roll')
             if search_query:
                 class_students = class_students.filter(
                     Q(full_name__icontains=search_query) |
@@ -978,7 +1037,10 @@ def student_corner_view(request):
             else:
                 current_class = assigned_classes[0]
             
-            class_students = Student.objects.filter(current_class=current_class).order_by('class_roll')
+            class_students = Student.objects.filter(
+                current_class=current_class,
+                old_student_year__isnull=True,
+            ).order_by('class_roll')
             if search_query:
                 class_students = class_students.filter(
                     Q(full_name__icontains=search_query) |
@@ -998,8 +1060,27 @@ def student_corner_view(request):
         'students': students,
         'search_query': search_query,
         'can_generate_admit': is_head_teacher or (teacher.is_class_teacher and selected_class == teacher.class_teacher_of),
+        'can_view_old_students': teacher.designation == 'Headmaster',
         'can_generate_seat': is_head_teacher or (teacher.is_class_teacher and selected_class == teacher.class_teacher_of),
         'is_head_teacher': is_head_teacher,
+    })
+
+
+@login_required
+def old_student_details_view(request):
+    teacher = getattr(request.user, 'teacher', None)
+    if not teacher or teacher.designation != 'Headmaster':
+        return HttpResponseForbidden("শুধুমাত্র প্রধান শিক্ষক পুরাতন শিক্ষার্থীদের তথ্য দেখতে পারবেন।")
+
+    old_students = Student.objects.filter(
+        old_student_year__isnull=False,
+    ).order_by('-old_student_year', 'full_name')
+    year_groups = []
+    for year, group in groupby(old_students, key=lambda student: student.old_student_year):
+        year_groups.append({'year': year, 'students': list(group)})
+
+    return render(request, 'myteacher/old_student_details.html', {
+        'year_groups': year_groups,
     })
 
 
@@ -1022,7 +1103,10 @@ def id_cards_view(request):
 
     students = Student.objects.none()
     if selected_class:
-        students = Student.objects.filter(current_class=selected_class).order_by('class_roll')
+        students = Student.objects.filter(
+            current_class=selected_class,
+            old_student_year__isnull=True,
+        ).order_by('class_roll')
 
     can_download = selected_class in class_teacher_classes or is_head_teacher
     current_year = datetime.date.today().year
@@ -1093,8 +1177,12 @@ def student_promotion_view(request):
     if not selected_class:
         selected_class = allowed_classes[0]
 
-    next_class = CLASS_PROMOTION_MAP.get(selected_class)
-    students = Student.objects.filter(current_class=selected_class).order_by('class_roll')
+    graduation_year = datetime.date.today().year
+    next_class = 'Old Student' if selected_class == '10' else CLASS_PROMOTION_MAP.get(selected_class)
+    students = Student.objects.filter(
+        current_class=selected_class,
+        old_student_year__isnull=True,
+    ).order_by('class_roll')
     status = None
     status_type = None
 
@@ -1103,7 +1191,7 @@ def student_promotion_view(request):
         if selected_class not in allowed_classes:
             return HttpResponseForbidden("আপনি এই ক্লাসের জন্য অনুমোদিত নন।")
 
-        next_class = CLASS_PROMOTION_MAP.get(selected_class)
+        next_class = 'Old Student' if selected_class == '10' else CLASS_PROMOTION_MAP.get(selected_class)
         selected_ids = request.POST.getlist('promote_student')
         promoted_count = 0
 
@@ -1115,7 +1203,11 @@ def student_promotion_view(request):
             status_type = 'danger'
         else:
             for student_id in selected_ids:
-                student = Student.objects.filter(id=student_id, current_class=selected_class).first()
+                student = Student.objects.filter(
+                    id=student_id,
+                    current_class=selected_class,
+                    old_student_year__isnull=True,
+                ).first()
                 if not student:
                     continue
 
@@ -1126,12 +1218,18 @@ def student_promotion_view(request):
                     except (ValueError, TypeError):
                         pass
 
-                student.current_class = next_class
+                if selected_class == '10':
+                    student.old_student_year = graduation_year
+                else:
+                    student.current_class = next_class
                 student.save()
                 promoted_count += 1
 
             if promoted_count:
-                status = f'{promoted_count} জন ছাত্র/ছাত্রী এখন ক্লাস {next_class} এ প্রোমোট হয়েছে।'
+                if selected_class == '10':
+                    status = f'{promoted_count} জন ছাত্র/ছাত্রী {graduation_year} সালের পুরাতন শিক্ষার্থী হিসেবে সংরক্ষিত হয়েছে।'
+                else:
+                    status = f'{promoted_count} জন ছাত্র/ছাত্রী এখন ক্লাস {next_class} এ প্রোমোট হয়েছে।'
                 status_type = 'success'
             else:
                 status = 'কোন ছাত্র/ছাত্রী প্রোমোট হয়নি।'
@@ -1149,6 +1247,7 @@ def student_promotion_view(request):
         'promotion_classes': Student.CLASS_CHOICES,
         'allowed_classes': allowed_classes,
         'selected_class': selected_class,
+        'graduation_year': graduation_year,
     })
 
 
@@ -1156,7 +1255,10 @@ def student_promotion_view(request):
 def seat_plan_view(request):
     teacher = request.user.teacher
     assigned_class = teacher.class_teacher_of if teacher.is_class_teacher else None
-    students = Student.objects.filter(current_class=assigned_class).order_by('class_roll') if assigned_class else None
+    students = Student.objects.filter(
+        current_class=assigned_class,
+        old_student_year__isnull=True,
+    ).order_by('class_roll') if assigned_class else None
     return render(request, 'myteacher/seat_plan.html', {
         'teacher': teacher,
         'assigned_class': assigned_class,
@@ -2381,13 +2483,13 @@ def student_list_view(request):
     class_filter = request.GET.get('class_filter', '')
 
     if is_head_teacher:
-        students_qs = Student.objects.all()
+        students_qs = Student.objects.filter(old_student_year__isnull=True)
     else:
         allowed_classes = get_teacher_allowed_classes(teacher)
         own_class_teacher_classes = get_teacher_own_class_teacher_classes(teacher)
         if own_class_teacher_classes:
             allowed_classes = list(set(allowed_classes) | set(own_class_teacher_classes))
-        students_qs = Student.objects.filter(current_class__in=allowed_classes)
+        students_qs = Student.objects.filter(current_class__in=allowed_classes, old_student_year__isnull=True)
 
     if class_filter:
         students_qs = students_qs.filter(current_class=class_filter)
@@ -2415,13 +2517,16 @@ def student_list_report_view(request):
         class_options = [{'value': 'all', 'label': 'All Classes'}] + [
             {'value': value, 'label': f'Class {value}'} for value, _ in Student.CLASS_CHOICES
         ]
-        students = Student.objects.all().order_by('current_class', 'class_roll')
+        students = Student.objects.filter(old_student_year__isnull=True).order_by('current_class', 'class_roll')
         if selected_class and selected_class != 'all':
             students = students.filter(current_class=selected_class)
     else:
         selected_class = teacher.class_teacher_of or 'all'
         class_options = [{'value': selected_class, 'label': f'Class {selected_class}'}] if selected_class else []
-        students = Student.objects.filter(current_class=selected_class).order_by('class_roll') if selected_class else Student.objects.none()
+        students = Student.objects.filter(
+            current_class=selected_class,
+            old_student_year__isnull=True,
+        ).order_by('class_roll') if selected_class else Student.objects.none()
 
     class_groups = []
     if selected_class == 'all':

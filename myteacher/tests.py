@@ -1,10 +1,12 @@
 from decimal import Decimal
 from types import SimpleNamespace
 import datetime
+from unittest.mock import patch
 
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.test import RequestFactory, TestCase
 from django.contrib.auth import get_user_model
@@ -13,7 +15,7 @@ from django.urls import reverse
 from django.contrib import admin
 
 from myteacher.admin import ExamRoutineAdminForm, SubjectAdmin, SubjectAdminForm
-from myteacher.models import ExamRoutine, Mark, Subject, Teacher, TeacherSubjectAssignment
+from myteacher.models import ExamRoutine, Mark, Subject, Teacher, TeacherSubjectAssignment, Testimonial
 from myteacher.views import get_student_result_summary, mark_entry_view
 from students.models import ManualASRBatch, Student, StudentResultPublication
 
@@ -43,6 +45,156 @@ class DashboardWithoutTeacherProfileTests(TestCase):
         response = self.client.get(reverse('myteacher:dashboard'))
 
         self.assertEqual(response.status_code, 403)
+
+
+class TestimonialSavedRecordsTests(TestCase):
+    def setUp(self):
+        user = get_user_model().objects.create_user(
+            username='testimonial-headmaster',
+            password='test-password',
+        )
+        Teacher.objects.create(
+            user=user,
+            teacher_id='TEST-HM-1',
+            teacher_name='Headmaster',
+            designation='Headmaster',
+            mobile='01700000000',
+            email='testimonial-headmaster@example.com',
+            teacher_img='',
+            assigned_class='10',
+        )
+        self.client.force_login(user)
+        self.student = Student.objects.create(
+            full_name='Testimonial Student',
+            father_name='Student Father',
+            mother_name='Student Mother',
+            student_id='TEST101',
+            current_class='10',
+            class_roll=12,
+            shift='Day',
+            mobile_num='01700000000',
+        )
+        self.testimonial = Testimonial.objects.create(
+            student=self.student,
+            serial_number=21,
+            generated_date=datetime.date(2025, 6, 1),
+            name='Saved Testimonial Name',
+            father_name='Saved Father',
+            mother_name='Saved Mother',
+            class_level='10',
+            group='Science',
+            roll='12',
+            registration='REG-12',
+            session='2024-2025',
+            date_of_birth='01/01/2008',
+            gender='Female',
+            candidate_type='Regular',
+        )
+
+    def test_saved_testimonials_are_listed_and_selecting_one_loads_saved_values(self):
+        response = self.client.get(
+            reverse('myteacher:testimonial'),
+            {'student_id': self.student.pk},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Saved Testimonials')
+        self.assertContains(response, f'value="{self.student.pk}" selected')
+        self.assertContains(response, 'Saved Testimonial Name')
+        self.assertContains(response, 'value="Saved Father"')
+        self.assertContains(response, 'value="Saved Mother"')
+        self.assertContains(response, reverse('myteacher:testimonial_blank_pdf', args=['current']))
+        self.assertContains(response, reverse('myteacher:testimonial_blank_pdf', args=['ssc_passed']))
+
+    def test_saving_an_existing_testimonial_edits_instead_of_duplicating(self):
+        response = self.client.post(
+            reverse('myteacher:testimonial'),
+            {
+                'student_id': self.student.pk,
+                'name': 'Edited Testimonial Name',
+                'father_name': 'Edited Father',
+                'mother_name': 'Edited Mother',
+                'class_level': '10',
+                'group': 'Science',
+                'roll': '13',
+                'registration': 'REG-13',
+                'session': '2024-2025',
+                'date_of_birth': '01/01/2008',
+                'gender': 'Female',
+                'status': 'current',
+                'ssc_year': '',
+                'ssc_board': '',
+                'candidate_type': 'Regular',
+                'gpa': '',
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.testimonial.refresh_from_db()
+        self.assertEqual(Testimonial.objects.count(), 1)
+        self.assertEqual(self.testimonial.name, 'Edited Testimonial Name')
+        self.assertEqual(self.testimonial.serial_number, 21)
+        self.assertContains(response, '&ldquo;I wish her every success in life.&rdquo;')
+        self.assertNotContains(response, 'Student ID: <strong>')
+        self.assertNotContains(response, 'Compared by')
+
+    def test_blank_testimonial_downloads_use_separate_student_statuses(self):
+        with patch(
+            'myteacher.views._create_testimonial_pdf',
+            return_value=HttpResponse(b'%PDF', content_type='application/pdf'),
+        ) as create_pdf:
+            for status in ('current', 'ssc_passed'):
+                with self.subTest(status=status):
+                    response = self.client.get(reverse(
+                        'myteacher:testimonial_blank_pdf',
+                        args=[status],
+                    ))
+
+                    self.assertEqual(response.status_code, 200)
+                    pdf_args, pdf_kwargs = create_pdf.call_args
+                    values, filename = pdf_args[:2]
+                    self.assertEqual(values['status'], status)
+                    self.assertTrue(all(not value for key, value in values.items() if key != 'status'))
+                    self.assertEqual(filename, f'testimonial_blank_{status}.pdf')
+                    self.assertTrue(pdf_kwargs['blank_template'])
+
+        self.assertEqual(Testimonial.objects.count(), 1)
+
+    def test_blank_testimonial_templates_have_status_specific_text_and_handwriting_lines(self):
+        current_html = render_to_string('myteacher/testimonial.html', {
+            'generated': True,
+            'blank_template': True,
+            'blank_status': 'current',
+            'values': {},
+        })
+        ssc_html = render_to_string('myteacher/testimonial.html', {
+            'generated': True,
+            'blank_template': True,
+            'blank_status': 'ssc_passed',
+            'values': {},
+        })
+
+        self.assertIn('is a student of Class', current_html)
+        self.assertNotIn('passed the Secondary School Certificate', current_html)
+        self.assertIn('passed the Secondary School Certificate', ssc_html)
+        self.assertIn('class="handwrite-field field-name"', ssc_html)
+        self.assertIn('class="handwrite-field field-date"', current_html)
+
+    def test_non_headmaster_cannot_download_blank_testimonial(self):
+        user = get_user_model().objects.create_user(
+            username='regular-testimonial-user',
+            password='test-password',
+        )
+        self.client.force_login(user)
+
+        with patch('myteacher.views._create_testimonial_pdf') as create_pdf:
+            response = self.client.get(reverse(
+                'myteacher:testimonial_blank_pdf',
+                args=['current'],
+            ))
+
+        self.assertEqual(response.status_code, 403)
+        create_pdf.assert_not_called()
 
 
 class IDCardTests(TestCase):
@@ -189,6 +341,150 @@ class IDCardTests(TestCase):
         card_html = response.content.decode()
         self.assertLess(card_html.index('Headmaster</div>'), card_html.index('MD. SALIM SARDER'))
         self.assertLess(card_html.index('MD. SALIM SARDER'), card_html.index('Mob: 01714939122'))
+
+
+class StudentPromotionTests(TestCase):
+    def create_class_teacher(self, class_level):
+        user = get_user_model().objects.create_user(
+            username=f'class-teacher-{class_level}',
+            password='test-password',
+        )
+        Teacher.objects.create(
+            user=user,
+            teacher_id=f'CT-{class_level}',
+            teacher_name='Class Teacher',
+            designation='Assistant Teacher',
+            mobile='01700000000',
+            email=f'class-teacher-{class_level}@example.com',
+            teacher_img='',
+            assigned_class=class_level,
+            is_class_teacher=True,
+            class_teacher_of=class_level,
+        )
+        self.client.force_login(user)
+
+    def create_student(self, student_id, class_level):
+        return Student.objects.create(
+            full_name=f'Student {student_id}',
+            father_name='Father',
+            mother_name='Mother',
+            student_id=student_id,
+            current_class=class_level,
+            class_roll=1,
+            shift='Day',
+            mobile_num='01700000000',
+        )
+
+    def test_class_10_promotion_archives_student_by_year(self):
+        self.create_class_teacher('10')
+        student = self.create_student('OLD1001', '10')
+
+        response = self.client.post(
+            reverse('myteacher:student_promotion'),
+            {'selected_class': '10', 'promote_student': [str(student.pk)]},
+        )
+
+        self.assertRedirects(
+            response,
+            f"{reverse('myteacher:student_promotion')}?selected_class=10",
+        )
+        student.refresh_from_db()
+        self.assertEqual(student.current_class, '10')
+        self.assertEqual(student.old_student_year, datetime.date.today().year)
+
+        corner_response = self.client.get(reverse('myteacher:student_corner'))
+        self.assertNotContains(corner_response, 'Old Student Details')
+        self.assertNotContains(corner_response, student.full_name)
+        self.assertEqual(
+            self.client.get(reverse('myteacher:old_student_details')).status_code,
+            403,
+        )
+
+        promotion_response = self.client.get(
+            reverse('myteacher:student_promotion'),
+            {'selected_class': '10'},
+        )
+        self.assertNotContains(promotion_response, student.full_name)
+
+    def test_other_class_promotion_still_moves_student_to_next_class(self):
+        self.create_class_teacher('9')
+        student = self.create_student('PROM901', '9')
+
+        response = self.client.post(
+            reverse('myteacher:student_promotion'),
+            {'selected_class': '9', 'promote_student': [str(student.pk)]},
+        )
+
+        self.assertRedirects(
+            response,
+            f"{reverse('myteacher:student_promotion')}?selected_class=9",
+        )
+        student.refresh_from_db()
+        self.assertEqual(student.current_class, '10')
+        self.assertIsNone(student.old_student_year)
+
+
+class OldStudentDetailsTests(TestCase):
+    def create_teacher(self, designation, username):
+        user = get_user_model().objects.create_user(
+            username=username,
+            password='test-password',
+        )
+        Teacher.objects.create(
+            user=user,
+            teacher_id=f'T-{username[-8:]}',
+            teacher_name='Test Staff',
+            designation=designation,
+            mobile='01700000000',
+            email=f'{username}@example.com',
+            teacher_img='',
+            assigned_class='10',
+        )
+        self.client.force_login(user)
+
+    def test_headmaster_can_view_year_grouped_details_and_print_layout(self):
+        self.create_teacher('Headmaster', 'old-student-headmaster')
+        student = Student.objects.create(
+            photo='students/archived-photo.jpg',
+            full_name='Archived Student',
+            father_name='Father Detail',
+            mother_name='Mother Detail',
+            student_id='OLD2025',
+            gender='Female',
+            date_of_birth=datetime.date(2010, 3, 5),
+            blood_group='A+',
+            current_class='10',
+            class_roll=12,
+            shift='Day',
+            mobile_num='01712345678',
+            group='Science',
+            religion='Islam',
+            old_student_year=2025,
+        )
+
+        response = self.client.get(reverse('myteacher:old_student_details'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, student.full_name)
+        self.assertContains(response, student.father_name)
+        self.assertContains(response, student.mother_name)
+        self.assertContains(response, student.mobile_num)
+        self.assertContains(response, '10 Pass Year: 2025')
+        self.assertContains(response, 'src="/media/students/archived-photo.jpg"')
+        self.assertContains(response, '@page { size: A4 landscape; margin: 9mm; }')
+        self.assertContains(response, 'window.print()')
+
+        corner_response = self.client.get(reverse('myteacher:student_corner'))
+        self.assertContains(corner_response, reverse('myteacher:old_student_details'))
+
+    def test_non_headmaster_cannot_view_old_student_details(self):
+        self.create_teacher('Assistant Headmaster', 'old-student-assistant')
+
+        response = self.client.get(reverse('myteacher:old_student_details'))
+
+        self.assertEqual(response.status_code, 403)
+        corner_response = self.client.get(reverse('myteacher:student_corner'))
+        self.assertNotContains(corner_response, reverse('myteacher:old_student_details'))
 
 
 class ManualASRTests(TestCase):

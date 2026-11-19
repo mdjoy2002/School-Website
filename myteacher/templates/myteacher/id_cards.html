@@ -226,11 +226,8 @@
         background: rgba(255,255,255,.96); margin-top: 2px;
     }
     .back-family-row {
-        display: grid; grid-template-columns: 78px 8px minmax(0, 1fr);
+        display: grid; grid-template-columns: 66px 8px minmax(0, 1fr);
         align-items: start; column-gap: 3px; margin: 0; font-size: 7pt; line-height: 1.1;
-    }
-    .back-family-row.parent-name-row {
-        height: auto; overflow: visible;
     }
     .back-family-label { font-weight: 800; color: var(--info-label-color, var(--maroon)); }
     .back-family-value {
@@ -239,8 +236,7 @@
         -webkit-box-orient: vertical; -webkit-line-clamp: 2;
     }
     .parent-name-row .back-family-value {
-        display: block; overflow: visible; line-height: inherit;
-        -webkit-line-clamp: unset; -webkit-box-orient: initial;
+        font-size: 6pt; line-height: 1.05;
     }
     .back-family-row:not(.parent-name-row) { align-items: center; white-space: nowrap; }
     .back-family-row:not(.parent-name-row) .back-family-value { white-space: nowrap; overflow-wrap: normal; }
@@ -525,7 +521,7 @@
 
                             <div class="back-family-row parent-name-row"><span class="back-family-label">Mother's Name</span><span>:</span><span class="back-family-value">{{ student.mother_name|default:"N/A" }}</span></div>
 
-                            <div class="back-family-row"><span class="back-family-label">Guardian Mobile</span><span>:</span><span class="back-family-value">{{ student.mobile_num|default:"N/A" }}</span></div>
+                            <div class="back-family-row"><span class="back-family-label">Guardian Mob</span><span>:</span><span class="back-family-value">{{ student.mobile_num|default:"N/A" }}</span></div>
 
                         </div>
 

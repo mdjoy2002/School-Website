@@ -123,7 +123,11 @@
         <div class="promotion-card">
             <div class="promotion-header">
                 <h2>Student Promotion Panel</h2>
-                <p>Promote selected students from Class {{ current_class }} to Class {{ next_class }} with editable roll numbers before saving. This page is designed for all screen sizes and displays a clean, modern promotion panel.</p>
+                {% if current_class == '10' %}
+                <p>Move selected Class 10 students to the year-wise Old Student list for {{ graduation_year }}.</p>
+                {% else %}
+                <p>Promote selected students from Class {{ current_class }} to Class {{ next_class }} with editable roll numbers before saving.</p>
+                {% endif %}
             </div>
             <div class="promotion-body">
                 {% if status %}
@@ -145,8 +149,13 @@
                         <p>{{ current_class }}</p>
                     </div>
                     <div class="promotion-metric">
+                        {% if current_class == '10' %}
+                        <h5>Old Student Year</h5>
+                        <p>{{ graduation_year }}</p>
+                        {% else %}
                         <h5>Next Class</h5>
                         <p>{{ next_class|default:'N/A' }}</p>
+                        {% endif %}
                     </div>
                     <div class="promotion-metric">
                         <h5>Total Students</h5>
@@ -209,7 +218,12 @@
                     <div class="promotion-submit">
                         {% if next_class and students %}
                         <button type="submit" class="btn btn-success btn-lg rounded-pill">
-                            <i class="fas fa-level-up-alt me-2"></i>Promote Selected to Class {{ next_class }}
+                            <i class="fas fa-level-up-alt me-2"></i>
+                            {% if current_class == '10' %}
+                            Move Selected to Old Students
+                            {% else %}
+                            Promote Selected to Class {{ next_class }}
+                            {% endif %}
                         </button>
                         {% endif %}
                     </div>

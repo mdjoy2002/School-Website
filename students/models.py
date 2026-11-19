@@ -70,6 +70,7 @@ class Student(models.Model):
     )
     current_class = models.CharField(max_length=2, choices=CLASS_CHOICES, verbose_name="Class")
     class_roll = models.PositiveIntegerField(verbose_name="Class Roll")
+    old_student_year = models.PositiveSmallIntegerField(null=True, blank=True, db_index=True, verbose_name="Old Student Year")
     shift = models.CharField(max_length=10, default='Day', verbose_name="Shift")
     mobile_num = models.CharField(max_length=15, verbose_name="Mobile Number")
     group = models.CharField(max_length=20, choices=GROUP_CHOICES, null=True, blank=True, verbose_name="Group")

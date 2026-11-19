@@ -14,7 +14,7 @@
 
 html,
 body,
-body *:not(i):not(svg):not([class^="fa-"]):not([class*=" fa-"]):not([class~="fa"]):not([class~="fas"]):not([class~="far"]):not([class~="fab"]):not([class~="bi"]):not([class^="bi-"]):not([class*=" bi-"]) {
+body *:not(.certificate):not(.certificate *):not(i):not(svg):not([class^="fa-"]):not([class*=" fa-"]):not([class~="fa"]):not([class~="fas"]):not([class~="far"]):not([class~="fab"]):not([class~="bi"]):not([class^="bi-"]):not([class*=" bi-"]) {
     font-family: 'Times New Roman', 'Kalpurush', serif !important;
 }
 

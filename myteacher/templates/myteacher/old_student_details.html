@@ -1,0 +1,102 @@
+{% extends 'myteacher/base.html' %}
+
+{% block content %}
+<style>
+    .old-student-page { max-width: 1440px; margin: 0 auto; padding: 24px; }
+    .old-student-table { min-width: 1100px; }
+    .old-student-table th, .old-student-table td { vertical-align: top; }
+    .old-student-photo { width: 36px; height: 44px; object-fit: cover; border-radius: 4px; }
+
+    @page { size: A4 landscape; margin: 9mm; }
+    @media print {
+        body { background: #fff !important; }
+        nav, .no-print { display: none !important; }
+        .old-student-page { max-width: none; margin: 0; padding: 0; }
+        .old-student-year { break-after: avoid-page; page-break-after: avoid; }
+        .old-student-table {
+            width: 100%;
+            min-width: 0;
+            table-layout: fixed;
+            border-collapse: collapse;
+            font-size: 6.5pt;
+        }
+        .old-student-photo { width: 27px; height: 34px; border-radius: 0; }
+        .old-student-table th, .old-student-table td {
+            border: 1px solid #444 !important;
+            padding: 3px !important;
+            overflow-wrap: anywhere;
+        }
+        .old-student-table thead { display: table-header-group; }
+        .old-student-table tr { break-inside: avoid; page-break-inside: avoid; }
+    }
+</style>
+
+<main class="old-student-page">
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6 no-print">
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900">Old Student Details</h1>
+            <p class="text-sm text-slate-500 mt-1">Class 10 students grouped by 10 pass year.</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{% url 'myteacher:student_corner' %}" class="rounded-lg bg-slate-200 px-4 py-2 font-semibold text-slate-800">Back</a>
+            <button type="button" onclick="window.print()" class="rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white">
+                <i class="fas fa-print me-2"></i>Print A4
+            </button>
+        </div>
+    </div>
+
+    {% for year_group in year_groups %}
+    <section class="mb-8">
+        <h2 class="old-student-year text-lg font-bold text-indigo-800 mb-2">10 Pass Year: {{ year_group.year }}</h2>
+        <div class="overflow-x-auto">
+            <table class="old-student-table w-full border-collapse text-left text-xs">
+                <thead>
+                    <tr class="bg-slate-100">
+                        <th scope="col">No.</th>
+                        <th scope="col">Photo</th>
+                        <th scope="col">Student Name</th>
+                        <th scope="col">Student ID</th>
+                        <th scope="col">Roll</th>
+                        <th scope="col">Father's Name</th>
+                        <th scope="col">Mother's Name</th>
+                        <th scope="col">Mobile</th>
+                        <th scope="col">Date of Birth</th>
+                        <th scope="col">Gender</th>
+                        <th scope="col">Blood Group</th>
+                        <th scope="col">Group</th>
+                        <th scope="col">Religion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in year_group.students %}
+                    <tr class="border-b border-slate-200">
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            {% if student.photo %}
+                            <img class="old-student-photo" src="{{ student.photo.url }}" alt="{{ student.full_name }}">
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>{{ student.full_name }}</td>
+                        <td>{{ student.student_id }}</td>
+                        <td>{{ student.class_roll }}</td>
+                        <td>{{ student.father_name }}</td>
+                        <td>{{ student.mother_name }}</td>
+                        <td>{{ student.mobile_num|default:'-' }}</td>
+                        <td>{{ student.date_of_birth|date:'d M Y'|default:'-' }}</td>
+                        <td>{{ student.gender|default:'-' }}</td>
+                        <td>{{ student.blood_group|default:'-' }}</td>
+                        <td>{{ student.group|default:'-' }}</td>
+                        <td>{{ student.religion|default:'-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% empty %}
+    <p class="rounded-xl bg-white p-6 text-slate-500">No old students have been added yet.</p>
+    {% endfor %}
+</main>
+{% endblock %}
