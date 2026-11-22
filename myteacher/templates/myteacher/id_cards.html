@@ -1,308 +1,433 @@
-
-
 {% load static %}
 
 {% block content %}
 
 <style>
     :root {
-        --maroon: #650d35;
-        --maroon-dark: #4b0928;
-        --orange: #9f4764;
-        --green: #159b68;
-        --gold: #f5d52e;
-        --ink: #20202a;
+        --primary: #0f4c5c;
+        --primary-dark: #0a3440;
+        --accent: #1f8a8a;
+        --coral: #c2501c;
+        --green: #1b8a6b;
+        --gold: #f4b942;
+        --gold-light: #ffe3a3;
+        --gold-deep: #c98a10;
+        --paper: #f4fafa;
+        --ink: #17262b;
+        --muted: #5f7378;
+        --line: #d6e5e8;
+        --surface: #ffffff;
+        --page: #eaf3f4;
         --card-font: "Times New Roman", Times, serif;
     }
 
     body {
         font-family: var(--card-font, "Times New Roman", Times, serif);
-        background: #eef0f4;
+        background: var(--page);
+        color: var(--ink);
     }
 
-    .page-container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    .page-container { max-width: 1240px; margin: 0 auto; padding: 28px 24px 48px; }
 
+    /* ---------- PAGE TITLE ---------- */
+    .page-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 18px; }
+    .page-title h1 { margin: 0; font-size: 26px; font-weight: 700; color: var(--primary-dark); }
+    .page-title span { font-size: 14px; color: var(--muted); }
+
+    /* ---------- PANELS ---------- */
     .control-panel, .customizer-panel {
-        background: #fff; padding: 16px 22px; border-radius: 12px;
-        margin-bottom: 18px; display: flex; gap: 16px; align-items: center;
-        box-shadow: 0 5px 18px rgba(35, 25, 45, .07); flex-wrap: wrap;
+        background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+        box-shadow: 0 6px 20px rgba(10, 50, 60, .06);
     }
-    .control-panel select, .control-panel button { font-size: 14px; }
-    .back-button {
-        display: inline-flex; align-items: center; padding: 9px 12px;
-        border: 1px solid var(--maroon); border-radius: 7px;
-        color: var(--maroon); background: #fff; font-size: 14px;
-        font-weight: 700; text-decoration: none;
+    .control-panel {
+        padding: 16px 20px; margin-bottom: 16px; display: flex; gap: 14px 22px;
+        align-items: flex-end; flex-wrap: wrap;
     }
-    .back-button:hover { color: #fff; background: var(--maroon); }
-    .control-panel .download-selected {
-        background: #159b68; color: #fff; border: 0; padding: 10px 18px;
-        border-radius: 8px; cursor: pointer; font-weight: 700;
+    .control-panel .field { display: flex; flex-direction: column; gap: 5px; }
+    .control-panel .field > label, .control-panel label.field {
+        font-size: 12px; font-weight: 700; color: var(--primary); margin: 0;
     }
-    .control-panel .download-selected:disabled { opacity: .5; cursor: not-allowed; }
     .control-panel .class-select {
-        padding: 9px 12px; border-radius: 7px; border: 1px solid #d7dce4;
-        background: #f8fafc;
+        padding: 9px 12px; border-radius: 8px; border: 1px solid #c5d6da;
+        background: #f6fafb; font-size: 14px; font-family: inherit; min-width: 140px;
     }
-    .customizer-panel { border-left: 5px solid var(--orange); margin-bottom: 28px; }
+    .control-panel .class-select:focus, .customizer-panel select:focus {
+        outline: 2px solid var(--accent); outline-offset: 1px;
+    }
+    .back-button {
+        display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px;
+        border: 1px solid var(--primary); border-radius: 8px; color: var(--primary);
+        background: #fff; font-size: 14px; font-weight: 700; text-decoration: none;
+        transition: background .15s, color .15s;
+    }
+    .back-button:hover { color: #fff; background: var(--primary); }
+    .control-panel .download-selected {
+        margin-left: auto; border: 0;
+        background: linear-gradient(135deg, var(--gold), #e9a42a); color: var(--primary-dark);
+        padding: 11px 20px; border-radius: 9px; cursor: pointer; font-weight: 700;
+        font-size: 14px; font-family: inherit; box-shadow: 0 4px 12px rgba(244,185,66,.4);
+    }
+    .control-panel .download-selected:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
+    .note-box { margin-top: 4px; font-size: 12px; color: #4a6066; flex-basis: 100%; }
+    .control-panel .note-box {
+        background: #fff6e0; border: 1px solid #f1dca3; border-radius: 8px; padding: 8px 12px;
+    }
+
+    .customizer-panel {
+        padding: 14px 20px; margin-bottom: 28px; display: flex; gap: 12px 18px;
+        align-items: center; flex-wrap: wrap; border-left: 5px solid var(--gold);
+    }
+    .customizer-title { font-weight: 700; color: var(--primary); font-size: 14px; margin-right: 4px; }
     .customizer-panel label {
-        font-size: 12px; font-weight: 700; color: var(--maroon);
-        display: flex; align-items: center; gap: 5px;
+        font-size: 12px; font-weight: 700; color: var(--primary);
+        display: flex; align-items: center; gap: 6px; margin: 0;
+        padding: 5px 10px; background: #f3f8f9; border: 1px solid var(--line); border-radius: 999px;
     }
     .customizer-panel input[type="color"] {
-        border: 0; width: 25px; height: 25px; cursor: pointer; background: none;
+        border: 0; width: 24px; height: 24px; cursor: pointer; background: none; padding: 0;
+        border-radius: 50%; overflow: hidden;
     }
     .customizer-panel select {
-        padding: 6px 8px; border-radius: 6px; border: 1px solid #d7dce4; font-size: 12px;
+        padding: 4px 6px; border-radius: 6px; border: 1px solid #c5d6da; font-size: 12px;
+        background: #fff; font-family: inherit;
     }
 
+    /* ---------- GRID & HOLDER ---------- */
     .card-grid {
-        display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-        gap: 28px;
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(470px, 1fr));
+        gap: 24px;
     }
-    .card-holder { position: relative; overflow-x: auto; padding: 4px 2px 8px; }
-    .card-checkbox { position: absolute; top: -4px; left: -4px; z-index: 10; transform: scale(1.3); }
-    .id-card-pair { display: flex; gap: 14px; width: max-content; }
+    .card-holder {
+        position: relative; overflow-x: auto; padding: 14px 16px 16px;
+        background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(10, 50, 60, .06);
+    }
+    .holder-head {
+        display: flex; align-items: center; gap: 10px; margin: 0 0 12px 30px;
+        padding-bottom: 10px; border-bottom: 1px dashed var(--line);
+    }
+    .holder-name { font-size: 14px; font-weight: 700; color: var(--primary-dark); line-height: 1.2; }
+    .holder-meta { font-size: 12px; color: var(--muted); }
+    .card-checkbox {
+        position: absolute; top: 16px; left: 16px; z-index: 10;
+        width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer;
+    }
+    .id-card-pair { display: flex; gap: 14px; width: max-content; margin: 0 auto; }
 
+    /* =====================================================
+       CARD BASE  (flex column => nothing can overlap)
+       ===================================================== */
     .id-card {
-        width: 210px; min-width: 210px; max-width: 210px;
-        height: 332px; min-height: 332px; max-height: 332px; flex: 0 0 210px;
-        background: var(--card-bg, #fff);
-        background-image: var(--card-pattern, none);
+        width: 54mm; min-width: 54mm; max-width: 54mm;
+        height: 85mm; min-height: 85mm; max-height: 85mm; flex: 0 0 54mm;
+        display: flex; flex-direction: column;
+        background-color: var(--card-bg, var(--paper));
+        background-image: var(--card-pattern, none), linear-gradient(180deg, rgba(255,255,255,.6), rgba(255,255,255,0) 70%);
         font-family: var(--card-font, "Times New Roman", Times, serif);
-        border-radius: 5px; box-shadow: 0 8px 22px rgba(35, 15, 30, .16);
-        border: 1.5px solid var(--card-border-color, var(--maroon));
+        border-radius: 8px; box-shadow: 0 10px 26px rgba(8, 35, 42, .2);
+        border: 1.5px solid var(--card-border-color, var(--primary));
         overflow: hidden; position: relative; box-sizing: border-box; color: var(--ink);
     }
+    .id-card > * { flex-shrink: 0; }
     .id-card > :not(.card-watermark) { position: relative; z-index: 2; }
-    .id-card > .footer-container, .id-card > .back-contact, .id-card > .back-website, .id-card > .bottom-border {
-        position: absolute;
+
+    /* ---------- SHARED HEADER (front + back) ---------- */
+    .id-card .header {
+        flex: 0 0 48px; height: 48px; box-sizing: border-box;
+        display: flex; align-items: center; gap: 6px;
+        padding: 0 8px 4px;
+        background: linear-gradient(135deg, var(--card-header-bg1, var(--primary-dark)), var(--card-header-bg2, var(--primary)));
+        border-bottom: 3px solid var(--gold);
+        border-radius: 0 0 50% 50% / 0 0 10px 10px;
+        color: #fff;
+    }
+    .id-card-back .back-header {
+        border-radius: 0;
+    }
+    .logo-circle, .back-emblem {
+        width: 32px; height: 32px; box-sizing: border-box; flex: 0 0 32px;
+        background: #fff; border-radius: 50%; overflow: hidden;
+        display: flex; align-items: center; justify-content: center;
+        border: 1.5px solid var(--gold);
+        box-shadow: 0 0 0 1.5px var(--gold-deep), 0 2px 6px rgba(0,0,0,.28);
+    }
+    .logo-circle img, .back-emblem img {
+        display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 50%;
+    }
+    .school-heading {
+        flex: 1; min-width: 0; text-align: center;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+    }
+    .school-name {
+        font-size: 9.4px; font-weight: 900; line-height: 1.1; white-space: nowrap;
+        text-transform: uppercase; color: var(--gold-light); letter-spacing: .2px;
+        text-shadow: 0 1px 2px rgba(0,0,0,.45);
+    }
+    .school-name-sub {
+        margin-top: 1px; font-size: 9.4px; font-weight: 900; line-height: 1.1; white-space: nowrap;
+        text-transform: uppercase; color: var(--gold-light); letter-spacing: .2px;
+        text-shadow: 0 1px 2px rgba(0,0,0,.45);
+    }
+    /* location + EIIN: soft aqua color (not white) */
+    .front-school-location {
+        margin-top: 1px;
+        font-size: 6.5px;
+        font-weight: 800;
+        line-height: 1;
+        color: #9fece0;
+        letter-spacing: .45px;
+        text-shadow: 0 1px 2px rgba(0,0,0,.45);
+    }
+    .school-eiin {
+        margin-top: 2px; color: #9fece0; font-size: 7.5px; line-height: 1;
+        font-weight: 800; letter-spacing: .7px;
+        text-shadow: 0 1px 2px rgba(0,0,0,.45);
     }
 
-    /* FRONT */
-    .id-card-front { background: #fff; }
-    .id-card-front::before {
-        content: ""; position: absolute; z-index: 1; top: 0; left: 0;
-        width: 100%; height: 76px;
-        background: linear-gradient(145deg, var(--card-header-bg1, var(--maroon-dark)), var(--card-header-bg2, var(--maroon)));
-        border-radius: 0 0 50% 50% / 0 0 18% 18%;
-    }
-    .id-card-front::after {
-        content: ""; position: absolute; z-index: 0; top: 58px; left: 0;
-        width: 100%; height: 22px;
-        background: linear-gradient(180deg, #dfa0b3, #cc8399);
-        border-radius: 0 0 50% 50% / 0 0 72% 72%;
-    }
-    .header {
-        height: 50px; box-sizing: border-box; display: flex; align-items: center; gap: 4px;
-        padding: 4px; color: #fff; background: transparent;
-    }
-    .logo-circle {
-        width: 40px; height: 40px; box-sizing: border-box; background: #fff; border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        border: 2px solid var(--orange); flex-shrink: 0; overflow: hidden;
-    }
-    .logo-circle img { width: 100%; height: 100%; object-fit: contain; }
-    .school-heading { min-width: 0; flex: 1; padding-top: 0; text-align: center; }
-    .school-name {
-        font-size: 11.5px; font-weight: 900; line-height: 1.05;
-        text-transform: uppercase; color: var(--gold); letter-spacing: 0; white-space: nowrap;
-        text-shadow: 0 1px 1px rgba(0,0,0,.4);
-    }
-    .school-subtitle {
-        margin-top: 2px; font-size: 6.5px; color: #fff; font-weight: 700;
-        letter-spacing: .15px; line-height: 1.1;
-    }
-    .slogan-bar {
-        position: absolute !important; top: 58px; left: 0; right: 0;
-        background: transparent; color: var(--maroon-dark); font-size: 6px;
-        text-align: center; padding: 0 8px; font-weight: 800; letter-spacing: .25px;
-    }
-    .id-card-label {
-        background: var(--label-badge-bg, var(--maroon)); color: #fff;
-        border: 1px solid var(--slogan-bg, var(--orange));
-        text-align: center; font-size: 7pt; font-weight: 800; letter-spacing: .3px;
-        padding: 3px 14px; margin: 8px auto 0; width: max-content; min-width: 96px;
-        border-radius: 999px; box-shadow: 0 2px 6px rgba(101,13,53,.2), inset 0 1px 0 rgba(255,255,255,.15);
-    }
-    .photo-area {
-        display: flex; justify-content: center; margin: -10px 0 1px;
-    }
+    /* ---------- FRONT ---------- */
+    .photo-area { display: flex; justify-content: center; margin: 5px 0 0; }
     .profile-photo {
-        width: 62px; height: 62px; border: 2px solid #fff;
-        outline: 1.5px solid var(--slogan-bg, var(--orange));
-        border-radius: 50%; overflow: hidden; background: #f1f5f9;
-        box-shadow: 0 3px 9px rgba(0,0,0,.16);
+        width: 60px; height: 60px; box-sizing: border-box;
+        border: 2px solid #fff; border-radius: 50%; overflow: hidden; background: #f1f5f9;
+        box-shadow: 0 0 0 2px var(--gold), 0 0 0 4px rgba(244,185,66,.28), 0 4px 10px rgba(10,52,64,.3);
     }
-    .profile-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .photo-placeholder {
         display: flex; width: 100%; height: 100%; align-items: center;
         justify-content: center; color: #64748b; font-size: 7pt; font-weight: 700;
     }
-    .student-id-text {
-        text-align: center; font-size: 7.5pt; font-weight: 800;
-        line-height: 1.05; margin: 1px 0 2px; color: #b51f45;
+
+    /* ---- STUDENT ID CARD badge: solid golden ribbon (no shine) ---- */
+    .id-card-label {
+        margin: 4px auto 3px; width: max-content; min-width: 96px; box-sizing: border-box;
+        position: relative;
+        background-color: var(--label-badge-bg, #f4b942);
+        background-image: none;
+        color: var(--primary-dark); border: 1px solid var(--primary-dark);
+        text-align: center; font-size: 6.2pt; font-weight: 900; letter-spacing: .8px; line-height: 1.1;
+        padding: 2px 12px; border-radius: 999px;
+        box-shadow:
+            0 0 0 1.5px #fff,
+            0 0 0 2.5px var(--primary),
+            0 3px 7px rgba(15,76,92,.32);
     }
+    .id-card-label::before,
+    .id-card-label::after {
+        content: "\25C6";
+        position: absolute; top: 50%; transform: translateY(-50%);
+        font-size: 6px; line-height: 1; color: var(--primary-dark);
+    }
+    .id-card-label::before { left: 4px; }
+    .id-card-label::after { right: 4px; }
+
     .name-bar {
-        background: transparent; color: var(--namebar-bg, var(--maroon));
-        text-align: center; font-size: 10pt; font-weight: 900; line-height: 1.08;
-        padding: 1px 5px 2px; text-transform: uppercase; white-space: nowrap;
-        overflow: hidden; margin: 0 8px 1px;
-        border-radius: 0;
+        margin: 4px 8px 0; padding: 1px 5px; box-sizing: border-box;
+        background: transparent; color: var(--primary-dark);
+        text-align: center; font-size: 10pt; font-weight: 900; line-height: 1.1;
+        text-transform: uppercase; white-space: nowrap; overflow: hidden; border-radius: 3px;
     }
     .name-text { display: inline-block; white-space: nowrap; transform-origin: center; }
-    .id-card-front .student-id-text {
-        margin: 0 0 4px; color: #b51f45; font-size: 7.5pt;
-        letter-spacing: .25px;
-    }
-    .details-container {
-        margin: 0 8px; padding: 2px 7px 1px;
-        border: 1px solid #b9e1d3; border-radius: 13px 4px 13px 4px;
-        font-size: var(--card-font-size, 7.2pt); color: #222;
-        line-height: .98; background: rgba(255,255,255,.88);
-    }
-    .info-row { display: flex; align-items: flex-start; margin-bottom: 1.5px; }
-    .label {
-        width: 60px; min-width: 60px; font-weight: 800; white-space: nowrap;
-        color: var(--info-label-color, var(--maroon)); text-align: left;
-    }
-    .colon { width: 9px; min-width: 9px; text-align: center; font-weight: 800; color: var(--orange); }
-    .value {
-        font-weight: 700; flex: 1; color: var(--info-value-color, #26232a);
-        word-break: break-word; white-space: normal; line-height: 1;
-    }
-    .footer-container {
-        bottom: 18px; right: 0; width: 100%; display: flex;
-        justify-content: flex-end; padding: 0 10px; box-sizing: border-box;
-        z-index: 3 !important;
-    }
-    .signature-box { text-align: center; display: flex; flex-direction: column; align-items: center; }
-    .sig-image {
-        width: 38px; height: auto; object-fit: contain;
-        display: block; margin-bottom: -2px; transform: translateY(-4px);
-    }
-    .sig-line { width: 80px; border-top: 1px solid #333; margin-bottom: 2px; }
-    .sig-text { font-size: 6.5pt; font-weight: 800; color: var(--sig-text-color, var(--maroon)); line-height: 1; }
-    .sig-text + .sig-text { margin-top: 1px; }
-    .id-card-front .bottom-border {
-        bottom: 0; left: 0; width: 100%; height: 18px;
-        background: linear-gradient(12deg, var(--card-header-bg1, var(--maroon)) 0 67%, var(--slogan-bg, var(--orange)) 67% 73%, transparent 73%);
-        z-index: 1 !important;
+    .student-id-text {
+        margin: 1px 0 3px; text-align: center; font-size: 7.5pt; font-weight: 800;
+        line-height: 1.05; letter-spacing: .5px; color: var(--coral);
     }
 
-    /* BACK */
-    .id-card-back { background: linear-gradient(180deg, #fff 0%, #fff 80%, #fff8f1 100%); }
-    .id-card-back::after {
-        content: ""; position: absolute; z-index: 0; left: -28px; bottom: -40px;
-        width: 266px; height: 82px;
-        background: linear-gradient(180deg, #f4e3ea 0 33%, var(--card-header-bg1, var(--maroon)) 34% 100%);
-        border-radius: 50% 50% 0 0 / 35% 35% 0 0;
+    /* ---- INFO TABLE: thick outer border + row & column lines ---- */
+    .details-container {
+        margin: 0 8px; padding: 0; box-sizing: border-box;
+        border: 2px solid var(--card-border-color, var(--primary));
+        border-radius: 5px; overflow: hidden;
+        font-size: var(--card-font-size, 7.3pt); color: #222;
+        background: rgba(255,255,255,.92); box-shadow: 0 2px 6px rgba(15,76,92,.08);
     }
-    .back-header {
-        height: 50px; box-sizing: border-box; background: var(--card-header-bg1, var(--maroon));
-        justify-content: flex-start; align-items: center; gap: 6px; text-align: center;
-        padding: 4px 8px;
+    .info-row {
+        display: flex; align-items: stretch; padding: 0; line-height: 1;
+        border-bottom: 1px solid var(--card-border-color, var(--primary));
     }
-    .back-header .school-heading { display: flex; flex-direction: column; justify-content: center; }
-    .back-header .school-name { font-size: 10px; line-height: 1.05; text-align: center; }
-    .school-eiin {
-        margin-top: 2px; color: #ffe3a3; font-size: 8px; line-height: 1;
-        font-weight: 700; letter-spacing: .35px; text-align: center;
+    .info-row:last-child { border-bottom: 0; }
+    .info-row:nth-child(even) { background: linear-gradient(90deg, rgba(15,76,92,.07), rgba(244,185,66,.12)); }
+    .label {
+        width: 60px; min-width: 60px; font-weight: 800; white-space: nowrap;
+        color: var(--info-label-color, var(--primary)); text-align: left;
+        padding: .4px 0 .4px 3px; box-sizing: border-box;
     }
-    .back-emblem {
-        display: flex; justify-content: center; margin: 0; flex-shrink: 0;
-        width: 32px; height: 32px; box-sizing: border-box; border-radius: 50%; padding: 2px;
-        align-items: center; overflow: hidden;
-        background: #fff; border: 1.5px solid var(--slogan-bg, var(--orange));
-        box-shadow: 0 2px 6px rgba(0,0,0,.12);
+    .colon {
+        width: 8px; min-width: 8px; text-align: center; font-weight: 800; color: var(--gold-deep);
+        padding: .4px 0; box-sizing: border-box;
+        border-right: 1px solid var(--card-border-color, var(--primary));
     }
-    .back-emblem img {
-        display: block; width: 100%; height: 100%; max-width: 100%; max-height: 100%;
-        border-radius: 50%; object-fit: contain;
+    .value {
+        flex: 1; min-width: 0; font-weight: 700; color: var(--info-value-color, #1d2a2e);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        padding: .4px 3px; box-sizing: border-box;
     }
-    .back-content { padding: 0 10px 12px; color: #1e293b; }
+    .blood-group-value { color: #c91f37 !important; }
+
+    /* signature zone: fills the leftover space between table and footer */
+    .footer-container {
+        flex: 1 1 auto; min-height: 0; box-sizing: border-box;
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 10px;
+    }
+    .verify-note {
+        max-width: 74px; padding: 3px 5px 3px 6px;
+        border-left: 2px solid var(--gold); border-radius: 0 4px 4px 0;
+        background: rgba(15,76,92,.07); color: var(--primary);
+        font-size: 5.8pt; line-height: 1.15; font-weight: 800; text-align: left;
+    }
+    .signature-box { width: 68px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+    .sig-image { height: 13px; width: auto; max-width: 52px; object-fit: contain; display: block; margin-bottom: 1px; }
+    .sig-line { width: 80px; border-top: 1px solid var(--primary-dark); margin-bottom: 2px; }
+    .sig-text { font-size: 6.5pt; font-weight: 800; color: var(--sig-text-color, var(--primary)); line-height: 1.1; white-space: nowrap; }
+
+    /* front bottom band */
+    .id-card-front .bottom-border {
+        flex: 0 0 18px; height: 18px; box-sizing: border-box;
+        display: flex; align-items: center; justify-content: center;
+        background: linear-gradient(90deg, var(--primary-dark), var(--primary) 50%, var(--primary-dark));
+        border-top: 3px solid var(--gold); border-radius: 50% 50% 0 0 / 8px 8px 0 0;
+        color: var(--gold-light); font-size: 6pt; font-weight: 800; letter-spacing: .8px;
+        line-height: 1; white-space: nowrap;
+    }
+
+    /* ---------- BACK ---------- */
+    .card-watermark {
+        position: absolute; top: 53%; left: 50%; width: 145px; height: 145px;
+        transform: translate(-50%, -50%); object-fit: contain; opacity: .05;
+        pointer-events: none; z-index: 0;
+    }
+    .back-content {
+        flex: 1 1 auto; min-height: 0; box-sizing: border-box;
+        display: flex; flex-direction: column; justify-content: space-between;
+        padding: 4px 9px; color: #1e293b;
+    }
     .back-family {
-        padding: 2px 6px; border: 1px solid #d7e5df; border-radius: 7px;
-        background: rgba(255,255,255,.96); margin-top: 2px;
+        padding: 3px 6px; border: 1px solid #c9dde1; border-left: 3px solid var(--gold-deep);
+        border-radius: 3px 7px 7px 3px; background: #fff; box-shadow: 0 1px 4px rgba(15,76,92,.08);
     }
     .back-family-row {
-        display: grid; grid-template-columns: 66px 8px minmax(0, 1fr);
+        display: grid; grid-template-columns: 62px 8px minmax(0, 1fr);
         align-items: start; column-gap: 3px; margin: 0; font-size: 7pt; line-height: 1.1;
     }
-    .back-family-label { font-weight: 800; color: var(--info-label-color, var(--maroon)); }
+    .back-family-label { font-weight: 800; color: var(--info-label-color, var(--primary)); white-space: nowrap; }
     .back-family-value {
         display: -webkit-box; min-width: 0; font-weight: 700;
         overflow-wrap: anywhere; line-height: 1.1; overflow: hidden;
         -webkit-box-orient: vertical; -webkit-line-clamp: 2;
     }
-    .parent-name-row .back-family-value {
-        font-size: 6pt; line-height: 1.05;
-    }
+    .parent-name-row .back-family-value { font-size: 6pt; line-height: 1.05; }
     .back-family-row:not(.parent-name-row) { align-items: center; white-space: nowrap; }
     .back-family-row:not(.parent-name-row) .back-family-value { white-space: nowrap; overflow-wrap: normal; }
     .back-section-title {
-        margin: 4px 0 3px; padding: 2px 4px; background: var(--slogan-bg, var(--orange));
-        color: #fff; text-align: center; font-size: 7.2pt; line-height: 1.12; font-weight: 800; border-radius: 3px;
+        margin: 0; padding: 2px 4px; background: var(--slogan-bg, var(--accent));
+        color: #fff; text-align: center; font-size: 7.2pt; line-height: 1.12; font-weight: 800;
+        border-radius: 999px; letter-spacing: .3px;
     }
-    .back-section-title.validity-title { background: #f6e7bf; color: var(--maroon-dark, var(--maroon)); }
+    .back-section-title.validity-title {
+        background: linear-gradient(90deg, #ffedbf, #fbd176); color: var(--primary-dark); border: 1px solid #e3b04a;
+    }
     .back-return-message {
-        margin: 4px 2px 5px; padding: 3px 4px; text-align: center;
-        color: #c62828; background: #fff1f2; border-radius: 3px;
-        font-size: 8.2pt; font-weight: 800; line-height: 1.15;
+        margin: 0; padding: 2px 4px; text-align: center;
+        color: var(--coral); background: #fff3ec; border: 1px dashed #f3c1a5; border-radius: 4px;
+        font-size: 8pt; font-weight: 800; line-height: 1.15;
     }
-    .back-address { margin-top: 4px; text-align: center; font-size: 6.8pt; line-height: 1.15; font-weight: 700; }
-    .back-qr-row {
-        display: flex; justify-content: center; margin: 0;
-    }
+    .back-address-wrap { display: flex; flex-direction: column; gap: 3px; }
+    .back-address { text-align: center; font-size: 6.4pt; line-height: 1.15; font-weight: 700; }
+    .back-qr-row { display: flex; justify-content: center; margin: 0; }
     .student-qr {
         width: 80px; height: 80px; flex: 0 0 80px;
         padding: 4px; box-sizing: border-box; background: #fff;
-        border: 1px solid #e2d5da; border-radius: 4px;
+        border: 1.5px solid var(--gold-deep); border-radius: 6px;
+        box-shadow: 0 3px 8px rgba(15,76,92,.18);
     }
     .student-qr img, .student-qr canvas {
         display: block; width: 70px !important; height: 70px !important;
     }
-    .back-contact {
-        bottom: 20px; left: 0; width: 100%; box-sizing: border-box;
-        display: grid; justify-items: center; gap: 1px; margin: 0; padding: 0 4px;
-        color: var(--maroon-dark); font-size: 6pt; line-height: 1.15; font-weight: 700;
-    }
-    .back-contact-row { display: flex; gap: 3px; white-space: nowrap; }
-    .back-contact-label { font-weight: 800; color: var(--info-label-color, var(--maroon)); }
-    .back-website {
-        bottom: 5px; left: 0; width: 100%; text-align: center;
-        color: #fff; font-size: 6.5pt; font-weight: 800; z-index: 3;
-        padding: 2px 0; background: var(--card-header-bg1, var(--maroon));
-    }
-    .id-card-back .bottom-border {
-        bottom: 0; left: 0; width: 100%; height: 4px;
-        background: var(--slogan-bg, var(--orange)); z-index: 3;
-    }
-    .card-watermark {
-        position: absolute; top: 53%; left: 50%; width: 145px; height: 145px;
-        transform: translate(-50%, -50%); object-fit: contain; opacity: .045;
-        pointer-events: none; z-index: 0;
-    }
 
-    .download-action { margin-top: 12px; display: flex; justify-content: center; }
-    .download-button {
-        background: var(--maroon); color: #fff; border: 0; padding: 8px 16px;
-        border-radius: 7px; cursor: pointer; font-weight: 700;
+    /* phone + email: sits right below the QR */
+    .back-reach {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 1px; margin: 0; padding: 2px 6px; box-sizing: border-box;
+        background: rgba(15,76,92,.06); border: 1px solid #d3e3e6; border-radius: 5px;
     }
-    .download-button:hover, .control-panel .download-selected:hover { filter: brightness(1.08); }
-    .note-box { margin-top: 10px; font-size: 12px; color: #334155; }
+    .back-reach-row {
+        display: flex; align-items: center; justify-content: center; gap: 3px;
+        font-size: 6.6pt; line-height: 1.1; font-weight: 800; white-space: nowrap;
+        color: var(--primary-dark);
+    }
+    .back-reach-label { color: var(--info-label-color, var(--primary)); font-weight: 900; }
+    .back-reach-colon { color: var(--gold-deep); font-weight: 900; }
+    .back-reach-value { color: #1d2a2e; font-weight: 800; letter-spacing: .1px; }
+
+    /* back footer: slim website band (in flow, so it never overlaps anything) */
+    .back-contact {
+        position: relative;
+        overflow: hidden;
+        flex: 0 0 24px; height: 24px; box-sizing: border-box;
+        display: flex; align-items: center; justify-content: center;
+        padding: 2px 6px 0; color: #fff;
+        background: linear-gradient(145deg, var(--primary-dark), var(--primary) 58%, var(--primary-dark));
+        border-top: 2px solid var(--gold);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+        border-radius: 46% 46% 0 0 / 9px 9px 0 0;
+    }
+    .back-contact::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 42%;
+        height: 2px;
+        background: linear-gradient(90deg, var(--gold), transparent);
+    }
+    .back-contact::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 42%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--gold));
+    }
+    .back-website {
+        position: relative; z-index: 2;
+        display: flex; align-items: center; justify-content: center; gap: 3px;
+        font-size: 6.5pt; line-height: 1; font-weight: 900; letter-spacing: .1px;
+        color: #fff; white-space: nowrap;
+        text-shadow: 0 1px 2px rgba(0,0,0,.5);
+    }
+    .back-website-label { color: var(--gold-light); font-weight: 900; }
+    .back-website-colon { color: var(--gold); font-weight: 900; }
+    .id-card-back .bottom-border { flex: 0 0 3px; height: 3px; background: var(--gold); }
+
+    /* ---------- ACTIONS ---------- */
+    .download-action { margin-top: 14px; display: flex; justify-content: center; }
+    .download-button {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; border: 0; padding: 9px 20px;
+        border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; font-family: inherit;
+        box-shadow: 0 4px 12px rgba(15,76,92,.25); transition: filter .15s;
+    }
+    .download-button:hover, .control-panel .download-selected:hover { filter: brightness(1.1); }
+    .download-button:focus-visible, .control-panel .download-selected:focus-visible, .back-button:focus-visible {
+        outline: 2px solid var(--gold); outline-offset: 2px;
+    }
+    .empty-state {
+        grid-column: 1 / -1; text-align: center; padding: 40px 16px; color: var(--muted);
+        background: var(--surface); border: 1px dashed #c5d6da; border-radius: 14px; font-size: 14px;
+    }
 
     @media (max-width: 600px) {
         .page-container { padding: 12px; }
         .card-grid { grid-template-columns: 1fr; }
+        .control-panel .download-selected { margin-left: 0; width: 100%; }
     }
     @media print {
         @page { size: A4; margin: 10mm; }
         body { background: #fff; }
-        .control-panel, .customizer-panel, .download-action, .card-checkbox { display: none !important; }
+        .control-panel, .customizer-panel, .download-action, .card-checkbox, .page-title, .holder-head { display: none !important; }
         .page-container { max-width: none; padding: 0; }
         .card-grid { display: block; }
-        .card-holder { overflow: visible; margin: 0 0 8mm; page-break-inside: avoid; break-inside: avoid; }
+        .card-holder { overflow: visible; margin: 0 0 8mm; padding: 0; border: 0; box-shadow: none; background: none; page-break-inside: avoid; break-inside: avoid; }
         .id-card-pair { gap: 4mm; }
         .id-card { box-shadow: none; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
     }
@@ -310,13 +435,18 @@
 
 <div class="page-container">
 
+    <div class="page-title">
+        <h1>Student ID Cards</h1>
+        <span>Class {{ selected_class }} &middot; {{ students|length }} student{{ students|length|pluralize }}</span>
+    </div>
+
     <div class="control-panel">
 
-        <a class="back-button" href="{% url 'myteacher:student_corner' %}?class_level={{ selected_class }}">Back to Student Corner</a>
+        <a class="back-button" href="{% url 'myteacher:student_corner' %}?class_level={{ selected_class }}">&larr; Back to Student Corner</a>
 
-        <div>
+        <div class="field">
 
-            <label class="fw-bold me-2">Select Class:</label>
+            <label for="classSelector">Select Class</label>
 
             <select id="classSelector" class="class-select" onchange="location.href='?class_level=' + this.value">
 
@@ -330,7 +460,7 @@
 
         </div>
 
-        <label class="fw-bold">Card expiry date:
+        <label class="field">Card expiry date
 
             <input id="expiryDateInput" class="class-select" type="date" value="{{ default_expiry_date|date:'Y-m-d' }}" required onchange="updateExpiryDate()">
 
@@ -356,9 +486,9 @@
 
     <div class="customizer-panel">
 
-        <span style="font-weight: bold; color: #650d35;">🎨 Customizer:</span>
+        <span class="customizer-title">🎨 Customizer</span>
 
-        <label>Font:
+        <label>Font
 
             <select id="fontFamilySelector" onchange="updateCardTheme()">
                 <option value="'Times New Roman', Times, serif" selected>Times New Roman</option>
@@ -367,7 +497,7 @@
 
         </label>
 
-        <label>Pattern:
+        <label>Pattern
 
             <select id="cardPatternSelector" onchange="updateCardTheme()">
 
@@ -381,21 +511,21 @@
 
         </label>
 
-        <label>H1: <input type="color" id="primaryColorPicker" value="#650d35" oninput="updateCardTheme()"></label>
+        <label>H1 <input type="color" id="primaryColorPicker" value="#0f4c5c" oninput="updateCardTheme()"></label>
 
-        <label>H2: <input type="color" id="secondaryColorPicker" value="#4b0928" oninput="updateCardTheme()"></label>
+        <label>H2 <input type="color" id="secondaryColorPicker" value="#0a3440" oninput="updateCardTheme()"></label>
 
-        <label>Slogan: <input type="color" id="sloganBgPicker" value="#9f4764" oninput="updateCardTheme()"></label>
+        <label>Slogan <input type="color" id="sloganBgPicker" value="#1f8a8a" oninput="updateCardTheme()"></label>
 
-        <label>Badge: <input type="color" id="badgeBgPicker" value="#650d35" oninput="updateCardTheme()"></label>
+        <label>Badge <input type="color" id="badgeBgPicker" value="#f4b942" oninput="updateCardTheme()"></label>
 
-        <label>Name Bar: <input type="color" id="nameBarPicker" value="#4b0928" oninput="updateCardTheme()"></label>
+        <label>Name Bar <input type="color" id="nameBarPicker" value="#0a3440" oninput="updateCardTheme()"></label>
 
-        <label>Text: <input type="color" id="textColorPicker" value="#26232a" oninput="updateCardTheme()"></label>
+        <label>Text <input type="color" id="textColorPicker" value="#1d2a2e" oninput="updateCardTheme()"></label>
 
-        <label>BG: <input type="color" id="cardBgPicker" value="#ffffff" oninput="updateCardTheme()"></label>
+        <label>BG <input type="color" id="cardBgPicker" value="#f4fafa" oninput="updateCardTheme()"></label>
 
-        <label>Size:
+        <label>Size
 
             <select id="fontSizeSelector" onchange="updateCardTheme()">
                 <option value="6.8pt">Small</option>
@@ -418,20 +548,32 @@
 
             {% if can_download %}
 
-            <input type="checkbox" class="card-checkbox" data-id="{{ student.id }}" data-name="{{ student.full_name|slugify }}">
+            <input type="checkbox" class="card-checkbox" data-id="{{ student.id }}" data-name="{{ student.full_name|slugify }}" aria-label="Select {{ student.full_name }}">
 
             {% endif %}
 
+            <div class="holder-head">
+                <div>
+                    <div class="holder-name">{{ student.full_name }}</div>
+                    <div class="holder-meta">ID {{ student.student_id }} &middot; Class {{ student.current_class }} &middot; Roll {{ student.class_roll }}</div>
+                </div>
+            </div>
+
             <div class="id-card-pair">
 
+                <!-- ================= FRONT ================= -->
                 <div class="id-card id-card-front" id="card-front-{{ student.id }}">
 
                     <div class="header">
                         <div class="logo-circle"><img src="/static/images/logo.png" alt="School Logo"></div>
                         <div class="school-heading">
-                            <div class="school-name">Khondoker Naser Uddin<br>High School</div>
+                            <div class="school-name" style="font-size: 10.8px;">Khondoker Naser Uddin</div>
+                            <div class="school-name-sub">High School</div>
+                            <div class="front-school-location">Boyra, GPO-9000, Khulna</div>
                         </div>
                     </div>
+
+                    <div class="id-card-label">STUDENT ID CARD</div>
 
                     <div class="photo-area">
 
@@ -451,15 +593,13 @@
 
                     </div>
 
-                    <div class="id-card-label">STUDENT ID CARD</div>
-
                     <div class="name-bar"><span class="name-text">{{ student.full_name }}</span></div>
 
                     <div class="student-id-text">ID NO: {{ student.student_id }}</div>
 
                     <div class="details-container">
 
-                        <div class="info-row"><span class="label">Class</span><span class="colon">:</span><span class="value">Class {{ student.current_class }}</span></div>
+                        <div class="info-row"><span class="label">Class</span><span class="colon">:</span><span class="value">{% if student.current_class == '6' %}Six{% elif student.current_class == '7' %}Seven{% elif student.current_class == '8' %}Eight{% elif student.current_class == '9' %}Nine{% elif student.current_class == '10' %}Ten{% else %}{{ student.current_class }}{% endif %}</span></div>
 
                         <div class="info-row"><span class="label">Roll</span><span class="colon">:</span><span class="value">{{ student.class_roll }}</span></div>
 
@@ -467,7 +607,7 @@
 
                         <div class="info-row"><span class="label">DOB</span><span class="colon">:</span><span class="value">{{ student.date_of_birth|date:"d M Y"|default:"N/A" }}</span></div>
 
-                        <div class="info-row"><span class="label">Blood Group</span><span class="colon">:</span><span class="value">{{ student.blood_group|default:"N/A" }}</span></div>
+                        <div class="info-row"><span class="label">Blood Group</span><span class="colon">:</span><span class="value blood-group-value">{{ student.blood_group|default:"N/A" }}</span></div>
 
                         <div class="info-row"><span class="label">Group</span><span class="colon">:</span><span class="value">{{ student.group|default:"General" }}</span></div>
 
@@ -479,6 +619,8 @@
 
                     <div class="footer-container">
 
+                        <div class="verify-note">Scan the QR on the back to verify this card</div>
+
                         <div class="signature-box">
 
                             <img src="/static/images/sign-cropped.png" class="sig-image" alt="Signature">
@@ -489,18 +631,17 @@
 
                             <div class="sig-text">Md. Salim Sarder</div>
 
-                            <div class="sig-text">Mob: 01714939122</div>
-
                         </div>
 
                     </div>
 
-                    <div class="bottom-border"></div>
+                    <div class="bottom-border">Education Begins With Good Character</div>
 
                 </div>
 
 
 
+                <!-- ================= BACK ================= -->
                 <div class="id-card id-card-back" id="card-back-{{ student.id }}">
 
                     <img class="card-watermark" src="/static/images/logo.png" alt="">
@@ -508,7 +649,8 @@
                     <div class="header back-header">
                         <div class="back-emblem"><img src="/static/images/logo.png" alt="School logo"></div>
                         <div class="school-heading">
-                            <div class="school-name">Khondoker Naser Uddin<br>High School</div>
+                            <div class="school-name">Khondoker Naser Uddin</div>
+                            <div class="school-name-sub">High School</div>
                             <div class="school-eiin">EIIN: 117407</div>
                         </div>
                     </div>
@@ -527,15 +669,16 @@
 
                         <div class="back-section-title validity-title">Valid Until: <span class="expiry-date">{{ default_expiry_date|date:"d M Y" }}</span></div>
 
-                        <p class="back-return-message">If found, please return this ID card to the school.</p>
+                        <p class="back-return-message">If found, return to school.</p>
 
-                        <div class="back-section-title">Return Address</div>
+                        <div class="back-address-wrap">
 
-                        <div class="back-address">
+                            <div class="back-section-title">Return Address</div>
 
-                            Khondoker Naser Uddin High School<br>
-
-                            Hazi Foyez Uddin Cross Road, Boyra,<br>GPO-9000, Khulna
+                            <div class="back-address">
+                                Khondoker Naser Uddin High School<br>
+                                Hazi Foyez Uddin Cross Road, Boyra,<br>GPO-9000, Khulna
+                            </div>
 
                         </div>
 
@@ -556,14 +699,16 @@
                                 aria-label="QR code with student and school information"
                             ></div>
                         </div>
+
+                        <div class="back-reach">
+                            <div class="back-reach-row"><span class="back-reach-label">Phone</span><span class="back-reach-colon">:</span><span class="back-reach-value">01714939122</span></div>
+                            <div class="back-reach-row"><span class="back-reach-label">Email</span><span class="back-reach-colon">:</span><span class="back-reach-value">knuhighschool1994@gmail.com</span></div>
+                        </div>
                     </div>
 
                     <div class="back-contact">
-                        <div class="back-contact-row"><span class="back-contact-label">Phone:</span><span>01714939122</span></div>
-                        <div class="back-contact-row"><span class="back-contact-label">Email:</span><span>knuhighschool1994@gmail.com</span></div>
+                        <span class="back-website"><span class="back-website-label">Web</span><span class="back-website-colon">:</span><span>knuhighschool.pythonanywhere.com</span></span>
                     </div>
-
-                    <div class="back-website">Website: knuhighschool.pythonanywhere.com</div>
 
                     <div class="bottom-border"></div>
 
@@ -585,7 +730,7 @@
 
         {% empty %}
 
-        <div class="note-box">No students found for this class.</div>
+        <div class="empty-state">No students found for this class.</div>
 
         {% endfor %}
 
@@ -595,6 +740,7 @@
 
 
 
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
@@ -606,134 +752,72 @@
     function updateCardTheme() {
 
         const primaryColor = document.getElementById('primaryColorPicker').value;
-
         const secondaryColor = document.getElementById('secondaryColorPicker').value;
-
         const sloganBg = document.getElementById('sloganBgPicker').value;
-
         const badgeBg = document.getElementById('badgeBgPicker').value;
-
         const nameBarBg = document.getElementById('nameBarPicker').value;
-
         const textColor = document.getElementById('textColorPicker').value;
-
         const cardBg = document.getElementById('cardBgPicker').value;
-
         const fontSize = document.getElementById('fontSizeSelector').value;
-
         const fontFamily = document.getElementById('fontFamilySelector').value;
-
         const patternType = document.getElementById('cardPatternSelector').value;
-
-
 
         let patternCSS = 'none';
 
         if (patternType === 'stripes') {
-
             patternCSS = `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.02) 10px, rgba(0,0,0,0.02) 20px)`;
-
         } else if (patternType === 'dots') {
-
             patternCSS = `radial-gradient(rgba(0,0,0,0.06) 1px, transparent 1px)`;
-
         }
 
-
+        const bandGradient = `linear-gradient(90deg, ${secondaryColor}, ${primaryColor} 50%, ${secondaryColor})`;
 
         const cards = document.querySelectorAll('.id-card');
 
         cards.forEach(card => {
 
             card.style.setProperty('--card-border-color', primaryColor);
-
             card.style.setProperty('--card-bg', cardBg);
-
             card.style.setProperty('--card-font', fontFamily);
-
             card.style.setProperty('--card-font-size', fontSize);
-
             card.style.setProperty('--card-pattern', patternCSS);
 
-            if(patternType === 'dots') {
-
-                card.style.backgroundSize = '12px 12px';
-
-            } else {
-
-                card.style.backgroundSize = 'auto';
-
-            }
-
-
+            // two background layers: pattern + soft white overlay
+            card.style.backgroundSize = patternType === 'dots' ? '12px 12px, auto' : 'auto, auto';
 
             const header = card.querySelector('.header');
-
             if (header) header.style.background = `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`;
 
-
-
-            const slogan = card.querySelector('.slogan-bar');
-
-            if (slogan) slogan.style.backgroundColor = sloganBg;
-
-
-
+            // badge color is applied through a CSS variable so the ribbon design is kept
             const badge = card.querySelector('.id-card-label');
-
-            if (badge) badge.style.backgroundColor = badgeBg;
-
-
+            if (badge) badge.style.setProperty('--label-badge-bg', badgeBg);
 
             const studentIdText = card.querySelector('.student-id-text');
-
             if (studentIdText) studentIdText.style.color = secondaryColor;
 
-
-
             const nameBar = card.querySelector('.name-bar');
-
             if (nameBar) { nameBar.style.backgroundColor = nameBarBg; nameBar.style.color = '#ffffff'; }
 
-
-
-            const values = card.querySelectorAll('.value');
-
-            values.forEach(v => v.style.color = textColor);
-
-
-
-            const labels = card.querySelectorAll('.label');
-
-            labels.forEach(l => l.style.color = secondaryColor);
-
-
-
-            const sigTexts = card.querySelectorAll('.sig-text');
-
-            sigTexts.forEach(st => st.style.color = primaryColor);
-
-
+            card.querySelectorAll('.value').forEach(v => {
+                v.style.color = v.classList.contains('blood-group-value') ? '#c91f37' : textColor;
+            });
+            card.querySelectorAll('.label').forEach(l => l.style.color = secondaryColor);
+            card.querySelectorAll('.sig-text').forEach(st => st.style.color = primaryColor);
 
             const bottomBorder = card.querySelector('.bottom-border');
-
             if (bottomBorder) {
                 bottomBorder.style.background = card.classList.contains('id-card-front')
-                    ? `linear-gradient(12deg, ${primaryColor} 0 67%, ${sloganBg} 67% 73%, transparent 73%)`
+                    ? bandGradient
                     : sloganBg;
             }
 
-            const backAccent = card.querySelectorAll('.back-section-title');
-
-            backAccent.forEach(item => item.style.backgroundColor = sloganBg);
+            card.querySelectorAll('.back-section-title:not(.validity-title)').forEach(item => item.style.backgroundColor = sloganBg);
 
             const backContact = card.querySelector('.back-contact');
-
-            if (backContact) backContact.style.backgroundColor = primaryColor;
-
-            const backWebsite = card.querySelector('.back-website');
-
-            if (backWebsite) backWebsite.style.color = secondaryColor;
+            if (backContact) {
+                backContact.style.background =
+                    `linear-gradient(145deg, ${secondaryColor}, ${primaryColor} 58%, ${secondaryColor})`;
+            }
 
         });
 
@@ -775,115 +859,155 @@
     }
 
 
-        function updateExpiryDate() {
+    function updateExpiryDate() {
 
-            const input = document.getElementById('expiryDateInput');
+        const input = document.getElementById('expiryDateInput');
 
-            if (!input || !input.value) return false;
+        if (!input || !input.value) return false;
 
-            const [year, month, day] = input.value.split('-').map(Number);
+        const [year, month, day] = input.value.split('-').map(Number);
 
-            const date = new Date(Date.UTC(year, month - 1, day));
+        const date = new Date(Date.UTC(year, month - 1, day));
 
-            const formatted = new Intl.DateTimeFormat('en-GB', {
+        const formatted = new Intl.DateTimeFormat('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            timeZone: 'UTC'
+        }).format(date);
 
-                day: '2-digit',
+        document.querySelectorAll('.expiry-date').forEach(element => {
+            element.textContent = formatted;
+        });
 
-                month: 'short',
+        return true;
 
-                year: 'numeric',
-
-                timeZone: 'UTC'
-
-            }).format(date);
-
-            document.querySelectorAll('.expiry-date').forEach(element => {
-
-                element.textContent = formatted;
-
-            });
-
-            return true;
-
-        }
+    }
 
 
 
     async function renderCardToBlob(cardId) {
-        fitStudentNames();
         const element = document.getElementById(cardId);
         if (!element) throw new Error("ID card element was not found.");
 
-        const images = Array.from(element.querySelectorAll("img"));
-        await Promise.all(images.map(img => {
-            if (img.complete && img.naturalWidth > 0) return Promise.resolve();
-            return new Promise(resolve => {
+        fitStudentNames();
+
+        await Promise.all(Array.from(element.querySelectorAll("img")).map(async img => {
+            img.loading = "eager";
+            if (img.complete && img.naturalWidth > 0) {
+                try {
+                    await img.decode();
+                } catch (error) {
+                    // The image is already complete; continue rendering.
+                }
+                return;
+            }
+            await new Promise(resolve => {
                 img.onload = resolve;
                 img.onerror = resolve;
             });
         }));
 
-        const canvas = await html2canvas(element, {
-            scale: 8,
-            useCORS: true,
-            allowTaint: false,
-            backgroundColor: "#ffffff",
-            logging: false,
-            width: 210,
-            height: 332,
-            onclone: clonedDocument => {
-                const clonedCard = clonedDocument.getElementById(cardId);
-                const signature = clonedCard && clonedCard.querySelector('.sig-image');
-                if (signature) signature.style.transform = 'translateY(-4px)';
-            }
-        });
+        if (document.fonts && document.fonts.ready) {
+            await document.fonts.ready;
+        }
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
-        return new Promise((resolve, reject) => {
-            canvas.toBlob(blob => {
-                if (blob) resolve(blob);
-                else reject(new Error("Could not create the card image."));
-            }, "image/png", 1);
-        });
+        const exportOptions = {
+            pixelRatio: 1,
+            canvasWidth: 638,
+            canvasHeight: 1004,
+            width: 204.094,
+            height: 321.26,
+            cacheBust: true,
+            skipFonts: false,
+            preferredFontFormat: "woff2",
+            backgroundColor: "#ffffff",
+            style: {
+                width: "54mm",
+                minWidth: "54mm",
+                maxWidth: "54mm",
+                height: "85mm",
+                minHeight: "85mm",
+                maxHeight: "85mm",
+                transform: "none",
+                animation: "none",
+                transition: "none",
+                margin: "0"
+            }
+        };
+
+        if (window.htmlToImage && typeof window.htmlToImage.toBlob === "function") {
+            const blob = await window.htmlToImage.toBlob(element, exportOptions);
+            if (!blob) throw new Error("Could not create the card PNG.");
+            return blob;
+        }
+
+        if (window.html2canvas) {
+            const canvas = await window.html2canvas(element, {
+                scale: 3.125,
+                useCORS: true,
+                allowTaint: false,
+                backgroundColor: "#ffffff",
+                logging: false,
+                width: 204.094,
+                height: 321.26,
+                scrollX: 0,
+                scrollY: 0,
+                imageTimeout: 15000,
+                onclone: clonedDocument => {
+                    const clonedCard = clonedDocument.getElementById(cardId);
+                    if (!clonedCard) return;
+                    clonedCard.style.width = "54mm";
+                    clonedCard.style.minWidth = "54mm";
+                    clonedCard.style.maxWidth = "54mm";
+                    clonedCard.style.height = "85mm";
+                    clonedCard.style.minHeight = "85mm";
+                    clonedCard.style.maxHeight = "85mm";
+                    clonedCard.style.transform = "none";
+                    clonedCard.style.animation = "none";
+                    clonedCard.style.transition = "none";
+                    clonedCard.style.margin = "0";
+                }
+            });
+            return await new Promise((resolve, reject) => {
+                canvas.toBlob(blob => {
+                    if (blob) resolve(blob);
+                    else reject(new Error("Could not create the card PNG."));
+                }, "image/png", 1);
+            });
+        }
+
+        throw new Error("No supported card renderer is available.");
     }
 
     async function downloadCardImages(studentId, studentSlug) {
 
         if (!updateExpiryDate()) {
-
             alert('Please select a card expiry date.');
-
             return;
-
         }
 
         try {
 
             const [front, back] = await Promise.all([
-
                 renderCardToBlob(`card-front-${studentId}`),
-
                 renderCardToBlob(`card-back-${studentId}`)
-
             ]);
 
             if (!front || !back) throw new Error('Could not render both card sides.');
 
             const zip = new JSZip();
-
             const name = studentSlug || 'student';
 
             zip.file(`${name}_ID_Card_Front.png`, front);
-
             zip.file(`${name}_ID_Card_Back.png`, back);
 
             saveAs(await zip.generateAsync({ type: 'blob' }), `${name}_ID_Card.zip`);
 
         } catch (error) {
-
             console.error('ID card download failed:', error);
-
             alert('Could not download both sides of the ID card. Please try again.');
-
         }
 
     }
@@ -897,20 +1021,13 @@
         if (zipButton && zipButton.disabled) return;
 
         if (!updateExpiryDate()) {
-
             alert('Please select a card expiry date.');
-
             return;
-
         }
-
-
 
         const selected = document.querySelectorAll('.card-checkbox:checked');
 
         if (!selected.length) { alert('Please select at least one card.'); return; }
-
-
 
         const zip = new JSZip();
 
@@ -919,17 +1036,12 @@
             for (let i = 0; i < selected.length; i++) {
 
                 const checkbox = selected[i];
-
                 const id = checkbox.getAttribute('data-id');
-
                 const name = checkbox.getAttribute('data-name') || `student_${i + 1}`;
 
                 const [front, back] = await Promise.all([
-
                     renderCardToBlob(`card-front-${id}`),
-
                     renderCardToBlob(`card-back-${id}`)
-
                 ]);
 
                 if (!front || !back) throw new Error(`Could not render both card sides for ${name}.`);
@@ -937,7 +1049,6 @@
                 const folder = zip.folder(`${name}_${i + 1}`);
 
                 folder.file(`${name}_ID_Card_Front.png`, front);
-
                 folder.file(`${name}_ID_Card_Back.png`, back);
 
             }
@@ -947,11 +1058,8 @@
             saveAs(content, 'student_id_cards.zip');
 
         } catch (error) {
-
             console.error('Selected ID card download failed:', error);
-
             alert('Could not download the selected ID cards. Please try again.');
-
         }
 
     }
@@ -974,7 +1082,9 @@
             `Group: ${student.studentGroup}`,
             `Religion: ${student.studentReligion}`,
             'Phone: 01714939122',
-            'Email: knuhighschool1994@gmail.com'
+            'Email: knuhighschool1994@gmail.com',
+            'Website:',
+            'https://knuhighschool.pythonanywhere.com'
         ].join('\n');
 
         new QRCode(qrElement, {
@@ -983,7 +1093,7 @@
             height: 264,
             colorDark: '#000000',
             colorLight: '#ffffff',
-            correctLevel: QRCode.CorrectLevel.M
+            correctLevel: QRCode.CorrectLevel.L
         });
     });
 
