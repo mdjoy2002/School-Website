@@ -74,6 +74,26 @@ class StudentPortalTests(TestCase):
         self.assertEqual(self.student.user.username, self.student.student_id)
         self.assertTrue(self.student.user.check_password(self.student.generated_password))
 
+    def test_student_id_is_generated_when_blank_and_is_unique(self):
+        student_data = {
+            'photo': '',
+            'full_name': 'New Student',
+            'father_name': 'Father',
+            'mother_name': 'Mother',
+            'student_id': '',
+            'current_class': '6',
+            'class_roll': 2,
+            'mobile_num': '01700000002',
+            'login_enabled': False,
+        }
+
+        first_student = Student.objects.create(**student_data)
+        second_student = Student.objects.create(**{**student_data, 'class_roll': 3})
+
+        self.assertRegex(first_student.student_id, r'^\d{7}$')
+        self.assertRegex(second_student.student_id, r'^\d{7}$')
+        self.assertNotEqual(first_student.student_id, second_student.student_id)
+
     def test_promotion_records_history_for_previous_class(self):
         self.student.ensure_login_credentials()
         self.student.promote_to_next_class()

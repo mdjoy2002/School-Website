@@ -1,4 +1,5 @@
 import random
+import secrets
 import string
 
 from django.apps import apps
@@ -62,7 +63,7 @@ class Student(models.Model):
     full_name = models.CharField(max_length=100, verbose_name="Full Name")
     father_name = models.CharField(max_length=100, verbose_name="Father's Name")
     mother_name = models.CharField(max_length=100, verbose_name="Mother's Name")
-    student_id = models.CharField(max_length=7, unique=True, verbose_name="Student ID (7 Digits)")
+    student_id = models.CharField(max_length=7, unique=True, blank=True, verbose_name="Student ID (7 Digits)")
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='Male', verbose_name="Gender")
     date_of_birth = models.DateField(null=True, blank=True, verbose_name="Date of Birth")
     blood_group = models.CharField(
@@ -142,6 +143,12 @@ class Student(models.Model):
             old_student_id = Student.objects.filter(pk=self.pk).values_list('student_id', flat=True).first()
 
         new_record = self.pk is None
+        if new_record and not self.student_id:
+            while True:
+                self.student_id = str(secrets.randbelow(10_000_000)).zfill(7)
+                if not Student.objects.filter(student_id=self.student_id).exists():
+                    break
+
         super().save(*args, **kwargs)
 
         if self.user and old_student_id and old_student_id != self.student_id:
